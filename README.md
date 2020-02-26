@@ -7,7 +7,7 @@ required:
 
 ## Git Workflow
 
-We use Feature Branches. Refer to [`doc/git_workflow.md`](doc/git_workflow.md) for instructions and [attlasion.com](and https://www.atlassian.com/git/tutorials/comparing-workflows/feature-branch-workflow) for a more in-depth explanation.
+We use Feature Branches. Refer to [`doc/git_workflow.md`](doc/git_workflow.md) for instructions and [attlasion.com](https://www.atlassian.com/git/tutorials/comparing-workflows/feature-branch-workflow) for a more in-depth explanation.
 
 ## Python Package Management
 
