@@ -1,7 +1,7 @@
 # buerro
 This is a super cool PDA GitHub from super cool people.
 
-![yummy burrito](https://lovingitvegan.com/wp-content/uploads/2018/11/Vegan-Burrito-11.jpg =250x "Yummy burrito")
+![yummy burrito](https://lovingitvegan.com/wp-content/uploads/2018/11/Vegan-Burrito-11.jpg "Yummy burrito" | width=250)
 
 required:
 
