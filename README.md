@@ -1,6 +1,8 @@
 # buerro
 This is a super cool PDA GitHub from super cool people.
 
+![yummy burrito](https://lovingitvegan.com/wp-content/uploads/2018/11/Vegan-Burrito-11.jpg "Yummy burrito")
+
 required:
 
 - Python 3.7
