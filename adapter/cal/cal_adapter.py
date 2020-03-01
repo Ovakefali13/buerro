@@ -4,7 +4,9 @@ from caldav.elements import dav, cdav
 from dotenv import load_dotenv
 from os import environ
 
-class CaldavAdapter:
+from .event import Event
+
+class CalAdapter:
     client = None
     calendar = None
 
@@ -52,49 +54,17 @@ class CaldavAdapter:
     def get_all_events(self):
         return self.calendar.events()
 
-    def format_date(self, dt):
-        return dt.strftime("%Y%m%dT%H%M%SZ")
 
-    def add_event(self, title:str, start:datetime, end:datetime, location:str="",
-            reminder_min:int=None):
-
-        event = {
-            'summary':  title, 
-            'dtstart':  self.format_date(start),
-            'dtend':    self.format_date(end), 
-            'dtstamp':  self.format_date(datetime.now()),
-            'uid':      self.format_date(datetime.now())+"@buerro",
-            'location': location,
-            'reminder_min': reminder_min
-        }
-
-        ical_ev = """BEGIN:VCALENDAR
-BEGIN:VEVENT
-SUMMARY:{summary}
-DTSTAMP:{dtstamp}
-DTSTART:{dtstart}
-DTEND:{dtend}
-LOCATION:{location}
-UID:{uid}
-BEGIN:VALARM
-TRIGGER:-PT{reminder_min}M
-ACTION:AUDIO
-END:VALARM
-END:VEVENT
-END:VCALENDAR"""
-        ical_ev = ical_ev.format(**event)
-        
-        print(ical_ev)
-
-        self.calendar.add_event(ical_ev)
+    def add_event(self, Event):
+        self.calendar.add_event(event.to_ical())
 
 
 if __name__ == "__main__":
     adapter = CaldavAdapter()
     print(adapter.get_all_events())
-    adapter.add_event("Main Event", 
+    adapter.add_event(Event("Main Event", 
             start=datetime(2020, 2, 26, 18, 00), 
             end=datetime(2020, 2, 26, 19, 00),
-            location="My Hood", reminder_min=10)
+            location="My Hood", reminder_min=10))
 
 
