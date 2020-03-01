@@ -14,6 +14,7 @@ def searchRecipeBySingleIngredient(ingredient):
     response_json = response_string.json()
     return(response_json['results'][0]['id'])
 
+
 # searches for the full information of a recipe with a given id
 # return: Full json information of a recipe
 def searchRecipeDataByID(id):
