@@ -1,0 +1,25 @@
+{
+	"general": {
+		"general1": "prefGeneral1"
+	},
+	"cooking": {
+		"cooking1": "prefCooking1",
+		"cooking2": "prefCooking2"
+	},
+	"github": {
+		"github1": "prefGithub1",
+		"github2": "prefGithub2"
+	},
+	"workday": {
+		"workday1": "prefWorkday1",
+		"workday2": "prefWorkday2"
+	},
+	"transport": {
+		"transport1": "prefTransport1",
+		"transport2": "prefTransport2"
+	},
+	"lunchbreak": {
+		"lunchbreak1": "prefLunchbreak1",
+		"lunchbreak2": "prefLunchbreak2"
+	}
+}
