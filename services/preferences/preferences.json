@@ -15,11 +15,12 @@
 		"workday2": "prefWorkday2"
 	},
 	"transport": {
-		"transport1": "prefTransport1",
-		"transport2": "prefTransport2"
+		"minTemp": 10,
+		"maxWind": 20
 	},
 	"lunchbreak": {
-		"lunchbreak1": "prefLunchbreak1",
-		"lunchbreak2": "prefLunchbreak2"
+		"base_radius": 500,
+		"ten_min_radius": 100,
+		"price": "1, 2"
 	}
 }

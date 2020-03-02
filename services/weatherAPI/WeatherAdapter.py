@@ -1,6 +1,6 @@
 import requests
-from Adapter.ApiError import ApiError
-from Adapter.Singleton import Singleton
+from services.ApiError import ApiError
+from services.Singleton import Singleton
 
 @Singleton
 class WeatherAdapter:
