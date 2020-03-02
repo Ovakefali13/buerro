@@ -3,14 +3,13 @@ import caldav
 from caldav.elements import dav, cdav
 from dotenv import load_dotenv
 from os import environ
+from abc import ABC, abstractmethod
 
-from .event import Event
+from icalendar import Event
+#from .event import Event
 
-class CalService:
-    client = None
-    calendar = None
 
-    def __init__(self):
+def get_icloud_calendar():
         load_dotenv()
 
         required_env = (
@@ -27,15 +26,25 @@ class CalService:
         principal = client.principal()
         calendars = principal.calendars()
 
+        calendar = None
         for cal in calendars:
             properties = cal.get_properties([dav.DisplayName(), ])
             display_name = properties['{DAV:}displayname']
             if(display_name == environ['CALENDAR']):
-                self.calendar = cal
+                calendar = cal
                 break
 
-        if self.calendar is None:
+        if calendar is None:
             raise EnvironmentError('Provided CALENDAR could not be found')
+
+        return calendar
+
+class CalService:
+    client = None
+    calendar = None
+
+    def __init__(self, calendar):
+        self.calendar = calendar
 
     def get_next_event(self):
         #TODO
@@ -55,7 +64,7 @@ class CalService:
         return self.calendar.events()
 
 
-    def add_event(self, Event):
+    def add_event(self, event:Event):
         self.calendar.add_event(event.to_ical())
 
 
