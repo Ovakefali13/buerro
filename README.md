@@ -57,3 +57,13 @@ Test functions need to start with `test*`.
 All tests can be discovered automatically using `cd <directory && python -m unittest discover`. This only works if all directories on the way to the test directory are importable as python modules (they contain a `__init__.py`.
 
 All test files need to start with `test*.py` or provide a different `-p` option to discover.
+
+See `Makefile` test target.
+
+### Debugging
+
+Insert this line anywhere in your code: this will add a breakpoint during unittest execution.
+
+```py
+from nose.tools import set_trace; set_trace()
+```

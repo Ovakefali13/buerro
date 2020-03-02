@@ -9,8 +9,10 @@ set_buerro_path:
 	echo $(ROOT_DIR) > buerro.pth
 
 .PHONY: test
-test:
-	cd adapter && $(PYTHON) -m unittest discover -v
+#test: export DONOTMOCK=1
+test: 
+	#cd adapter && $(PYTHON) -m unittest discover -v
+	cd adapter && $(PYTHON) `which nosetests` --nocapture -v
 
 .PHONY: vvs_cal
 vvs_cal:
