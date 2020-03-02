@@ -1,24 +1,47 @@
 import requests
+from openrouteservice import client
 from geocoding import getCoordsFromAddress
 
-# 2500 free transactions per day https://developer.tomtom.com/
-API_TOKEN = 'N27kv6AwYWkFy2BR0ApNAKg5pEPA9BiU'
 
-def getRouteSummaryFromTo(start, dest, extraargs = ['routeRepresentation=summaryOnly']):
-    req = 'https://api.tomtom.com/routing/1/calculateRoute/' + getCoordsFromAddress(start) + ':' + getCoordsFromAddress(dest) + '/' + 'json?key=' +  API_TOKEN + '&' + '&'.join(extraargs)
+class RouteRequest:
+    # openroute service
+    API_TOKEN = '5b3ce3597851110001cf62488ef50484ef524d228826ecc7b35f5df1'
 
-    resp = requests.get(req)
-    if resp.status_code != 200:
-        # This means something went wrong.
-        print('Error:', resp.status_code)
+    def __init__(self):
+        print('Init Map Service')
 
-    routeData = resp.json()
+        clnt = client.Client(key=self.API_TOKEN)
 
-    return routeData
+        self.PREFS = {
+            "profile": "driving-car",
+            "preference": "shortest"
+        }
 
+        self.request_params = {
+            'coordinates': [[12.108259, 54.081919], [12.072063, 54.103684]],
+            'format_out': 'json',
+            'profile': self.PREFS["profile"],
+            'preference': self.PREFS["preference"],
+            'instructions': 'false',
+            'geometry': 'false',            
+        }
 
-def test():
-    route = getRouteSummaryFromTo('Lindenstraße 31-1, Abstatt', 'Stuttgart')
+        def setRoute(self, start, dest):
+            if isinstance(start, list) and isinstance(dest, list):
+                self.request_params['coordinates'] = [start, dest]
+            elif isinstance (start, str) and isinstance(dest, str):
+                self.request_params['coordinates'] = [getCoordsFromAddress(start), getCoordsFromAddress(dest)]
+                
+        def setTravelMode(self, profile):
+            self.request_params['profile'] = profile
 
-    for name, value in route['routes'][0]['summary'].items():
-        print(f"{name}: {value}")
+        def getRouteInformation(self):
+            self.route = clnt.directions(**self.request_params)     
+
+        def printRouteSummary(self):
+            distance = self.route['routes'][0]['summary']['distance']
+            duration = self.route['routes'][0]['summary']['duration'] 
+            print(f"The route is {round(distance / 1000)} km long and takes {round(duration / 60)} minutes.")
+
+        getRouteInformation(self)
+        printRouteSummary(self)
