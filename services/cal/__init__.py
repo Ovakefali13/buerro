@@ -1,2 +1,2 @@
-from .cal_adapter import CalAdapter
+from .cal_service import CalService
 from .event import Event

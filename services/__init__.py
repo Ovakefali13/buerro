@@ -1,2 +1,2 @@
-from .cal import CalAdapter
-from .vvs import VVSAdapter
+from .cal import CalService
+from .vvs import VVSService

@@ -1,5 +1,5 @@
 import unittest
-from .. import VVSAdapter, VVSRemote, VVSEfaJSONRemote, JourneyRequest
+from .. import VVSService, VVSRemote, VVSEfaJSONRemote, JourneyRequest
 import os
 from datetime import datetime
 
@@ -42,22 +42,22 @@ class VVSMockRemote(VVSRemote):
                 req.time + timedelta(minutes=5))
         ]
 
-class TestVVSAdapter(unittest.TestCase):
+class TestVVSService(unittest.TestCase):
     if 'DONOTMOCK' in os.environ:
         remote = VVSEfaJSONRemote()
     else:
         print("Mocking remotes...")
         remote = VVSMockRemote()
 
-    vvs_adapter = VVSAdapter(remote)
+    vvs_service = VVSService(remote)
 
     def test_get_location(self):
-        location_id = self.vvs_adapter.get_location_id("Stuttgart Hauptbahnhof")
+        location_id = self.vvs_service.get_location_id("Stuttgart Hauptbahnhof")
         self.assertEqual(location_id, 'de:08111:6118')
 
     def test_get_journeys(self):
         req_time = datetime(2020, 3, 2, 9, 0)
 
-        journeys = self.vvs_adapter.get_journeys("Stuttgart Hauptbahnhof", "Rotebühlplatz", "arr", req_time)
+        journeys = self.vvs_service.get_journeys("Stuttgart Hauptbahnhof", "Rotebühlplatz", "arr", req_time)
         self.assertIsNotNone(journeys)
         self.assertTrue(len(journeys) > 0)

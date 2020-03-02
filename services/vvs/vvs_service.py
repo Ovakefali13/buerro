@@ -52,7 +52,7 @@ class VVAEfaXMLRemote(VVSRemote):
     base_url = "http://efastatic.vvs.de/vvs"
     outputFormat = "XML"
 """
-class VVSAdapter:
+class VVSService:
     remote = None
 
     def __init__(self, remote):

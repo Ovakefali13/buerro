@@ -11,8 +11,8 @@ set_buerro_path:
 .PHONY: test
 #test: export DONOTMOCK=1
 test: 
-	#cd adapter && $(PYTHON) -m unittest discover -v
-	cd adapter && $(PYTHON) `which nosetests` --nocapture -v
+	#cd services && $(PYTHON) -m unittest discover -v
+	cd services && $(PYTHON) `which nosetests` --nocapture -v
 
 .PHONY: vvs_cal
 vvs_cal:
