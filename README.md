@@ -55,6 +55,8 @@ Test functions need to start with `test*`.
 
 ### Discovering tests automatically
 
-All tests can be discovered automatically using `cd <directory && python -m unittest discover`. This only works if all directories on the way to the test directory are importable as python modules (they contain a `__init__.py`.
+All tests can be discovered automatically using `cd <directory && python -m unittest discover`. This only works if all directories on the way to the test directory are importable as python modules (they contain a `__init__.py`).
 
 All test files need to start with `test*.py` or provide a different `-p` option to discover.
+
+Use the target `make test` to discover tests within a module tracking coverage.
