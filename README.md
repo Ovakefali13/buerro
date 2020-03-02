@@ -1,7 +1,6 @@
-# buerro
-This is a super cool PDA GitHub from super cool people.
+# buerro 🌯
 
-![yummy burrito](https://www.springlane.de/magazin/wp-content/uploads/2016/05/Vegane-Burritos-mit-Grillgemuese_featured.jpg "Yummy burrito")
+This is a super cool PDA from super cool people.
 
 required:
 
