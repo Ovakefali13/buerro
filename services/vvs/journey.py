@@ -11,17 +11,19 @@ class Journey:
     duration = None
     transportation = None
     legs = [] # array of JourneyInfo
-    
     local_tz = pytz.timezone('Europe/Berlin')
 
-    def __init__(self, origin=None, dest=None, dep_time=None, arr_time=None):
+    def __init__(self, origin=None, dest=None,
+        dep_time:datetime=None, arr_time:datetime=None):
         self.origin = origin
         self.dest = dest
         self.dep_time = dep_time
         self.arr_time = arr_time
         if arr_time is not None and dep_time is not None:
             self.duration = divmod((arr_time - dep_time).total_seconds(), 60)[0]
+
         self.legs = []
+        self.transportation = None
 
     def set_transportation(self, transportation):
         self.transportation = transportation
@@ -35,7 +37,6 @@ class Journey:
     def get_duration(self):
         if self.duration:
             return self.duration
-        
         if self.arr_time and self.dep_time:
             self.duration = divmod((self.arr_time - self.dep_time).total_seconds(), 60)[0]
             return self.duration
@@ -52,12 +53,12 @@ class Journey:
                 + ' by '    + str(self.transportation)
                 + ' until ' + str(self.arr_time.strftime("%H:%M"))
                 + ' takes ' + str(self.get_duration()))
-        
-        for leg in self.legs: 
+
+        for leg in self.legs:
             description += "\n" + str(leg)
 
         return description
-     
+
     def from_vvs(self, journey:dict):
         def from_utc_to_local(utc_dt):
             #return self.local_tz.localize(utc_dt)
@@ -73,10 +74,10 @@ class Journey:
         legs = journey.get('legs')
         origin = legs[0].get('origin')
         dest = legs[-1].get('destination')
-        
         self.origin = origin.get('name')
         self.dest = dest.get('name')
-
+        self.transportation = list(map(lambda l:
+            l.get('transportation').get('name', 'foot'), legs))
         self.dep_time = parse_vvs_time(origin.get('departureTimePlanned'))
         self.arr_time = parse_vvs_time(dest.get('arrivalTimePlanned'))
 
@@ -85,7 +86,11 @@ class Journey:
             dest = copy(leg.get('destination').get('name'))
             dep_time = parse_vvs_time(leg.get('origin').get('departureTimePlanned'))
             arr_time = parse_vvs_time(leg.get('destination').get('arrivalTimePlanned'))
-            transportation = leg.get('transportation').get('name', 'foot')
 
-            self.legs.append(Journey(origin, dest, dep_time, arr_time))
+            leg_journey = Journey(origin, dest, dep_time, arr_time)
+            leg_journey.set_transportation(leg.get('transportation')
+                .get('name', 'foot'))
+            self.legs.append(leg_journey)
+
+        return self
 

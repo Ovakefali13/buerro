@@ -6,7 +6,7 @@ from os import environ
 
 from .event import Event
 
-class CalAdapter:
+class CalService:
     client = None
     calendar = None
 
@@ -60,10 +60,10 @@ class CalAdapter:
 
 
 if __name__ == "__main__":
-    adapter = CaldavAdapter()
-    print(adapter.get_all_events())
-    adapter.add_event(Event("Main Event", 
-            start=datetime(2020, 2, 26, 18, 00), 
+    service = CalService()
+    print(service.get_all_events())
+    service.add_event(Event("Main Event",
+            start=datetime(2020, 2, 26, 18, 00),
             end=datetime(2020, 2, 26, 19, 00),
             location="My Hood", reminder_min=10))
 

@@ -60,3 +60,11 @@ All tests can be discovered automatically using `cd <directory && python -m unit
 All test files need to start with `test*.py` or provide a different `-p` option to discover.
 
 Use the target `make test` to discover tests within a module tracking coverage.
+
+### Debugging
+
+Insert this line anywhere in your code: this will add a breakpoint during unittest execution.
+
+```py
+from nose.tools import set_trace; set_trace()
+```
