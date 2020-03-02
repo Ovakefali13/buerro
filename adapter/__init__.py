@@ -1,2 +1,2 @@
-from .caldav import CaldavAdapter
+from .cal import CalAdapter
 from .vvs import VVSAdapter

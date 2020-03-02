@@ -10,4 +10,8 @@ set_buerro_path:
 
 .PHONY: test
 test:
-	cd adapter && $(PYTHON) -m unittest discover
+	cd adapter && $(PYTHON) -m unittest discover -v
+
+.PHONY: vvs_cal
+vvs_cal:
+	$(PYTHON) usecase/vvs_cal.py "Hauptbahnhof" "Stadmitte" dep
