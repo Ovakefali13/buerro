@@ -1,4 +1,4 @@
-from Adapter.WeatherAPI.WeatherAdapter import WeatherAdapter
+from services.weatherAPI.WeatherAdapter import WeatherAdapter
 def main():
     weatherAdapter = WeatherAdapter.instance()
     weatherAdapter.update('Stuttgart')

@@ -1,7 +1,6 @@
-# buerro
-This is a super cool PDA GitHub from super cool people.
+# buerro 🌯
 
-![yummy burrito](https://www.springlane.de/magazin/wp-content/uploads/2016/05/Vegane-Burritos-mit-Grillgemuese_featured.jpg "Yummy burrito")
+This is a super cool PDA from super cool people.
 
 required:
 
@@ -56,6 +55,16 @@ Test functions need to start with `test*`.
 
 ### Discovering tests automatically
 
-All tests can be discovered automatically using `cd <directory && python -m unittest discover`. This only works if all directories on the way to the test directory are importable as python modules (they contain a `__init__.py`.
+All tests can be discovered automatically using `cd <directory && python -m unittest discover`. This only works if all directories on the way to the test directory are importable as python modules (they contain a `__init__.py`).
 
 All test files need to start with `test*.py` or provide a different `-p` option to discover.
+
+Use the target `make test` to discover tests within a module tracking coverage.
+
+### Debugging
+
+Insert this line anywhere in your code: this will add a breakpoint during unittest execution.
+
+```py
+from nose.tools import set_trace; set_trace()
+```
