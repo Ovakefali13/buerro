@@ -1,7 +1,10 @@
 import json
+import os
 
 def loadFile():
-    preferences_json = json.load(open('preferences.json'))
+    dirname = os.path.dirname(__file__)
+    filename = os.path.join(dirname, 'preferences.json')
+    preferences_json = json.load(open(filename))
     return preferences_json
 def mergerJsonFiles(dict1, dict2): 
     res = {**dict1, **dict2} 
