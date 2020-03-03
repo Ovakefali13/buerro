@@ -1,11 +1,11 @@
 import unittest
-from .. import routing, geocoding
+from .. import RouteService, MapRemote
 
 
-class MapMockRemote():    
+class MapMockRemote():
 
     def get_route_summary(self, start, dest, travel_mode):
-        if travel_mode not 'driving-car':
+        if travel_mode != 'driving-car':
             return ()
         dhbw = ['Rotebühlplatz 41-1, 70178, Stuttgart', [9.170963, 48.773563]]
         mensa = ['Holzgartenstraße 11, 70174 Stuttgart', [9.169989, 48.780834]]
@@ -17,7 +17,9 @@ class MapMockRemote():
 
 
 class TestMapService(unittest.TestCase):
-    map_service = MapMockRemote()
+    remote = MapMockRemote()
+
+    map_service = RouteService(remote)
 
     def test_get_summary(self):
         dhbw = ['Rotebühlplatz 41-1, 70178, Stuttgart', [9.170963, 48.773563]]
