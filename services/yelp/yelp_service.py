@@ -18,13 +18,13 @@ class YelpService:
         self.headers = {
             'Authorization': 'Bearer %s' % self.API_TOKEN,
         }
-        #self.PREFS = preferences_adapter.getLunchbreak()
-        #print(self.PREFS)
-        self.PREFS = {
-            "base_radius": 500,
-            "ten_min_radius": 100,
-            "price": "1, 2"
-        }
+        self.PREFS = preferences_adapter.getLunchbreak()
+        print(self.PREFS)
+        #self.PREFS = {
+         #   "base_radius": 500,
+          #  "ten_min_radius": 100,
+           # "price": "1, 2"
+        #}
 
         self.searchParams = {
             'term': 'food',
