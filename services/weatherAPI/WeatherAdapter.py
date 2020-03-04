@@ -2,6 +2,8 @@ import requests
 from services.ApiError import ApiError
 from services.Singleton import Singleton
 from abc import ABC, abstractmethod
+from services.preferences import preferences_adapter
+
 
 class WeatherAdapterModule(ABC):
     @abstractmethod
@@ -42,22 +44,30 @@ class WeatherAdapter:
     remote = None
     weather = []
     weatherForecast = []
+    PREFS = []
 
-    # TODO Preferences
     MIN_TEMP = 10.0 #°C
     MAX_WIND = 20.0 #km/h
-    REFRESH_RATE = 3600 #sec
 
     def __init__(self):
         self.remote = WeatherAdapterRemote
+        self.PREFS = preferences_adapter.getWeather()
+        self.MIN_TEMP = self.PREFS['min_temp']
+        self.MAX_WIND = self.PREFS['max_wind']
         self.update('Stuttgart')
 
     def setRemote(self, remote:WeatherAdapterModule):
         self.remote = remote
 
     def update(self, city):
-        self.weather = self.remote.updateCurrentWeatherByCity(self, city)
-        self.weatherForecast = self.remote.updateWeatherForecastByCity(self, city)
+        self.weather = self.updateCurrentWeatherByCity(self, city)
+        self.weatherForecast = self.updateWeatherForecastByCity(self, city)
+
+    def updateWeatherForecastByCity(self, city):
+        return self.remote.updateWeatherForecastByCity(self, city)
+
+    def updateCurrentWeatherByCity(self, city: str):
+        return self.remote.updateCurrentWeatherByCity(self, city)
 
     def getCurrentTemperature(self):
         return float(self.weather['main']['temp'])
@@ -112,12 +122,3 @@ class WeatherAdapter:
         else:
             return False
 
-    #todo forecast data
-    #todo wind
-    #nur max 1 mal die minute update
-
-#1582826400
-#1582837200
-
-#10800
-#3 * 3600
