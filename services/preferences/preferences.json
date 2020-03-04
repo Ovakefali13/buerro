@@ -18,6 +18,10 @@
 		"minTemp": 10,
 		"maxWind": 20
 	},
+	"weather": {
+		"min_temp": 10,
+		"max_wind": 20
+	},
 	"lunchbreak": {
 		"base_radius": 500,
 		"ten_min_radius": 100,
