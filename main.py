@@ -1,4 +1,4 @@
-from services.weatherAPI.WeatherAdapter import WeatherAdapter
+from services.weatherAPI.weather_service import WeatherAdapter
 import json
 def main():
     weatherAdapter = WeatherAdapter.instance()

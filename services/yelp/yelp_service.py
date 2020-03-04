@@ -2,9 +2,38 @@ import requests
 from services.ApiError import ApiError
 from services.Singleton import Singleton
 from services.preferences import preferences_adapter
+from abc import ABC, abstractmethod
+
+class YelpServiceModule(ABC):
+    @abstractmethod
+    def requestBusinesses(self):
+        pass
+
+    @abstractmethod
+    def requestBusiness(self, id:int):
+        pass
+
+class YelpServiceRemote(YelpServiceModule):
+    def requestBusinesses(self):
+        req = 'https://api.yelp.com/v3/businesses/search'
+        response = requests.request('GET', req, headers=self.headers, params=self.searchParams)
+        if response.status_code != 200:
+            raise ApiError('GET /tasks/ {}'.format(response.status_code))
+            print('Error')
+        return response.json()
+
+    def requestBusiness(self, id):
+        req = 'https://api.yelp.com/v3/businesses/' + id
+        response = requests.request('GET', req, headers=self.headers)
+        if response.status_code != 200:
+            raise ApiError('GET /tasks/ {}'.format(response.status_code))
+            print('Error')
+        return response.json()
+
 
 @Singleton
 class YelpService:
+    remote = None
     CLIENT_ID = 'A5Kch4F4A_1vSRVEEkgMnw'
     API_TOKEN = 'AA4LFvZbdhM3IgESoZAlBJSpsvKSHzVbYmpdbo7hehlsrBY-ZdzZIo9ZT7-hRSnlD3RLwnFR8sakmKVTb3xLcrYB3FM6j13KoOiEPh28uGESSgIPFbHdffk4UMZcXnYx'
     restaurants = []
@@ -14,17 +43,13 @@ class YelpService:
     PREFS = {}
 
     def __init__(self):
+        self.remote = YelpServiceRemote
         print('Init Yelp Service')
         self.headers = {
             'Authorization': 'Bearer %s' % self.API_TOKEN,
         }
         self.PREFS = preferences_adapter.getLunchbreak()
         print(self.PREFS)
-        #self.PREFS = {
-         #   "base_radius": 500,
-          #  "ten_min_radius": 100,
-           # "price": "1, 2"
-        #}
 
         self.searchParams = {
             'term': 'food',
@@ -54,20 +79,10 @@ class YelpService:
         self.requestBusinesses()
 
     def requestBusinesses(self):
-        req = 'https://api.yelp.com/v3/businesses/search'
-        response = requests.request('GET', req, headers=self.headers, params=self.searchParams)
-        if response.status_code != 200:
-            raise ApiError('GET /tasks/ {}'.format(response.status_code))
-            print('Error')
-        self.restaurants = response.json()
+        self.restaurants = self.remote.requestBusinesses()
 
     def requestBusiness(self, id):
-        req = 'https://api.yelp.com/v3/businesses/'+ id
-        response = requests.request('GET', req, headers=self.headers)
-        if response.status_code != 200:
-            raise ApiError('GET /tasks/ {}'.format(response.status_code))
-            print('Error')
-        self.focusedRestaurant = response.json()
+        self.focusedRestaurant = self.remote.requestBusiness(id)
 
 
     def getShortInformationOfRestaurants(self):

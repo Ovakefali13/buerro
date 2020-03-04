@@ -1,10 +1,11 @@
-from services.weatherAPI.WeatherAdapter import WeatherAdapter
+from services.weatherAPI.weather_service import WeatherAdapter
 from services.yelp.yelp_service import YelpService
 from datetime import datetime
 from services.preferences import preferences_adapter
 
 class Lunchbreak:
-    location = {}
+    location = {'latitude': 48.765337599999995,
+                'longitude': 9.161932799999999}
 
     def __init__(self, location):
         self.triggerUseCase(location)
