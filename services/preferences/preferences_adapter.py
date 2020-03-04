@@ -29,6 +29,10 @@ def getTransport():
     preferences_json = loadFile()
     return_json = mergerJsonFiles(preferences_json["general"], preferences_json["transport"])
     return  return_json
+def getWeather():
+    preferences_json = loadFile()
+    return_json = mergerJsonFiles(preferences_json["general"], preferences_json["weather"])
+    return  return_json
 def getLunchbreak():
     preferences_json = loadFile()
     return_json = mergerJsonFiles(preferences_json["general"], preferences_json["lunchbreak"])
