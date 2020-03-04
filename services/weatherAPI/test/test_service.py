@@ -2,9 +2,8 @@ import unittest
 import os
 import json
 
-from .. import WeatherAdapter
-
-
+from .. import WeatherAdapter, WeatherAdapterRemote
+#from . import WeatherAdapterRemote, WeatherAdapter
 
 class WeatherMock():
 
@@ -24,8 +23,15 @@ class WeatherMock():
 
 class TestWeatherService(unittest.TestCase):
     city = 'Stuttgart'
+
+    if 'DONOTMOCK' in os.environ:
+        remote = WeatherAdapterRemote()
+    else:
+        print("Mocking remotes...")
+        remote = WeatherMock()
+
     weatherAdapter = WeatherAdapter.instance()
-    weatherAdapter.setRemote(WeatherMock())
+    weatherAdapter.setRemote(remote)
 
     #def test_update(self):
     #   self.weatherAdapter.update('Stuttgart')
@@ -65,11 +71,7 @@ class TestWeatherService(unittest.TestCase):
         self.assertTrue(willBeBadWeather)
 
 
-    # if 'DONOTMOCK' in os.environ:
-    #     remote = VVSEfaJSONRemote()
-    # else:
-    #     print("Mocking remotes...")
-    #     remote = WeatherMock()
+
 
 
 

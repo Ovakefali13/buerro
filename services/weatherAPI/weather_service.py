@@ -14,12 +14,9 @@ class WeatherAdapterModule(ABC):
     def updateWeatherForecastByCity(self, city:str):
         pass
 
-    @abstractmethod
-    def update(self, city:str):
-        pass
-
 
 class WeatherAdapterRemote(WeatherAdapterModule):
+    API_TOKEN = '716b047d4b59fba6550709d60756b0fd'
     def updateCurrentWeatherByCity(self, city):
         req = 'https://api.openweathermap.org/data/2.5/weather?q=' +  city + '&units=metric&appid=' + self.API_TOKEN
         print(req)
@@ -40,7 +37,7 @@ class WeatherAdapterRemote(WeatherAdapterModule):
 
 @Singleton
 class WeatherAdapter:
-    API_TOKEN = '716b047d4b59fba6550709d60756b0fd'
+
     remote = None
     weather = []
     weatherForecast = []
@@ -50,7 +47,7 @@ class WeatherAdapter:
     MAX_WIND = 20.0 #km/h
 
     def __init__(self):
-        self.remote = WeatherAdapterRemote
+        self.remote = WeatherAdapterRemote()
         self.PREFS = preferences_adapter.getWeather()
         self.MIN_TEMP = self.PREFS['min_temp']
         self.MAX_WIND = self.PREFS['max_wind']
@@ -60,14 +57,14 @@ class WeatherAdapter:
         self.remote = remote
 
     def update(self, city):
-        self.weather = self.updateCurrentWeatherByCity(self, city)
-        self.weatherForecast = self.updateWeatherForecastByCity(self, city)
+        self.weather = self.updateCurrentWeatherByCity(city)
+        self.weatherForecast = self.updateWeatherForecastByCity(city)
 
-    def updateWeatherForecastByCity(self, city):
-        return self.remote.updateWeatherForecastByCity(self, city)
+    def updateWeatherForecastByCity(self, city:str):
+        return self.remote.updateWeatherForecastByCity(city)
 
-    def updateCurrentWeatherByCity(self, city: str):
-        return self.remote.updateCurrentWeatherByCity(self, city)
+    def updateCurrentWeatherByCity(self, city:str):
+        return self.remote.updateCurrentWeatherByCity(city)
 
     def getCurrentTemperature(self):
         return float(self.weather['main']['temp'])
