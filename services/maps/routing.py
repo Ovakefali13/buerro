@@ -2,10 +2,12 @@ import requests
 from openrouteservice import client
 from geocoding import getCoordsFromAddress
 from abc import ABC, abstractmethod
+from services.preferences import preferences_adapter
+
 
 class MapRemote(ABC):
     @abstractmethod
-    def get_route_information(self, start, dest, travel_mode):
+    def get_route_information(self, start, dest, travel_mode=None):
         pass
 
 
@@ -29,39 +31,45 @@ class MapJSONRemote(MapRemote):
             'profile': self.PREFS['profile'],
             'preference': self.PREFS['preference'],
             'instructions': 'false',
-            'geometry': 'false',            
+            'geometry': 'false',
         }
 
     def __set_route__(self, start, dest):
         if isinstance(start, list) and isinstance(dest, list):
             self.request_params['coordinates'] = [start, dest]
-        elif isinstance (start, str) and isinstance(dest, str):
-            self.request_params['coordinates'] = [getCoordsFromAddress(start), getCoordsFromAddress(dest)]
-            
+        elif isinstance(start, str) and isinstance(dest, str):
+            self.request_params['coordinates'] = [
+                getCoordsFromAddress(start), getCoordsFromAddress(dest)]
+
     def __set_travel_mode__(self, profile):
         self.request_params['profile'] = profile
 
-    def get_route_information(self, start, dest, travel_mode = None):
+    def get_route_information(self, start, dest, travel_mode=None):
         self.__set_route__(start, dest)
         if travel_mode:
             self.__set_travel_mode__(travel_mode)
-        return self.clnt.directions(**self.request_params)   
-        # TODO error handling
+        return self.clnt.directions(**self.request_params)
 
-    
 
 class MapService:
-    remote = None
-
+    
     def __init__(self, remote):
         self.remote = remote
 
-    def get_route_summary(self, start, dest, travel_mode = None):            
+        # TODO Create config for parameters
+
+    def get_route_summary(self, start, dest, travel_mode=None):
         route = self.remote.get_route_information(start, dest)
-        return (route['routes'][0]['summary']['distance'], route['routes'][0]['summary']['duration'] )
-        
 
+        summary = route['routes'][0]['summary']
+        coords = route['metadata']['query']['coordinates']
 
-router = MapService(MapJSONRemote)
-print(router.get_route_summary('Rotebühlplatz 41-1, 70178, Stuttgart','Holzgartenstraße 11, 70174 Stuttgart'))
-print(router.get_route_summary([9.170963, 48.773563],[9.169989, 48.780834]))
+        return {'start': coords[0],
+                'dest': coords[1],
+                'distance': summary['distance'],
+                'duration':  summary['duration']}
+
+    def get_route_link(self, start, dest, travel_mode = None):
+        summary = self.get_route_summary(start, dest, travel_mode)
+        # TODO Use to_link method 
+        return f'https://routing.openstreetmap.de/?loc={summary["start"][1]}%2C{summary["start"][0]}&loc={summary["dest"][1]}%2C{summary["dest"][0]}&hl=de'
