@@ -1,7 +1,7 @@
 ROOT_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 PYTHON:=$(ROOT_DIR)/venv/bin/python3.7
 
-all: test_services test_usecase
+all: test_services test_usecase test_controller
 
 .PHONY: set_buerro_path
 set_buerro_path:
@@ -11,7 +11,7 @@ set_buerro_path:
 #test: export DONOTMOCK=1
 test: 
 	#cd services && $(PYTHON) -m unittest discover -v
-	$(PYTHON) `which nosetests` --nologcapture --nocapture -v --with-coverage --cover-min-percentage=75 \
+	cd $(MODULE) && $(PYTHON) `which nosetests` --nologcapture --nocapture -v --with-coverage --cover-min-percentage=75 \
 		--cover-package=$(MODULE)
 
 .PHONY: test_services test_usecase
@@ -19,6 +19,8 @@ test_services: MODULE=services
 test_services: test
 test_usecase: MODULE=usecase
 test_usecase: test
+test_controller: MODULE=controller
+test_controller: test
 
 .PHONY: vvs_cal
 vvs_cal:
