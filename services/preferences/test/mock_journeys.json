@@ -1,0 +1,483 @@
+{
+  "version": "10.2.11.46",
+  "systemMessages": [],
+  "journeys": [
+    {
+      "rating": 0,
+      "isAdditional": false,
+      "interchanges": 0,
+      "legs": [
+        {
+          "duration": 60,
+          "origin": {
+            "isGlobalId": true,
+            "id": "de:08111:6056:1:2",
+            "name": "Stadtmitte",
+            "disassembledName": "Gleis 2",
+            "type": "platform",
+            "pointType": "TRACK",
+            "coord": [
+              755678,
+              3512801
+            ],
+            "niveau": -2,
+            "parent": {
+              "id": "5006056",
+              "name": "Stadtmitte",
+              "type": "stop",
+              "parent": {
+                "id": "placeID:8111000:51",
+                "name": "Stuttgart",
+                "type": "locality"
+              }
+            },
+            "departureTimePlanned": "2020-02-25T08:56:00Z",
+            "departureTimeEstimated": "2020-02-25T08:56:00Z",
+            "properties": {
+              "downloads": [
+                {
+                  "type": "RM",
+                  "url": "FILELOAD?Filename=vvs1_5E5CF33D6.pdf"
+                },
+                {
+                  "type": "SM",
+                  "url": "vvs/uroteb.pdf"
+                }
+              ],
+              "AREA_NIVEAU_DIVA": "-2",
+              "stoppingPointPlanned": "Gleis 2",
+              "areaGid": "de:08111:6056:1"
+            }
+          },
+          "destination": {
+            "isGlobalId": true,
+            "id": "de:08111:6118:1:102",
+            "name": "Stuttgart Hauptbahnhof (tief)",
+            "disassembledName": "Gleis 102",
+            "type": "platform",
+            "pointType": "TRACK",
+            "coord": [
+              754888,
+              3513328
+            ],
+            "niveau": -3,
+            "parent": {
+              "id": "5006118",
+              "name": "Stuttgart Hauptbahnhof (tief)",
+              "disassembledName": "Hauptbahnhof (tief)",
+              "type": "stop",
+              "parent": {
+                "id": "placeID:8111000:51",
+                "name": "Stuttgart",
+                "type": "locality"
+              }
+            },
+            "arrivalTimePlanned": "2020-02-25T08:57:00Z",
+            "arrivalTimeEstimated": "2020-02-25T08:57:00Z",
+            "properties": {
+              "downloads": [
+                {
+                  "type": "RM",
+                  "url": "FILELOAD?Filename=vvs1_5E5CF33D7.pdf"
+                },
+                {
+                  "type": "SM",
+                  "url": "vvs/uhbf.pdf"
+                }
+              ],
+              "AREA_NIVEAU_DIVA": "-3",
+              "stoppingPointPlanned": "Gleis 102",
+              "areaGid": "de:08111:6118:1"
+            }
+          },
+          "transportation": {
+            "id": "vvs:10005: :R:j20",
+            "name": "S-Bahn S5",
+            "disassembledName": "S5",
+            "number": "S5",
+            "description": "Stuttgart - Bietigheim-Bissingen",
+            "product": {
+              "id": 0,
+              "class": 1,
+              "name": "S-Bahn",
+              "iconId": 2
+            },
+            "operator": {
+              "id": "10",
+              "name": "DB"
+            },
+            "destination": {
+              "id": "5001400",
+              "name": "Bietigheim-Bissingen",
+              "type": "stop"
+            },
+            "properties": {
+              "trainNumber": "7520",
+              "isROP": true,
+              "tripCode": 7520,
+              "mtSubcode": "0"
+            }
+          },
+          "stopSequence": [
+            {
+              "isGlobalId": true,
+              "id": "de:08111:6056:1:2",
+              "name": "Stadtmitte",
+              "disassembledName": "Gleis 2",
+              "type": "platform",
+              "pointType": "TRACK",
+              "coord": [
+                755678,
+                3512801
+              ],
+              "niveau": -2,
+              "parent": {
+                "id": "5006056",
+                "name": "Stadtmitte",
+                "type": "stop",
+                "parent": {
+                  "id": "placeID:8111000:51",
+                  "name": "Stuttgart",
+                  "type": "locality"
+                }
+              },
+              "properties": {
+                "AREA_NIVEAU_DIVA": "-2",
+                "stoppingPointPlanned": "Gleis 2",
+                "areaGid": "de:08111:6056:1",
+                "zone": "vvs:1"
+              },
+              "departureTimePlanned": "2020-02-25T08:56:00Z"
+            },
+            {
+              "isGlobalId": true,
+              "id": "de:08111:6118:1:102",
+              "name": "Stuttgart Hauptbahnhof (tief)",
+              "disassembledName": "Gleis 102",
+              "type": "platform",
+              "pointType": "TRACK",
+              "coord": [
+                754888,
+                3513328
+              ],
+              "niveau": -3,
+              "parent": {
+                "id": "5006118",
+                "name": "Stuttgart Hauptbahnhof (tief)",
+                "disassembledName": "Hauptbahnhof (tief)",
+                "type": "stop",
+                "parent": {
+                  "id": "placeID:8111000:51",
+                  "name": "Stuttgart",
+                  "type": "locality"
+                }
+              },
+              "properties": {
+                "AREA_NIVEAU_DIVA": "-3",
+                "stoppingPointPlanned": "Gleis 102",
+                "areaGid": "de:08111:6118:1",
+                "zone": "vvs:1"
+              },
+              "arrivalTimePlanned": "2020-02-25T08:57:00Z"
+            }
+          ],
+          "infos": []
+        }
+      ],
+      "fare": {
+        "zones": [
+          {
+            "net": "vvs",
+            "toLeg": 0,
+            "fromLeg": 0,
+            "neutralZone": "",
+            "zones": [
+              "1"
+            ]
+          }
+        ]
+      },
+      "daysOfService": {
+        "rvb": "7FF0C0007FFFFFFF1FFFFFFF67FFFFFF3FFFFFFF7FFFFFFF3FFFFFFF7FFFFFFF7FFFFFFF3FFFFFFF7FFFFFFF3FFFFFFF00000FFF"
+      }
+    },
+    {
+      "rating": 0,
+      "isAdditional": false,
+      "interchanges": 0,
+      "legs": [
+        {
+          "duration": 120,
+          "origin": {
+            "isGlobalId": true,
+            "id": "de:08111:6056:1:2",
+            "name": "Stadtmitte",
+            "disassembledName": "Gleis 2",
+            "type": "platform",
+            "pointType": "TRACK",
+            "coord": [
+              755678,
+              3512801
+            ],
+            "niveau": -2,
+            "parent": {
+              "id": "5006056",
+              "name": "Stadtmitte",
+              "type": "stop",
+              "parent": {
+                "id": "placeID:8111000:51",
+                "name": "Stuttgart",
+                "type": "locality"
+              }
+            },
+            "departureTimePlanned": "2020-02-25T08:58:00Z",
+            "departureTimeEstimated": "2020-02-25T08:58:00Z",
+            "properties": {
+              "downloads": [
+                {
+                  "type": "RM",
+                  "url": "FILELOAD?Filename=vvs1_5E5CF33D9.pdf"
+                },
+                {
+                  "type": "SM",
+                  "url": "vvs/uroteb.pdf"
+                }
+              ],
+              "AREA_NIVEAU_DIVA": "-2",
+              "stoppingPointPlanned": "Gleis 2",
+              "areaGid": "de:08111:6056:1"
+            }
+          },
+          "destination": {
+            "isGlobalId": true,
+            "id": "de:08111:6118:1:102",
+            "name": "Stuttgart Hauptbahnhof (tief)",
+            "disassembledName": "Gleis 102",
+            "type": "platform",
+            "pointType": "TRACK",
+            "coord": [
+              754888,
+              3513328
+            ],
+            "niveau": -3,
+            "parent": {
+              "id": "5006118",
+              "name": "Stuttgart Hauptbahnhof (tief)",
+              "disassembledName": "Hauptbahnhof (tief)",
+              "type": "stop",
+              "parent": {
+                "id": "placeID:8111000:51",
+                "name": "Stuttgart",
+                "type": "locality"
+              }
+            },
+            "arrivalTimePlanned": "2020-02-25T09:00:00Z",
+            "arrivalTimeEstimated": "2020-02-25T09:00:00Z",
+            "properties": {
+              "downloads": [
+                {
+                  "type": "RM",
+                  "url": "FILELOAD?Filename=vvs1_5E5CF33DA.pdf"
+                },
+                {
+                  "type": "SM",
+                  "url": "vvs/uhbf.pdf"
+                }
+              ],
+              "AREA_NIVEAU_DIVA": "-3",
+              "stoppingPointPlanned": "Gleis 102",
+              "areaGid": "de:08111:6118:1"
+            }
+          },
+          "transportation": {
+            "id": "vvs:10003: :R:j20",
+            "name": "S-Bahn S3",
+            "disassembledName": "S3",
+            "number": "S3",
+            "description": "Flughafen/Messe - Stuttgart - Backnang",
+            "product": {
+              "id": 0,
+              "class": 1,
+              "name": "S-Bahn",
+              "iconId": 2
+            },
+            "operator": {
+              "id": "10",
+              "name": "DB"
+            },
+            "destination": {
+              "id": "5007600",
+              "name": "Backnang",
+              "type": "stop"
+            },
+            "properties": {
+              "trainNumber": "28316",
+              "isROP": true,
+              "tripCode": 28316,
+              "mtSubcode": "0"
+            }
+          },
+          "stopSequence": [
+            {
+              "isGlobalId": true,
+              "id": "de:08111:6056:1:2",
+              "name": "Stadtmitte",
+              "disassembledName": "Gleis 2",
+              "type": "platform",
+              "pointType": "TRACK",
+              "coord": [
+                755678,
+                3512801
+              ],
+              "niveau": -2,
+              "parent": {
+                "id": "5006056",
+                "name": "Stadtmitte",
+                "type": "stop",
+                "parent": {
+                  "id": "placeID:8111000:51",
+                  "name": "Stuttgart",
+                  "type": "locality"
+                }
+              },
+              "properties": {
+                "AREA_NIVEAU_DIVA": "-2",
+                "stoppingPointPlanned": "Gleis 2",
+                "areaGid": "de:08111:6056:1",
+                "zone": "vvs:1"
+              },
+              "departureTimePlanned": "2020-02-25T08:58:00Z"
+            },
+            {
+              "isGlobalId": true,
+              "id": "de:08111:6118:1:102",
+              "name": "Stuttgart Hauptbahnhof (tief)",
+              "disassembledName": "Gleis 102",
+              "type": "platform",
+              "pointType": "TRACK",
+              "coord": [
+                754888,
+                3513328
+              ],
+              "niveau": -3,
+              "parent": {
+                "id": "5006118",
+                "name": "Stuttgart Hauptbahnhof (tief)",
+                "disassembledName": "Hauptbahnhof (tief)",
+                "type": "stop",
+                "parent": {
+                  "id": "placeID:8111000:51",
+                  "name": "Stuttgart",
+                  "type": "locality"
+                }
+              },
+              "properties": {
+                "AREA_NIVEAU_DIVA": "-3",
+                "stoppingPointPlanned": "Gleis 102",
+                "areaGid": "de:08111:6118:1",
+                "zone": "vvs:1"
+              },
+              "arrivalTimePlanned": "2020-02-25T09:00:00Z"
+            }
+          ],
+          "infos": []
+        }
+      ],
+      "fare": {
+        "zones": [
+          {
+            "net": "vvs",
+            "toLeg": 0,
+            "fromLeg": 0,
+            "neutralZone": "",
+            "zones": [
+              "1"
+            ]
+          }
+        ]
+      },
+      "daysOfService": {
+        "rvb": "244F80007CF9F3C60F983E7C67CF9F3E3CF9E1E71F2E7CF833E7C01E7CF9F3E74F9F3E7C39F3E7CF3E7CF9F327CF9F3E000007CF"
+      }
+    },
+    {
+      "isAdditional": false,
+      "interchanges": 0,
+      "legs": [
+        {
+          "duration": 720,
+          "distance": 801,
+          "origin": {
+            "isGlobalId": true,
+            "id": "de:08111:6056",
+            "name": "Stuttgart, Stadtmitte",
+            "type": "stop",
+            "coord": [
+              755598,
+              3512920
+            ],
+            "parent": {
+              "id": "placeID:8111000:51",
+              "name": "Stuttgart",
+              "type": "locality"
+            },
+            "departureTimePlanned": "2020-02-25T08:48:00Z",
+            "departureTimeEstimated": "2020-02-25T08:48:00Z",
+            "properties": {
+              "downloads": [
+                {
+                  "type": "RM",
+                  "url": "FILELOAD?Filename=vvs1_5E5CF33D1.pdf"
+                },
+                {
+                  "type": "SM",
+                  "url": "vvs/uroteb.pdf"
+                }
+              ]
+            }
+          },
+          "destination": {
+            "isGlobalId": true,
+            "id": "de:08111:6118",
+            "name": "Stuttgart, Hauptbahnhof (tief)",
+            "type": "stop",
+            "coord": [
+              755072,
+              3513372
+            ],
+            "parent": {
+              "id": "placeID:8111000:51",
+              "name": "Stuttgart",
+              "type": "locality"
+            },
+            "arrivalTimePlanned": "2020-02-25T09:00:00Z",
+            "arrivalTimeEstimated": "2020-02-25T09:00:00Z",
+            "properties": {
+              "downloads": [
+                {
+                  "type": "RM",
+                  "url": "FILELOAD?Filename=vvs1_5E5CF33D1.pdf"
+                },
+                {
+                  "type": "SM",
+                  "url": "vvs/uhbf.pdf"
+                }
+              ]
+            }
+          },
+          "transportation": {
+            "product": {
+              "class": 100,
+              "name": "footpath",
+              "iconId": 100
+            }
+          },
+          "infos": []
+        }
+      ],
+      "daysOfService": {
+        "rvb": ""
+      }
+    }
+  ]
+}
