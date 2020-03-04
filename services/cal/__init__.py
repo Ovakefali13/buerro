@@ -1,2 +1,2 @@
-from .cal_service import CalService, get_icloud_calendar
+from .cal_service import CalService, iCloudCaldavRemote
 from .event import Event

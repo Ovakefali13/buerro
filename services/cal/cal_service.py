@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime as dt
 import caldav
 from caldav.elements import dav, cdav
 from dotenv import load_dotenv
@@ -8,8 +8,9 @@ from abc import ABC, abstractmethod
 from icalendar import Event
 #from .event import Event
 
+class iCloudCaldavRemote:
+    def __init__(self):
 
-def get_icloud_calendar():
         load_dotenv()
 
         required_env = (
@@ -24,27 +25,28 @@ def get_icloud_calendar():
 
         client = caldav.DAVClient(environ['CALDAV_URL'], username=environ['USERNAME'], password=environ['PASSWORD'])
         principal = client.principal()
-        calendars = principal.calendars()
+        cals = principal.calendars()
 
-        calendar = None
-        for cal in calendars:
+        self.calendar = None
+        for loaded_cal in all_cals:
             properties = cal.get_properties([dav.DisplayName(), ])
             display_name = properties['{DAV:}displayname']
             if(display_name == environ['CALENDAR']):
-                calendar = cal
+                self.calendar = loaded_cal
                 break
 
-        if calendar is None:
+        if self.calendar is None:
             raise EnvironmentError('Provided CALENDAR could not be found')
 
-        return calendar
+    def add_event(self):
+        ical = "BEGIN:VCALENDAR\n"+event.to_ical()+"\nEND:VCALENDAR"
+        self.calendar.add_event(ical)
+
 
 class CalService:
-    client = None
-    calendar = None
 
-    def __init__(self, calendar):
-        self.calendar = calendar
+    def __init__(self, remote):
+        self.remote = remote
 
     def get_next_event(self):
         #TODO
@@ -53,19 +55,22 @@ class CalService:
     def get_events_in_next_minutes(self, minutes:int):
         now = datetime.now()
         in_min = now + timedelta(minutes=minutes)
-        return self.calendar.date_search(now, in_min)
+        return self.remote.date_search(now, in_min)
 
     def get_events_in_next_hours(self, hours:int):
         now = datetime.now()
         in_h = now + timedelta(hours=hours)
-        return self.calendar.date_search(now, in_h)
+        return self.remote.date_search(now, in_h)
+
+    def get_events_between(self, start:dt, end:dt):
+        return self.remote.date_search(start, end)
 
     def get_all_events(self):
-        return self.calendar.events()
+        return self.remote.events()
 
 
     def add_event(self, event:Event):
-        self.calendar.add_event(event.to_ical())
+        self.remote.add_event(event)
 
 
 if __name__ == "__main__":
