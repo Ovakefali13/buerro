@@ -5,8 +5,18 @@ from dotenv import load_dotenv
 from os import environ
 from abc import ABC, abstractmethod
 
-from icalendar import Event
-#from .event import Event
+from . import Event
+
+class CaldavRemote(ABC):
+
+    @abstractmethod
+    def add_event(self, event:Event):
+        pass
+
+    @abstractmethod
+    def events(self):
+        pass
+
 
 class iCloudCaldavRemote:
     def __init__(self):
@@ -25,27 +35,24 @@ class iCloudCaldavRemote:
 
         client = caldav.DAVClient(environ['CALDAV_URL'], username=environ['USERNAME'], password=environ['PASSWORD'])
         principal = client.principal()
-        cals = principal.calendars()
-
-        self.calendar = None
-        for loaded_cal in all_cals:
-            properties = cal.get_properties([dav.DisplayName(), ])
-            display_name = properties['{DAV:}displayname']
-            if(display_name == environ['CALENDAR']):
-                self.calendar = loaded_cal
-                break
+        self.calendar = principal.calendar(environ['CALENDAR'], environ['CALENDAR_ID'])
 
         if self.calendar is None:
             raise EnvironmentError('Provided CALENDAR could not be found')
+        from nose.tools import set_trace; set_trace()
+        print(self.calendar.events())
 
-    def add_event(self):
+    def add_event(self, event:Event):
         ical = "BEGIN:VCALENDAR\n"+event.to_ical()+"\nEND:VCALENDAR"
         self.calendar.add_event(ical)
+
+    def events(self):
+        return self.calendar.events()
 
 
 class CalService:
 
-    def __init__(self, remote):
+    def __init__(self, remote:CaldavRemote):
         self.remote = remote
 
     def get_next_event(self):
@@ -71,14 +78,5 @@ class CalService:
 
     def add_event(self, event:Event):
         self.remote.add_event(event)
-
-
-if __name__ == "__main__":
-    service = CalService()
-    print(service.get_all_events())
-    service.add_event(Event("Main Event",
-            start=datetime(2020, 2, 26, 18, 00),
-            end=datetime(2020, 2, 26, 19, 00),
-            location="My Hood", reminder_min=10))
 
 

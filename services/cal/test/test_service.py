@@ -1,5 +1,4 @@
 import unittest
-import caldav
 import os
 from icalendar import Calendar
 import random
@@ -7,13 +6,17 @@ import string
 from datetime import datetime
 import pytz
 
-from .. import CalService, iCloudCaldavRemote, Event
+from .. import CalService, CaldavRemote, iCloudCaldavRemote, Event
 
-class MockCaldavRemote(Calendar):
+class MockCaldavRemote(CaldavRemote):
+    def __init__(self):
+        self.calendar = Calendar()
+        self.calendar.add('prodid', '-//My calendar product//mxm.dk//')
+        self.calendar.add('version', '2.0')
     def add_event(self, event:Event):
-        self.add_component(event)
+        self.calendar.add_component(event)
     def events(self):
-        return self.subcomponents
+        return self.calendar.subcomponents
 
 class TestCalService(unittest.TestCase):
     remote = None
@@ -22,8 +25,6 @@ class TestCalService(unittest.TestCase):
     else:
         print('Mocking API...')
         remote = MockCaldavRemote()
-        remote.add('prodid', '-//My calendar product//mxm.dk//')
-        remote.add('version', '2.0')
 
     cal_service = CalService(remote)
 
@@ -37,5 +38,6 @@ class TestCalService(unittest.TestCase):
         self.cal_service.add_event(event)
         all_events = self.cal_service.get_all_events()
         self.assertTrue(len(all_events) > 0)
+        self.assertIsInstance(all_events[0], Event)
         self.assertTrue(len(list(
             filter(lambda e: e['summary'] == summary, all_events))) > 0)
