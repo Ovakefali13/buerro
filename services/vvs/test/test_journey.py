@@ -12,7 +12,7 @@ class TestJourney(unittest.TestCase):
     def test_from_vvs(self):
         journeys = []
         for mock_json in self.mock_journeys:
-           journeys.append(Journey().from_vvs(mock_json)) 
+           journeys.append(Journey().from_vvs(mock_json))
         self.assertTrue(len(journeys) == 3)
 
         for journey in journeys:
