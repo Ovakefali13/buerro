@@ -1,54 +1,36 @@
 import datetime
+from datetime import timedelta, datetime as dt
+from icalendar import Event as iCalEvent
+from icalendar import Alarm, vDatetime
 
-class Event:
+class Event(iCalEvent):
 
-    def __init__(self, title:str, start:datetime, end:datetime, location:str=""):
-        self.title = title
-        self.start = start
-        self.end = end
-        self.location = location
-        self.reminder = None
-        self.stamp = datetime.datetime.now()
-    
+    def __init__(self, title:str, start:dt, end:dt, location:str=""):
+        super().__init__()
+        self.add('summary', title)
+        self.add('dtstart', start)
+        self.add('dtend', end)
+        self.add('location', location)
+        self.add('dtstamp', datetime.datetime.now())
+
+        now = dt.now()
+        self.add('dtstamp', now)
+        self.add('uid', vDatetime(now).to_ical().decode('utf-8')+'@buerro')
+
     def format_date(self, dt):
         #2020-02-26T18:00:00Z
         return dt.strftime("%Y-%m-%dT%H:%M:%SZ")
 
     def to_ical(self):
-        event = {
-            'summary':  self.title, 
-            'dtstart':  self.format_date(self.start),
-            'dtend':    self.format_date(self.end), 
-            'dtstamp':  self.format_date(self.stamp),
-            'uid':      self.format_date(self.stamp)+"@buerro",
-            'location': self.location,
-            'alarm_ical': self.get_alarm_ical()
-        }
-        
-        ical_ev = """BEGIN:VCALENDAR
-BEGIN:VEVENT
-SUMMARY:{summary}
-DTSTAMP:{dtstamp}
-DTSTART:{dtstart}
-DTEND:{dtend}
-LOCATION:{location}
-UID:{uid}
-{alarm_ical}
-END:VEVENT
-END:VCALENDAR"""
-        return ical_ev.format(**event)
+        ical = super().to_ical()
+        ical = ical.replace(b'\r\n',b'\n').strip()
+        ical = ical.decode('utf-8')
+        return ical
 
-    # reminder should be a datetime.timedelta
-    def set_reminder(self, reminder:datetime.timedelta):
-        self.reminder = reminder
-
-    def get_alarm_ical(self):
-        if not self.reminder:
-            return ""
-
-        reminder_min = int(self.reminder.total_seconds() / 60)
-        alarm_ical = """BEGIN:VALARM
-TRIGGER:-PT{reminder_min}M
-ACTION:AUDIO
-END:VALARM"""
-        return alarm_ical.format(reminder_min=reminder_min)
+    def set_reminder(self, reminder:timedelta):
+        # all types: https://github.com/collective/icalendar/blob/2aa726714ff4a17e47b256da529640b201ebf66b/src/icalendar/prop.py 
+        alarm = Alarm()
+        alarm.add('trigger', -reminder)
+        alarm.add('action', 'AUDIO')
+        #TODO alarm.add('repeat', 2)
+        self.add_component(alarm)
