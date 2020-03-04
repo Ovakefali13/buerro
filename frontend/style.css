@@ -1,0 +1,27 @@
+.bubble {
+    margin:15px;
+    width:80%;
+}
+
+.bubble-bot {
+    background-color:#CCF;
+    float:left;
+}
+
+.bubble-user {
+    background-color:#CFC;
+    float:right;
+}
+
+.stay-bottom {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+}
+
+.chatcontainer {
+    position:relative;
+    width:500px;
+    height:750px;
+    background-color:#EEE;
+}
