@@ -10,30 +10,34 @@ class Recipe:
     def __init__(self, ingredient):
         self.triggerUseCase(ingredient)
 
-    def triggerUseCase(self, ingredient):
-        self.loadPreferences()
-        if self.checkForTime():
-            self.getRecipe(ingredient)
+    def trigger_use_case(self, ingredient):
+        self.load_preferences()
+        if self.check_for_time():
+            self.get_recipe(ingredient)
+            self.set_shopping_list()
+            self.set_calender()
         else:
             print("No time to cook")
         
-
-    def checkForTime(self):
+    def check_for_time(self):
         normalCookingTime = self.preferences_json['normalCookingTime']
         print(normalCookingTime)
         ### Todo: Check in calender for 'normalCookingTime' time
         return True
 
-    def loadPreferences(self):
+    def load_preferences(self):
         self.pref_service = PrefService(PrefJSONRemote())
         self.pref_service = self.pref_service.get_preferences('cooking')
 
-    def getRecipe(self, ingredient):
-        self.spoonacle_service = SpoonacularService(SpoonacularJSONRemote())
+    def get_recipe(self, ingredient):
+        self.spoonacle_service = SpoonacularService(SpoonacularJSONRemote(), ingredient)
+        print(self.spoonacle_service.get_summary())
 
-    def openMapsRoute(self, choice):
-        
-    def waitForUserRequest(self):
-        
-    def timeDiffInHours(self,date1, date2):
+    def set_shopping_list(self):
+        ingredients = self.spoonacle_service.get_ingredients()
+        ### add ingredients to the todo list ###
+
+    def set_calender(self):
+        cookingTime = self.spoonacle_service.get_cookingTime()
+        ### add time to calender ###
     
