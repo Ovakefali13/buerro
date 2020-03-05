@@ -99,7 +99,7 @@ class WeatherAdapter:
         code = self.getCurrentWeatherID()
         wind = self.getCurrentWind()
 
-        print("Code: " + str(code) + "\nTemp: " + str(temp) + "\nWind: " + str(wind) +"\n")
+        #print("Code: " + str(code) + "\nTemp: " + str(temp) + "\nWind: " + str(wind) +"\n")
 
         if(((code > 200) & (code  < 799)) | (temp < self.MIN_TEMP) | (wind > self.MAX_WIND)):
             return True
@@ -112,7 +112,7 @@ class WeatherAdapter:
         code = self.getForecastWeatherID(hours)
         wind = self.getForecastWind(hours)
 
-        print("Code: " + str(code) + "\nTemp: " + str(temp) + "\nWind: " + str(wind) + "\n")
+        #print("Code: " + str(code) + "\nTemp: " + str(temp) + "\nWind: " + str(wind) + "\n")
 
         if (((code > 200) & (code < 799)) | (temp < self.MIN_TEMP) | (wind > self.MAX_WIND)):
             return True

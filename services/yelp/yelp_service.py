@@ -3,6 +3,7 @@ from services.ApiError import ApiError
 from services.Singleton import Singleton
 from services.preferences import preferences_adapter
 from abc import ABC, abstractmethod
+import json
 
 class YelpServiceModule(ABC):
     @abstractmethod
@@ -14,9 +15,15 @@ class YelpServiceModule(ABC):
         pass
 
 class YelpServiceRemote(YelpServiceModule):
-    def requestBusinesses(self):
+    CLIENT_ID = 'A5Kch4F4A_1vSRVEEkgMnw'
+    API_TOKEN = 'AA4LFvZbdhM3IgESoZAlBJSpsvKSHzVbYmpdbo7hehlsrBY-ZdzZIo9ZT7-hRSnlD3RLwnFR8sakmKVTb3xLcrYB3FM6j13KoOiEPh28uGESSgIPFbHdffk4UMZcXnYx'
+    headers = {
+        'Authorization': 'Bearer %s' % API_TOKEN,
+    }
+
+    def requestBusinesses(self, searchParam):
         req = 'https://api.yelp.com/v3/businesses/search'
-        response = requests.request('GET', req, headers=self.headers, params=self.searchParams)
+        response = requests.request('GET', req, headers=self.headers, params=searchParam)
         if response.status_code != 200:
             raise ApiError('GET /tasks/ {}'.format(response.status_code))
             print('Error')
@@ -34,20 +41,15 @@ class YelpServiceRemote(YelpServiceModule):
 @Singleton
 class YelpService:
     remote = None
-    CLIENT_ID = 'A5Kch4F4A_1vSRVEEkgMnw'
-    API_TOKEN = 'AA4LFvZbdhM3IgESoZAlBJSpsvKSHzVbYmpdbo7hehlsrBY-ZdzZIo9ZT7-hRSnlD3RLwnFR8sakmKVTb3xLcrYB3FM6j13KoOiEPh28uGESSgIPFbHdffk4UMZcXnYx'
     restaurants = []
     focusedRestaurant = []
     searchParams = {}
-    headers = {}
     PREFS = {}
 
     def __init__(self):
-        self.remote = YelpServiceRemote
+        self.remote = YelpServiceRemote()
         print('Init Yelp Service')
-        self.headers = {
-            'Authorization': 'Bearer %s' % self.API_TOKEN,
-        }
+
         self.PREFS = preferences_adapter.getLunchbreak()
         print(self.PREFS)
 
@@ -60,6 +62,9 @@ class YelpService:
             'limit' : 10,
             'sort_by' : 'distance'
         }
+
+    def setRemote(self, remote):
+        self.remote = remote
 
     def setLocation(self, location):
         self.searchParams['location'] = location
@@ -79,11 +84,13 @@ class YelpService:
         self.requestBusinesses()
 
     def requestBusinesses(self):
-        self.restaurants = self.remote.requestBusinesses()
+        self.restaurants = self.remote.requestBusinesses(self.searchParams)
 
     def requestBusiness(self, id):
         self.focusedRestaurant = self.remote.requestBusiness(id)
 
+    def getBusinessInformation(self):
+        return self.focusedRestaurant
 
     def getShortInformationOfRestaurants(self):
         nameList = []
@@ -101,20 +108,8 @@ class YelpService:
             nameList.append(info)
         return nameList
 
-    def getShortInformationOfRestaurant(self, num):
-        shortList = {
-            'id' : self.restaurants['businesses'][num]['id'],
-            'name': self.restaurants['businesses'][num]['name'],
-            'price': self.restaurants['businesses'][num]['price'],
-            'is_closed': self.restaurants['businesses'][num]['is_closed'],
-            'rating': self.restaurants['businesses'][num]['rating'],
-            'location': self.restaurants['businesses'][num]['location'],
-            'url': self.restaurants['businesses'][num]['url'],
-        }
 
-        return shortList
-
-    def printBusinessNames(self):
-        for x in self.restaurants['businesses']:
-            print(x['id'] + '\t' + x['name'] + '\t' + x['price'] + '\t' + str(x['is_closed']) + '\t' + str(x['rating']) + '\t' + str(x['location'])  + '\t' + x['url'] )
+    # def printBusinessNames(self):
+    #     for x in self.restaurants['businesses']:
+    #         print(x['id'] + '\t' + x['name'] + '\t' + x['price'] + '\t' + str(x['is_closed']) + '\t' + str(x['rating']) + '\t' + str(x['location'])  + '\t' + x['url'] )
 

@@ -1,1 +1,1 @@
-from .weather_service import WeatherAdapter, WeatherAdapterRemote
+from .weather_service import WeatherAdapter, WeatherAdapterRemote, WeatherAdapterModule
