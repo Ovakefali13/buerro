@@ -55,13 +55,12 @@ class TestYelpService(unittest.TestCase):
         self.assertEquals(shortInfoFocused['name'], 'Gasthaus Bären')
 
 
-    def test_getDelivery(self):
+    def test_getNext(self):
         self.yelpService = YelpService.instance()
         self.yelpService.setRemote(self.remote)
         self.yelpService.setRadius(60, False)
-        self.yelpService.setLimit(60)
         self.yelpService.requestBusinesses(1583160868, 'Stuttgart')
 
-        nextDelivery = self.yelpService.getDelivery()
+        nextDelivery = self.yelpService.getNextBusiness()
 
-        self.assertEquals(nextDelivery, )
+        self.assertEquals(nextDelivery['name'], 'Gasthaus Bären')

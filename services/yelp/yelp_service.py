@@ -55,7 +55,7 @@ class YelpService:
         self.searchParams = {
             'term': 'food',
             'location': 'Jägerstraße 56, 70174 Stuttgart',
-            'price': self.pref.get_preferences('price'),
+            'price': self.pref.get_specific_pref('price'),
             'radius': 2000,
             'open_at': 1583160868,
             'limit' : 10,
@@ -65,9 +65,6 @@ class YelpService:
     def setRemote(self, remote):
         self.remote = remote
 
-    def setLimit(self, num):
-        self.searchParams['limit'] = num
-
     def setLocation(self, location):
         self.searchParams['location'] = location
 
@@ -76,9 +73,9 @@ class YelpService:
 
     def setRadius(self, time, isBadWeather):
         if(isBadWeather):
-            self.searchParams['radius'] = int((self.pref.get_preferences('base_radius') + ((time/10) * self.pref.get_preferences('ten_min_radius'))) / 2)
+            self.searchParams['radius'] = int((self.pref.get_specific_pref('base_radius') + ((time/10) * self.pref.get_specific_pref('ten_min_radius'))) / 2)
         else:
-            self.searchParams['radius'] = int(self.pref.get_preferences('base_radius') + ((time/10) * self.pref.get_preferences('ten_min_radius')))
+            self.searchParams['radius'] = int(self.pref.get_specific_pref('base_radius') + ((time/10) * self.pref.get_specific_pref('ten_min_radius')))
 
     def requestBusinesses(self, time, location):
         self.setLocation(location)
@@ -111,15 +108,12 @@ class YelpService:
         return nameList
 
 
-
-    def getDelivery(self):
-        for r in self.restaurants:
-            if( 'delivery' in r['transaction']):
-                return {'name' : r['name'] ,
-                        'phone' : r['phone']}
-
-
-    # def printBusinessNames(self):
-    #     for x in self.restaurants['businesses']:
-    #         print(x['id'] + '\t' + x['name'] + '\t' + x['price'] + '\t' + str(x['is_closed']) + '\t' + str(x['rating']) + '\t' + str(x['location'])  + '\t' + x['url'] )
-
+    def getNextBusiness(self):
+        info = {
+            'name': self.restaurants['businesses'][0]['name'],
+            'id': self.restaurants['businesses'][0]['id'],
+            'phone' : self.restaurants['businesses'][0]['phone'],
+            'address': self.restaurants['businesses'][0]['location']['address1'] + ', ' + self.restaurants['businesses'][0]['location']['zip_code'] + ' ' + self.restaurants['businesses'][0]['location']['city'],
+            'url': self.restaurants['businesses'][0]['url'],
+        }
+        return info
