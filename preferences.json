@@ -3,8 +3,9 @@
 		"spoonacularAPIKey": "0a3a6b562932438aaab0cb05460096de"
 	},
 	"cooking": {
-		"normalCookingTime": 90,
-		"cooking2": "prefCooking2"
+		"diet": "omnivore",
+		"intolerances": "Shellfish",
+		"maxCookingTime": 90
 	},
 	"github": {
 		"github1": "prefGithub1",
