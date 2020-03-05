@@ -1,4 +1,5 @@
 from services.weatherAPI.weather_service import WeatherAdapter
+from usecase import lunch
 import json
 def main():
     weatherAdapter = WeatherAdapter.instance()
