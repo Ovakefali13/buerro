@@ -25,3 +25,6 @@ class TestPrefService(unittest.TestCase):
         }
         mergedJson = self.remote.merge_json_files(json1, json2)
         self.assertEqual(rightJson, mergedJson)
+    
+    def test_get_specific_pref(self):
+        self.assertEqual(self.pref_service.get_specific_pref("spoonacularAPIKey"), "0a3a6b562932438aaab0cb05460096de")
