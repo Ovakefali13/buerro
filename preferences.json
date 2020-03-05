@@ -3,7 +3,7 @@
 		"spoonacularAPIKey": "0a3a6b562932438aaab0cb05460096de"
 	},
 	"cooking": {
-		"cooking1": "prefCooking1",
+		"normalCookingTime": 90,
 		"cooking2": "prefCooking2"
 	},
 	"github": {
