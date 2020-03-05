@@ -40,19 +40,42 @@ class SpoonacularJSONRemote(SpoonacularRemote):
 
 class SpoonacularService:
     remote = None
-    def __init__(self, remote):
-        self.remote = remote
+    recipe_id = None
+    ingredient = ''
+    recipe = []
 
-    def get_ingredient_list_by_id(self, id):
-        recipe_json = self.remote.search_recipe_by_id(id)
+    def __init__(self, remote, ingredient):
+        self.remote = remote
+        self.ingredient = ingredient
+        self.newRecipe(self.ingredient)
+
+    def newRecipe(self, ingredient):
+        self.recipe_id = self.remote.search_recipe_by_ingredient(ingredient)
+        self.recipe = self.remote.search_recipe_by_id(self.recipe_id)
+
+    def get_ingredients(self):
         ingredient_list = []
-        for ingredient in recipe_json['extendedIngredients']:
+        for ingredient in self.recipe['extendedIngredients']:
             ingredient_list.append(ingredient['name'] + ' ' + str(ingredient['amount']) + ' ' + ingredient['unit'])
         return ingredient_list
     
-    def get_ingredient_list_by_ingredient(self, ingredient):
-        return self.get_ingredient_list_by_id(self.remote.search_recipe_by_ingredient(ingredient))
+    def get_vegetarian(self):
+        return self.recipe['vegetarian']
     
-    def get_recipe_by_ingredient(self, ingredient):
-        return self.remote.search_recipe_by_id(self.remote.search_recipe_by_ingredient(ingredient))
-
+    def get_vegan(self):
+        return self.recipe['vegan']
+    
+    def get_cookingTime(self):
+        return str(self.recipe['readyInMinutes']) + " minutes"
+    
+    def get_sourceURL(self):
+        return self.recipe['sourceUrl']
+    
+    def get_healthScore(self):
+        return self.recipe['healthScore']
+    
+    def get_title(self):
+        return self.recipe['title']
+    
+    def get_summary(self):
+        return self.recipe['summary']
