@@ -1,7 +1,7 @@
 import requests
 from services.ApiError import ApiError
 from services.Singleton import Singleton
-from services.preferences import preferences_adapter
+from services.preferences import PrefService
 from abc import ABC, abstractmethod
 
 class YelpServiceModule(ABC):
@@ -48,7 +48,7 @@ class YelpService:
         self.headers = {
             'Authorization': 'Bearer %s' % self.API_TOKEN,
         }
-        self.PREFS = preferences_adapter.getLunchbreak()
+        self.PREFS = PrefService().getLunchbreak()
         print(self.PREFS)
 
         self.searchParams = {
