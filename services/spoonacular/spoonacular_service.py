@@ -66,7 +66,7 @@ class SpoonacularService:
         return self.recipe['vegan']
     
     def get_cookingTime(self):
-        return str(self.recipe['readyInMinutes']) + " minutes"
+        return self.recipe['readyInMinutes']
     
     def get_sourceURL(self):
         return self.recipe['sourceUrl']

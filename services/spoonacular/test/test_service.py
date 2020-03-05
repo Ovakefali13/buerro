@@ -55,7 +55,7 @@ class TestSpoonacularService(unittest.TestCase):
         self.assertEqual(self.spoonacular_service.get_title(), "Pork Piccata")
     
     def test_get_cookingTime(self):
-        self.assertEqual(self.spoonacular_service.get_cookingTime(), "17 minutes")
+        self.assertEqual(self.spoonacular_service.get_cookingTime(), 17)
     
     def test_get_vegetarian(self):
         self.assertEqual(self.spoonacular_service.get_vegetarian(), False)
