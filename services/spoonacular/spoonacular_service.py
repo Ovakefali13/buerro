@@ -3,7 +3,6 @@ import json
 from abc import ABC, abstractmethod
 from ..preferences.pref_service import PrefService, PrefJSONRemote, PrefRemote
 
-API_TOKEN = ''
 class SpoonacularRemote(ABC):
     @abstractmethod
     def search_recipe_by_id(self, id:str):
