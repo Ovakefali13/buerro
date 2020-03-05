@@ -2,10 +2,9 @@ import unittest
 import os
 import json
 
-from .. import WeatherAdapter, WeatherAdapterRemote
-#from . import WeatherAdapterRemote, WeatherAdapter
+from .. import WeatherAdapter, WeatherAdapterRemote, WeatherAdapterModule
 
-class WeatherMock():
+class WeatherMock(WeatherAdapterModule):
 
     def updateCurrentWeatherByCity(self, city):
         dirname = os.path.dirname(__file__)
@@ -45,6 +44,7 @@ class TestWeatherService(unittest.TestCase):
 
 
     def test_getCurrentTemperature(self):
+        self.weatherAdapter.setRemote(self.remote)
         self.weatherAdapter.update(self.city)
         temp = self.weatherAdapter.getCurrentTemperature()
         self.assertEqual(temp, 2.34)
@@ -52,6 +52,11 @@ class TestWeatherService(unittest.TestCase):
     def test_getCurrentWeather(self):
         self.weatherAdapter.update(self.city)
         weather = self.weatherAdapter.getCurrentWeather()
+        self.assertEquals(weather, 'Clouds')
+
+    def test_getForecastWeather(self):
+        self.weatherAdapter.update(self.city)
+        weather = self.weatherAdapter.getForecastWeather(3)
         self.assertEquals(weather, 'Clouds')
 
     def test_isBadWeather(self):

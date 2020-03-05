@@ -1,1 +1,1 @@
-from .yelp_service import YelpService, YelpServiceRemote
+from .yelp_service import YelpService, YelpServiceRemote, YelpServiceModule
