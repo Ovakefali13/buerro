@@ -1,7 +1,7 @@
 import requests
 from services.ApiError import ApiError
 from services.Singleton import Singleton
-from services.preferences import preferences_adapter
+from services.preferences import PrefService
 from abc import ABC, abstractmethod
 import json
 
@@ -49,7 +49,6 @@ class YelpService:
     def __init__(self):
         self.remote = YelpServiceRemote()
         print('Init Yelp Service')
-
         self.PREFS = preferences_adapter.getLunchbreak()
         print(self.PREFS)
 

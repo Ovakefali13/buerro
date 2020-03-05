@@ -2,7 +2,7 @@ import requests
 from services.ApiError import ApiError
 from services.Singleton import Singleton
 from abc import ABC, abstractmethod
-from services.preferences import preferences_adapter
+from services.preferences import PrefService
 
 
 class WeatherAdapterModule(ABC):
@@ -48,7 +48,7 @@ class WeatherAdapter:
 
     def __init__(self):
         self.remote = WeatherAdapterRemote()
-        self.PREFS = preferences_adapter.getWeather()
+        self.PREFS = PrefService().get_preferences('weather')
         self.MIN_TEMP = self.PREFS['min_temp']
         self.MAX_WIND = self.PREFS['max_wind']
         self.update('Stuttgart')

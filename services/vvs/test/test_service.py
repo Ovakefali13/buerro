@@ -1,7 +1,8 @@
 import unittest
-from .. import VVSService, VVSRemote, VVSEfaJSONRemote, JourneyRequest
+from .. import VVSService, VVSRemote, VVSEfaJSONRemote, Journey, JourneyRequest
 import os
-from datetime import datetime
+import json
+from datetime import datetime, timedelta
 
 class VVSMockRemote(VVSRemote):
 
@@ -32,15 +33,11 @@ class VVSMockRemote(VVSRemote):
         return []
 
     def get_journeys(self, req:JourneyRequest):
-        arr_time = req.time + timedelta(minutes=2)
-        return [
-            Journey('de:08111:6118', 'de:08111:6056',
-                req.time,
-                req.time + timedelta(minutes=2)),
-            Journey('de:08111:6118', 'de:08111:6056',
-                req.time + timedelta(minutes=3),
-                req.time + timedelta(minutes=5))
-        ]
+        dirname = os.path.dirname(__file__)
+        with open(os.path.join(dirname, 'mock_journeys.json'), 'r') as mock_journeys_f:
+            mock_journeys = json.load(mock_journeys_f).get('journeys')
+
+        return mock_journeys
 
 class TestVVSService(unittest.TestCase):
     if 'DONOTMOCK' in os.environ:

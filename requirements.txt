@@ -2,6 +2,7 @@ caldav==0.6.2
 certifi==2019.11.28
 chardet==3.0.4
 coverage==5.0.3
+icalendar==4.0.4
 Deprecated==1.2.7
 idna==2.9
 lxml==4.5.0
