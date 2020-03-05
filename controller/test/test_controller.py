@@ -14,13 +14,37 @@ from usecase import Usecase
 class MockChatbot(Chatbot):
 
     def get_intent(self, message:str):
-       if "work" in message:
-           return Intent("mock_work", [])
+       return Intent("mock_work", [])
+
 
 @Singleton
 class MockUsecase(Usecase):
+    def __init__(self):
+        self.count == 0
+
     def advance(self, entities):
-        return "I created reminders for you"
+        self.count += 1
+
+        if self.count == 1:
+            return {
+                'message': "I created reminders for you. Do you want music?"
+            }
+        if self.count == 2:
+            return {
+                'message': 'How about this Spotify playlist?'
+                    + '\nWhich project do you want to work on?',
+                'link': 'https://open.spotify.com/playlist/37i9dQZF1DWZeKCadgRdKQ'
+            }
+        if self.count == 3:
+            todos = [
+                'Mark 1 to n relationships in architecture',
+                'Implement a prototype for browser notifications'
+            ]
+            return {
+                'message': "Here are you Todo's: ",
+                'list': todos
+            }
+        raise Exception("advance called too often")
 
 class TestController(unittest.TestCase):
     @classmethod
@@ -54,14 +78,20 @@ class TestController(unittest.TestCase):
             raise Exception("most likely failed to start server")
 
     def test_ping_pong(self):
-        resp = requests.post(self.server_url, data={"message": "ping"})
-        self.assertEqual(resp.content, b"pong")
+        res = requests.post(self.server_url, data={"message": "ping"})
+        self.assertEqual(res.content, b"pong")
 
-    def test_get_answer(self):
-        message = "Set up my work environment"
-        resp = requests.post(self.server_url, data={"message":message})
-        self.assertEqual(resp.content,b"I created reminders for you")
+    def test_can_step_through_usecase(self):
+        def _query(message:str):
+            whole_res = requests.post(self.server_url, data={"message":message})
+            return whole_res.get('message')
 
+        res = _query("Set up my work environment")
+        self.assertIn(b"music?", res)
+        res = _query("Yes, I do.")
+        self.assertIn(b"Which project do you want to work on?", res)
+        res = _query("ASE")
+        self.assertIn(b"Todo", res)
 
     @classmethod
     def tearDownClass(self):
