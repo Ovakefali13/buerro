@@ -44,18 +44,18 @@ class YelpService:
     restaurants = []
     focusedRestaurant = []
     searchParams = {}
-    PREFS = {}
+    pref = None
 
     def __init__(self):
         self.remote = YelpServiceRemote()
         print('Init Yelp Service')
-        self.PREFS = preferences_adapter.getLunchbreak()
-        print(self.PREFS)
+        self.pref = PrefService()
+        print(self.pref.get_preferences('lunchbreak'))
 
         self.searchParams = {
             'term': 'food',
             'location': 'Jägerstraße 56, 70174 Stuttgart',
-            'price': self.PREFS['price'],
+            'price': self.pref.get_preferences('price'),
             'radius': 2000,
             'open_at': 1583160868,
             'limit' : 10,
@@ -65,6 +65,9 @@ class YelpService:
     def setRemote(self, remote):
         self.remote = remote
 
+    def setLimit(self, num):
+        self.searchParams['limit'] = num
+
     def setLocation(self, location):
         self.searchParams['location'] = location
 
@@ -73,9 +76,9 @@ class YelpService:
 
     def setRadius(self, time, isBadWeather):
         if(isBadWeather):
-            self.searchParams['radius'] = int((self.PREFS['base_radius'] + ((time/10) * self.PREFS['ten_min_radius'])) / 2)
+            self.searchParams['radius'] = int((self.pref.get_preferences('base_radius') + ((time/10) * self.pref.get_preferences('ten_min_radius'))) / 2)
         else:
-            self.searchParams['radius'] = int(self.PREFS['base_radius'] + ((time/10) * self.PREFS['ten_min_radius']))
+            self.searchParams['radius'] = int(self.pref.get_preferences('base_radius') + ((time/10) * self.pref.get_preferences('ten_min_radius')))
 
     def requestBusinesses(self, time, location):
         self.setLocation(location)
@@ -106,6 +109,14 @@ class YelpService:
             }
             nameList.append(info)
         return nameList
+
+
+
+    def getDelivery(self):
+        for r in self.restaurants:
+            if( 'delivery' in r['transaction']):
+                return {'name' : r['name'] ,
+                        'phone' : r['phone']}
 
 
     # def printBusinessNames(self):

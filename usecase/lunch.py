@@ -1,7 +1,7 @@
 from services.weatherAPI.weather_service import WeatherAdapter
 from services.yelp.yelp_service import YelpService
 from datetime import datetime
-from services.preferences import preferences_adapter
+from services.preferences import pref_service
 
 class Lunchbreak:
     location = {'latitude': 48.765337599999995,
@@ -46,6 +46,7 @@ class Lunchbreak:
         for x in self.restaurants:
             print(x['name'])
 
+        print(yelpService.getDelivery())
     def openMapsRoute(self, choice):
         address = self.restaurants[choice]['address']
         ###Generate Maps Link
