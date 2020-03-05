@@ -22,7 +22,7 @@ class SpoonacularJSONRemote(SpoonacularRemote):
         self.api_token = pref_json['spoonacularAPIKey']
 
     def search_recipe_by_ingredient(self, ingredient):
-        request_string = self.base_url + 'search?query=' + ingredient + '&number=1&apiKey=' + self.api_token
+        request_string = self.base_url + 'search?query=' + ingredient + '&apiKey=' + self.api_token
         response_string = requests.get(request_string)
         if response_string.status_code != 200:
             print('Error search by ingredient')
