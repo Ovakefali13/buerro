@@ -16,19 +16,32 @@ class SpoonacularJSONRemote(SpoonacularRemote):
     base_url = 'https://api.spoonacular.com/recipes/'
     api_token = ''
     pref_service = PrefService(PrefJSONRemote())
+    diet = ''
+    maxCookingTime = 90
 
     def __init__(self):
-        pref_json = self.pref_service.get_preferences("general")
+        pref_json = self.pref_service.get_preferences("cooking")
         self.api_token = pref_json['spoonacularAPIKey']
+        self.diet = pref_json['diet']
+        self.maxCookingTime = pref_json['maxCookingTime']
 
     def search_recipe_by_ingredient(self, ingredient):
-        request_string = self.base_url + 'search?query=' + ingredient + '&apiKey=' + self.api_token
+        request_string = self.base_url + 'complexSearch?' + self.get_search_options(ingredient)
         response_string = requests.get(request_string)
         if response_string.status_code != 200:
             print('Error search by ingredient')
             print(request_string)
         response_json = response_string.json()
         return(response_json['results'][0]['id'])
+    
+    def get_search_options(self, ingredient):
+        search_options = 'includeIngredients=' + ingredient
+        search_options += '&diet=' + self.diet
+        search_options += '&maxReadyTime=' + str(self.maxCookingTime)
+        search_options += '&apiKey=' + self.api_token
+        print(search_options)
+        return search_options
+    
     def search_recipe_by_id(self, id):
         request_string = self.base_url + str(id) +'/information?apiKey=' + self.api_token
         response_string = requests.get(request_string)

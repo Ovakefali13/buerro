@@ -9,8 +9,10 @@ class SpoonacularMOCKRemote(SpoonacularRemote):
     pref_service = PrefService(PrefJSONRemote())
 
     def __init__(self):
-        pref_json = self.pref_service.get_preferences("general")
+        pref_json = self.pref_service.get_preferences("cooking")
         self.api_token = pref_json['spoonacularAPIKey']
+        self.diet = pref_json['diet']
+        self.maxCookingTime = pref_json['maxCookingTime']
 
     def search_recipe_by_ingredient(self, ingredient):
         dirname = os.path.dirname(__file__)
@@ -20,6 +22,13 @@ class SpoonacularMOCKRemote(SpoonacularRemote):
             response_json = json.load(open(dirname + '/mock_general_result_false.json'))
         return(response_json['results'][0]['id'])
 
+    def get_search_options(self, ingredient):
+        search_options = 'includeIngredients=' + ingredient
+        search_options += '&diet=' + self.diet
+        search_options += '&maxReadyTime=' + str(self.maxCookingTime)
+        search_options += '&apiKey=' + self.api_token
+        return search_options
+    
     def search_recipe_by_id(self, id):
         dirname = os.path.dirname(__file__)
         if id == 111364:
@@ -62,3 +71,7 @@ class TestSpoonacularService(unittest.TestCase):
     
     def test_get_vegan(self):
         self.assertEqual(self.spoonacular_service.get_vegan(), False)
+
+    def test_get_search_options(self):
+        search_options = self.remote.get_search_options('pork')
+        self.assertEqual(search_options, "includeIngredients=pork&diet=omnivore&maxReadyTime=90&apiKey=0a3a6b562932438aaab0cb05460096de")

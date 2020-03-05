@@ -3,8 +3,8 @@ from services.spoonacular.spoonacular_service import SpoonacularService, Spoonac
 #from usecase import lunch
 import json
 def main():
-    spoonacular_service = SpoonacularService(SpoonacularJSONRemote())
-    spoonacular_service.get_recipe_reduced_by_ingredient('pork')
+    spoonacular_service = SpoonacularService(SpoonacularJSONRemote(), 'pork')
+    print(spoonacular_service.get_summary())
     #weatherAdapter = WeatherAdapter.instance()
     #weatherAdapter.update('Stuttgart')
     #print(weatherAdapter.isBadWeather())
