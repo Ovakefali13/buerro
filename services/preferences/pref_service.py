@@ -28,4 +28,11 @@ class PrefService:
     def get_preferences(self, key):
         preferences_json = self.remote.load_file()
         return_json = self.remote.merge_json_files(preferences_json["general"], preferences_json[key])
-        return return_json
+        return return_json  
+    def get_specific_pref(self, key):
+        preferences_json = self.remote.load_file()
+        return_json = preferences_json['general']
+        for root_pref in preferences_json.values():
+            return_json = self.remote.merge_json_files(return_json, root_pref)
+        return return_json[key]
+
