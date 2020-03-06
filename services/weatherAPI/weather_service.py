@@ -41,16 +41,17 @@ class WeatherAdapter:
     remote = None
     weather = []
     weatherForecast = []
-    PREFS = []
+    pref = None
 
     MIN_TEMP = 10.0 #°C
     MAX_WIND = 20.0 #km/h
 
     def __init__(self):
         self.remote = WeatherAdapterRemote()
-        self.PREFS = PrefService().get_preferences('weather')
-        self.MIN_TEMP = self.PREFS['min_temp']
-        self.MAX_WIND = self.PREFS['max_wind']
+        self.pref = PrefService()
+        #get_preferences('weather')
+        self.MIN_TEMP = self.pref.get_specific_pref('min_temp')
+        self.MAX_WIND = self.pref.get_specific_pref('max_wind')
         self.update('Stuttgart')
 
     def setRemote(self, remote:WeatherAdapterModule):

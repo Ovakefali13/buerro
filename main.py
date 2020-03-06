@@ -11,6 +11,8 @@ def main():
     print(weatherAdapter.weatherForecast)
     print(weatherAdapter.weather)
 
+    l = lunch.Lunchbreak('Stuttgart')
+
 
 if __name__ == '__main__':
     main()
