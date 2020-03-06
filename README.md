@@ -63,7 +63,7 @@ All tests can be discovered automatically using `cd <directory && python -m unit
 
 All test files need to start with `test*.py` or provide a different `-p` option to discover.
 
-Use the target `make test` to discover tests within a module tracking coverage. The tests are run from the virtual environmet, you don't have to activate it, before running `make`.
+Use the target `make test` to discover tests within a module tracking coverage. The tests are run from the virtual environment, you don't have to activate it, before running `make`.
 
 ### Debugging
 
