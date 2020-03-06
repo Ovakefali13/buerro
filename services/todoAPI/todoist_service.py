@@ -94,12 +94,12 @@ class TodoistService:
     
     def set_shopping_list(self, items):
         project_id = self.get_shopping_list_id()
-        self.remote.set_todos(items, project_id)
+        return self.remote.set_todos(items, project_id)
     
     def set_data_science(self, items):
         project_id = self.get_data_science_id()
-        self.remote.set_todos(items, project_id)
+        return self.remote.set_todos(items, project_id)
     
     def set_software_enigneering(self, items):
         project_id = self.get_software_engineering_id()
-        self.remote.set_todos(items, project_id)
+        return self.remote.set_todos(items, project_id)
