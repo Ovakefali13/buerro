@@ -1,31 +1,34 @@
 from abc import ABC, abstractmethod
 from opencage.geocoder import OpenCageGeocode, InvalidInputError, RateLimitExceededError, UnknownError
 from services.Singleton import Singleton
+from ..preferences.pref_service import PrefService, PrefJSONRemote, PrefRemote
 
 class GeocodingRemote(ABC):
     @abstractmethod
-    def get_information_from_address(self, address):
+    def get_information_from_address(self, address:str):
         pass
     @abstractmethod
-    def get_information_from_coords(self, coords):
+    def get_information_from_coords(self, coords:list):
         pass
 
 @Singleton
 class GeocodingJSONRemote(GeocodingRemote):
-    # 2500 free transactions per day https://opencagedata.com
-    API_TOKEN = '2642206c773e4b06aedabd0a0e876a2f'
 
     def __init__(self):
-        self.geocoder = OpenCageGeocode(self.API_TOKEN)
+        pref_service = PrefService(PrefJSONRemote())
+        prefs = pref_service.get_preferences("transport")
+        self.geocoder = OpenCageGeocode(prefs['opencagegeocodingAPIKey'])
+
 
     # Street, City, Country
-    def get_information_from_address(self, address):
+    def get_information_from_address(self, address:str):
         try:
             return self.geocoder.geocode(address, pretty=True)
         except RateLimitExceededError as ex:
             print(ex)
 
-    def get_information_from_coords(self, coords):
+
+    def get_information_from_coords(self, coords:list):
         try:
             return self.geocoder.reverse_geocode(coords[0], coords[1], language='de', no_annotations='1')
         except RateLimitExceededError as ex:
@@ -37,14 +40,16 @@ class GeocodingService:
     def __init__(self, remote):
         self.remote = remote
 
-    def get_coords_from_address(self, address):
+
+    def get_coords_from_address(self, address:str):
         results = self.remote.get_information_from_address(address)
         latitude  = results[0]['geometry']['lat']
         longitude = results[0]['geometry']['lng']
 
         return [latitude, longitude]        
 
-    def get_address_from_cords(self, coords):            
+
+    def get_address_from_cords(self, coords:list):            
         results = self.remote.get_information_from_coords(coords)
         
         return results[0]['formatted']

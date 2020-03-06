@@ -6,7 +6,7 @@ from .. import MapService, MapRemote, MapJSONRemote, GeocodingService, Geocoding
 
 class MapMockRemote():
 
-    def get_route_information(self, start, dest, travel_mode):
+    def get_route_information(self, start:list, dest:list, travel_mode:str):
         if travel_mode != 'driving-car':
             return
 
@@ -44,7 +44,7 @@ class GeocodingMockRemote():
     dhbw = ['Rotebühlplatz 41, 70178 Stuttgart, Deutschland', [48.7735115, 9.1710448]]
 
 
-    def get_information_from_address(self, address):
+    def get_information_from_address(self, address:str):
         if address == self.dhbw[0]:
             dirname = os.path.dirname(__file__)
             with open(os.path.join(dirname, 'mock_from_address.json'), 'r') as f:
@@ -52,7 +52,7 @@ class GeocodingMockRemote():
             return mock_from_address
 
     
-    def get_information_from_coords(self, coords):
+    def get_information_from_coords(self, coords:list):
         if coords == self.dhbw[1]:
             dirname = os.path.dirname(__file__)            
             with open(os.path.join(dirname, 'mock_from_coords.json'), 'r') as f:
