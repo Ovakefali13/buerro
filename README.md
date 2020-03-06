@@ -24,7 +24,6 @@ Create a new local virtual environment and install the packages in `requirements
 
 ```
 virtualenv -p python3.7 venv
-pip install -r requirements.txt
 ```
 
 Activate the virtual environment (do this every time you start working on it).
@@ -33,15 +32,20 @@ Activate the virtual environment (do this every time you start working on it).
 source venv/bin/activate
 ```
 
-Change some code, until you want to use some packages. If you do, just `pip install` them.
-
-Once you've finished working on it for that shell session, make sure to persist your virtual environment. You can skip this step if you didn't install any new packages this session. The `venv/` folder should not be tracked by source control (it contains binaries). Instead you can freeze your current state into a `requirements.txt`.
+Install the required python packages:
 
 ```
+pip install -r requirements.txt
+```
+
+Change some code, until you want to use some packages. If you do, just install them and refresh the `requirements.txt`:
+
+```
+pip install some_package
 pip freeze > requirements.txt
 ```
 
-To exit your environment (switch to other adapter or finish a session):
+To exit your environment:
 
 ```
 deactivate
@@ -59,7 +63,7 @@ All tests can be discovered automatically using `cd <directory && python -m unit
 
 All test files need to start with `test*.py` or provide a different `-p` option to discover.
 
-Use the target `make test` to discover tests within a module tracking coverage.
+Use the target `make test` to discover tests within a module tracking coverage. The tests are run from the virtual environmet, you don't have to activate it, before running `make`.
 
 ### Debugging
 
