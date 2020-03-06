@@ -3,13 +3,26 @@
 #from usecase import lunch
 from services.preferences.pref_service import PrefService, PrefJSONRemote, PrefRemote
 from services.spoonacular.spoonacular_service import SpoonacularService, SpoonacularJSONRemote, SpoonacularRemote
+from services.todoAPI.todoist_service import TodoistService, TodoistRemote, TodoistJSONRemote
 from usecase.cooking import Cooking
 import json
 def main():
     #spoonacular_service = SpoonacularService(SpoonacularJSONRemote(), 'pork')
     
-    cooking = Cooking('pork')
-    print(cooking.get_response())
+    #cooking = Cooking('pork')
+    #print(cooking.get_response())
+    
+    todoist = TodoistService(TodoistJSONRemote())
+    todoist.remote.get_todos(2230670456)
+    #print(todoist.get_project_names())
+    #print(todoist.get_data_science_id())
+    #print(todoist.get_data_science_items())
+    #print(todoist.get_shopping_list_id())
+    #print(todoist.get_shopping_list_items())
+    #print(todoist.get_software_engineering_id())
+    #print(todoist.get_software_engineering_items())
+    #todoist.set_software_enigneering(['Hello World', 'Test Hello'])
+    
     #weatherAdapter = WeatherAdapter.instance()
     #weatherAdapter.update('Stuttgart')
     #print(weatherAdapter.isBadWeather())
