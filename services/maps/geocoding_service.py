@@ -50,10 +50,3 @@ class GeocodingService:
         return results[0]['formatted']
 
 
-remote = GeocodingJSONRemote.instance()
-
-dic = remote.get_information_from_address('Rotebühlplatz 41, 70178 Stuttgart, Deutschland')
-f = open('FILE.txt','a')
-
-for item in dic:
-        f.write("%s\n" % item)
