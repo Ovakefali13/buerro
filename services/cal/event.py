@@ -11,11 +11,11 @@ class Event(iCalEvent):
         self.add('dtstart', start)
         self.add('dtend', end)
         self.add('location', location)
-        self.add('dtstamp', datetime.datetime.now())
 
         now = dt.now()
         self.add('dtstamp', now)
-        self.add('uid', vDatetime(now).to_ical().decode('utf-8')+'@buerro')
+        self.add('uid', vDatetime(now).to_ical().decode('utf-8')+'@buerro.com')
+        #self.add('uid', '00008')
 
     def format_date(self, dt):
         #2020-02-26T18:00:00Z

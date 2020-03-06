@@ -18,8 +18,15 @@ class CaldavRemote(ABC):
         pass
 
 
-class iCloudCaldavRemote:
+class iCloudCaldavRemote(CaldavRemote):
     def __init__(self):
+        def _get_named_calendar(calendars, name):
+            calendars = principal.calendars()
+            for cal in calendars:
+                properties = cal.get_properties([dav.DisplayName(), ])
+                display_name = properties['{DAV:}displayname']
+                if(display_name == name):
+                    return cal
 
         load_dotenv()
 
@@ -33,14 +40,15 @@ class iCloudCaldavRemote:
         if not all([var in environ for var in required_env]):
             raise EnvironmentError("Did not set all of these environmet variables: ", required_env)
 
-        client = caldav.DAVClient(environ['CALDAV_URL'], username=environ['USERNAME'], password=environ['PASSWORD'])
-        principal = client.principal()
-        self.calendar = principal.calendar(environ['CALENDAR'], environ['CALENDAR_ID'])
+        client = caldav.DAVClient(
+            environ['CALDAV_URL'],
+            username=environ['USERNAME'],
+            password=environ['PASSWORD'])
 
+        principal = client.principal()
+        self.calendar = _get_named_calendar(principal.calendars(), environ['CALENDAR'])
         if self.calendar is None:
             raise EnvironmentError('Provided CALENDAR could not be found')
-        from nose.tools import set_trace; set_trace()
-        print(self.calendar.events())
 
     def add_event(self, event:Event):
         ical = "BEGIN:VCALENDAR\n"+event.to_ical()+"\nEND:VCALENDAR"
