@@ -1,40 +1,69 @@
 import requests
 from services.ApiError import ApiError
 from services.Singleton import Singleton
-from services.preferences import preferences_adapter
+from services.preferences import PrefService
+from abc import ABC, abstractmethod
+import json
+
+class YelpServiceModule(ABC):
+    @abstractmethod
+    def requestBusinesses(self):
+        pass
+
+    @abstractmethod
+    def requestBusiness(self, id:int):
+        pass
+
+class YelpServiceRemote(YelpServiceModule):
+    CLIENT_ID = 'A5Kch4F4A_1vSRVEEkgMnw'
+    API_TOKEN = 'AA4LFvZbdhM3IgESoZAlBJSpsvKSHzVbYmpdbo7hehlsrBY-ZdzZIo9ZT7-hRSnlD3RLwnFR8sakmKVTb3xLcrYB3FM6j13KoOiEPh28uGESSgIPFbHdffk4UMZcXnYx'
+    headers = {
+        'Authorization': 'Bearer %s' % API_TOKEN,
+    }
+
+    def requestBusinesses(self, searchParam):
+        req = 'https://api.yelp.com/v3/businesses/search'
+        response = requests.request('GET', req, headers=self.headers, params=searchParam)
+        if response.status_code != 200:
+            raise ApiError('GET /tasks/ {}'.format(response.status_code))
+            print('Error')
+        return response.json()
+
+    def requestBusiness(self, id):
+        req = 'https://api.yelp.com/v3/businesses/' + id
+        response = requests.request('GET', req, headers=self.headers)
+        if response.status_code != 200:
+            raise ApiError('GET /tasks/ {}'.format(response.status_code))
+            print('Error')
+        return response.json()
+
 
 @Singleton
 class YelpService:
-    CLIENT_ID = 'A5Kch4F4A_1vSRVEEkgMnw'
-    API_TOKEN = 'AA4LFvZbdhM3IgESoZAlBJSpsvKSHzVbYmpdbo7hehlsrBY-ZdzZIo9ZT7-hRSnlD3RLwnFR8sakmKVTb3xLcrYB3FM6j13KoOiEPh28uGESSgIPFbHdffk4UMZcXnYx'
+    remote = None
     restaurants = []
     focusedRestaurant = []
     searchParams = {}
-    headers = {}
-    PREFS = {}
+    pref = None
 
     def __init__(self):
+        self.remote = YelpServiceRemote()
         print('Init Yelp Service')
-        self.headers = {
-            'Authorization': 'Bearer %s' % self.API_TOKEN,
-        }
-        #self.PREFS = preferences_adapter.getLunchbreak()
-        #print(self.PREFS)
-        self.PREFS = {
-            "base_radius": 500,
-            "ten_min_radius": 100,
-            "price": "1, 2"
-        }
+        self.pref = PrefService()
+        print(self.pref.get_preferences('lunchbreak'))
 
         self.searchParams = {
             'term': 'food',
             'location': 'Jägerstraße 56, 70174 Stuttgart',
-            'price': self.PREFS['price'],
+            'price': self.pref.get_specific_pref('price'),
             'radius': 2000,
             'open_at': 1583160868,
             'limit' : 10,
             'sort_by' : 'distance'
         }
+
+    def setRemote(self, remote):
+        self.remote = remote
 
     def setLocation(self, location):
         self.searchParams['location'] = location
@@ -44,9 +73,9 @@ class YelpService:
 
     def setRadius(self, time, isBadWeather):
         if(isBadWeather):
-            self.searchParams['radius'] = int((self.PREFS['base_radius'] + ((time/10) * self.PREFS['ten_min_radius'])) / 2)
+            self.searchParams['radius'] = int((self.pref.get_specific_pref('base_radius') + ((time/10) * self.pref.get_specific_pref('ten_min_radius'))) / 2)
         else:
-            self.searchParams['radius'] = int(self.PREFS['base_radius'] + ((time/10) * self.PREFS['ten_min_radius']))
+            self.searchParams['radius'] = int(self.pref.get_specific_pref('base_radius') + ((time/10) * self.pref.get_specific_pref('ten_min_radius')))
 
     def requestBusinesses(self, time, location):
         self.setLocation(location)
@@ -54,21 +83,13 @@ class YelpService:
         self.requestBusinesses()
 
     def requestBusinesses(self):
-        req = 'https://api.yelp.com/v3/businesses/search'
-        response = requests.request('GET', req, headers=self.headers, params=self.searchParams)
-        if response.status_code != 200:
-            raise ApiError('GET /tasks/ {}'.format(response.status_code))
-            print('Error')
-        self.restaurants = response.json()
+        self.restaurants = self.remote.requestBusinesses(self.searchParams)
 
     def requestBusiness(self, id):
-        req = 'https://api.yelp.com/v3/businesses/'+ id
-        response = requests.request('GET', req, headers=self.headers)
-        if response.status_code != 200:
-            raise ApiError('GET /tasks/ {}'.format(response.status_code))
-            print('Error')
-        self.focusedRestaurant = response.json()
+        self.focusedRestaurant = self.remote.requestBusiness(id)
 
+    def getBusinessInformation(self):
+        return self.focusedRestaurant
 
     def getShortInformationOfRestaurants(self):
         nameList = []
@@ -86,20 +107,13 @@ class YelpService:
             nameList.append(info)
         return nameList
 
-    def getShortInformationOfRestaurant(self, num):
-        shortList = {
-            'id' : self.restaurants['businesses'][num]['id'],
-            'name': self.restaurants['businesses'][num]['name'],
-            'price': self.restaurants['businesses'][num]['price'],
-            'is_closed': self.restaurants['businesses'][num]['is_closed'],
-            'rating': self.restaurants['businesses'][num]['rating'],
-            'location': self.restaurants['businesses'][num]['location'],
-            'url': self.restaurants['businesses'][num]['url'],
+
+    def getNextBusiness(self):
+        info = {
+            'name': self.restaurants['businesses'][0]['name'],
+            'id': self.restaurants['businesses'][0]['id'],
+            'phone' : self.restaurants['businesses'][0]['phone'],
+            'address': self.restaurants['businesses'][0]['location']['address1'] + ', ' + self.restaurants['businesses'][0]['location']['zip_code'] + ' ' + self.restaurants['businesses'][0]['location']['city'],
+            'url': self.restaurants['businesses'][0]['url'],
         }
-
-        return shortList
-
-    def printBusinessNames(self):
-        for x in self.restaurants['businesses']:
-            print(x['id'] + '\t' + x['name'] + '\t' + x['price'] + '\t' + str(x['is_closed']) + '\t' + str(x['rating']) + '\t' + str(x['location'])  + '\t' + x['url'] )
-
+        return info

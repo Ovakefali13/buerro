@@ -59,7 +59,7 @@ class Journey:
 
         return description
 
-    def from_vvs(self, journey:dict):
+    def from_vvs(self, vvs_journey:dict):
         def from_utc_to_local(utc_dt):
             #return self.local_tz.localize(utc_dt)
             #return utc_dt.replace(tzinfo=self.local_tz)
@@ -71,7 +71,7 @@ class Journey:
             #vvs_time = datetime.strptime(datestr, "%Y-%m-%dT%H:%M:%SZ")
             return from_utc_to_local(vvs_time)
 
-        legs = journey.get('legs')
+        legs = vvs_journey.get('legs', [])
         origin = legs[0].get('origin')
         dest = legs[-1].get('destination')
         self.origin = origin.get('name')
@@ -81,7 +81,7 @@ class Journey:
         self.dep_time = parse_vvs_time(origin.get('departureTimePlanned'))
         self.arr_time = parse_vvs_time(dest.get('arrivalTimePlanned'))
 
-        for leg in journey.get('legs'):
+        for leg in vvs_journey.get('legs'):
             origin = copy(leg.get('origin').get('name'))
             dest = copy(leg.get('destination').get('name'))
             dep_time = parse_vvs_time(leg.get('origin').get('departureTimePlanned'))

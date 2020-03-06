@@ -1,26 +1,22 @@
 import requests
 from services.ApiError import ApiError
 from services.Singleton import Singleton
+from abc import ABC, abstractmethod
+from services.preferences import PrefService
 
-@Singleton
-class WeatherAdapter:
+
+class WeatherAdapterModule(ABC):
+    @abstractmethod
+    def updateCurrentWeatherByCity(self, city:str):
+        pass
+
+    @abstractmethod
+    def updateWeatherForecastByCity(self, city:str):
+        pass
+
+
+class WeatherAdapterRemote(WeatherAdapterModule):
     API_TOKEN = '716b047d4b59fba6550709d60756b0fd'
-    weather = []
-    weatherForecast = []
-
-    MIN_TEMP = 10.0 #°C
-    MAX_WIND = 20.0 #km/h
-    REFRESH_RATE = 3600 #sec
-
-    def __init__(self):
-        self.updateCurrentWeatherByCity('Stuttgart')
-        self.updateWeatherForecastByCity('Stuttgart')
-
-    def update(self, city):
-        self.updateCurrentWeatherByCity(city)
-        self.updateWeatherForecastByCity(city)
-
-
     def updateCurrentWeatherByCity(self, city):
         req = 'https://api.openweathermap.org/data/2.5/weather?q=' +  city + '&units=metric&appid=' + self.API_TOKEN
         print(req)
@@ -28,7 +24,7 @@ class WeatherAdapter:
         if resp.status_code != 200:
             raise ApiError('GET /tasks/ {}'.format(resp.status_code))
             print('Error')
-        self.weather = resp.json()
+        return resp.json()
 
 
     def updateWeatherForecastByCity(self, city):
@@ -37,7 +33,39 @@ class WeatherAdapter:
         if resp.status_code != 200:
             raise ApiError('GET /tasks/ {}'.format(resp.status_code))
             print('Error')
-        self.weatherForecast = resp.json()
+        return resp.json()
+
+@Singleton
+class WeatherAdapter:
+
+    remote = None
+    weather = []
+    weatherForecast = []
+    pref = None
+
+    MIN_TEMP = 10.0 #°C
+    MAX_WIND = 20.0 #km/h
+
+    def __init__(self):
+        self.remote = WeatherAdapterRemote()
+        self.pref = PrefService()
+        #get_preferences('weather')
+        self.MIN_TEMP = self.pref.get_specific_pref('min_temp')
+        self.MAX_WIND = self.pref.get_specific_pref('max_wind')
+        self.update('Stuttgart')
+
+    def setRemote(self, remote:WeatherAdapterModule):
+        self.remote = remote
+
+    def update(self, city):
+        self.weather = self.updateCurrentWeatherByCity(city)
+        self.weatherForecast = self.updateWeatherForecastByCity(city)
+
+    def updateWeatherForecastByCity(self, city:str):
+        return self.remote.updateWeatherForecastByCity(city)
+
+    def updateCurrentWeatherByCity(self, city:str):
+        return self.remote.updateCurrentWeatherByCity(city)
 
     def getCurrentTemperature(self):
         return float(self.weather['main']['temp'])
@@ -72,7 +100,7 @@ class WeatherAdapter:
         code = self.getCurrentWeatherID()
         wind = self.getCurrentWind()
 
-        print("Code: " + str(code) + "\nTemp: " + str(temp) + "\nWind: " + str(wind) +"\n")
+        #print("Code: " + str(code) + "\nTemp: " + str(temp) + "\nWind: " + str(wind) +"\n")
 
         if(((code > 200) & (code  < 799)) | (temp < self.MIN_TEMP) | (wind > self.MAX_WIND)):
             return True
@@ -85,19 +113,10 @@ class WeatherAdapter:
         code = self.getForecastWeatherID(hours)
         wind = self.getForecastWind(hours)
 
-        print("Code: " + str(code) + "\nTemp: " + str(temp) + "\nWind: " + str(wind) + "\n")
+        #print("Code: " + str(code) + "\nTemp: " + str(temp) + "\nWind: " + str(wind) + "\n")
 
         if (((code > 200) & (code < 799)) | (temp < self.MIN_TEMP) | (wind > self.MAX_WIND)):
             return True
         else:
             return False
 
-    #todo forecast data
-    #todo wind
-    #nur max 1 mal die minute update
-
-#1582826400
-#1582837200
-
-#10800
-#3 * 3600

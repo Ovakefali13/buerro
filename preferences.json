@@ -1,6 +1,6 @@
 {
 	"general": {
-		"general1": "prefGeneral1"
+		"spoonacularAPIKey": "0a3a6b562932438aaab0cb05460096de"
 	},
 	"cooking": {
 		"cooking1": "prefCooking1",
@@ -17,6 +17,10 @@
 	"transport": {
 		"minTemp": 10,
 		"maxWind": 20
+	},
+	"weather": {
+		"min_temp": 10,
+		"max_wind": 20
 	},
 	"lunchbreak": {
 		"base_radius": 500,
