@@ -1,6 +1,8 @@
 {
 	"general": {
-		"spoonacularAPIKey": "0a3a6b562932438aaab0cb05460096de"
+		"spoonacularAPIKey": "0a3a6b562932438aaab0cb05460096de",
+		"opencagegeocodingAPIKey": "2642206c773e4b06aedabd0a0e876a2f",
+		"openrouteserviceAPIKey": "5b3ce3597851110001cf62488ef50484ef524d228826ecc7b35f5df1"
 	},
 	"cooking": {
 		"cooking1": "prefCooking1",
@@ -16,7 +18,9 @@
 	},
 	"transport": {
 		"minTemp": 10,
-		"maxWind": 20
+		"maxWind": 20,
+		"profile": "cycling-regular",
+		"preference": "shortest"
 	},
 	"weather": {
 		"min_temp": 10,
