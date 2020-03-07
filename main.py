@@ -4,10 +4,10 @@ import json
 def main():
     weatherAdapter = WeatherAdapter.instance()
     weatherAdapter.update('Stuttgart')
-    print(weatherAdapter.isBadWeather())
-    print(weatherAdapter.willBeBadWeather(3))
-    print(weatherAdapter.willBeBadWeather(6))
-    print(weatherAdapter.willBeBadWeather(9))
+    print(weatherAdapter.is_bad_weather())
+    print(weatherAdapter.will_be_bad_weather(3))
+    print(weatherAdapter.will_be_bad_weather(6))
+    print(weatherAdapter.will_be_bad_weather(9))
     print(weatherAdapter.weatherForecast)
     print(weatherAdapter.weather)
 

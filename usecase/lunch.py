@@ -9,7 +9,7 @@ class Lunchbreak:
     location = {'latitude': 48.765337599999995,
                 'longitude': 9.161932799999999}
 
-    def __init__(self, location, mock:bool=False):
+    def __init__(self, mock:bool=False):
         if mock:
             weather_adapter = WeatherAdapter.instance()
             weather_adapter.set_remote(WeatherMock())
@@ -77,7 +77,7 @@ class Lunchbreak:
 
 
     def notify(self):
-        lunch_start = '2020-03-03T12:00:00'
+        lunch_start = '2020-05-05T12:00:00'
         duration = 60
 
         lunch_start_iso = datetime.fromisoformat(lunch_start)
