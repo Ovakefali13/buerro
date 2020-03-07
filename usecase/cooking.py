@@ -1,11 +1,13 @@
 from services.preferences.pref_service import PrefService, PrefRemote, PrefJSONRemote
 from services.spoonacular.spoonacular_service import SpoonacularService, SpoonacularJSONRemote, SpoonacularRemote
+from services.todoAPI.todoist_service import TodoistService, TodoistRemote, TodoistJSONRemote
 
 class Cooking:
     ingredient = 'pork'
     preferences_json = ''
     pref_service = None
     spoonacle_service = None
+    todoist_service = None
     response_message = ''
 
     def __init__(self, ingredient):
@@ -34,7 +36,9 @@ class Cooking:
         return self.spoonacle_service.get_summary()
 
     def set_shopping_list(self):
+        self.todoist_service = TodoistService(TodoistJSONRemote())
         ingredients = self.spoonacle_service.get_ingredients()
+        self.todoist_service.set_shopping_list(ingredients)
         ### add ingredients to the todo list ###
 
     def set_calender(self):

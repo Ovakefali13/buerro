@@ -9,11 +9,11 @@ import json
 def main():
     #spoonacular_service = SpoonacularService(SpoonacularJSONRemote(), 'pork')
     
-    #cooking = Cooking('pork')
-    #print(cooking.get_response())
+    cooking = Cooking('pork')
+    print(cooking.get_response())
     
-    todoist = TodoistService(TodoistJSONRemote())
-    print(todoist.remote.get_todos(2230686957))
+    #todoist = TodoistService(TodoistJSONRemote())
+    #print(todoist.remote.get_todos(2230686957))
     #print(todoist.get_project_names())
     #print(todoist.get_data_science_id())
     #print(todoist.get_data_science_items())
