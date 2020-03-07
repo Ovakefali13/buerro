@@ -8,4 +8,5 @@ class TestLunchbreak(unittest.TestCase):
         lb = Lunchbreak(self.MOCK_LOCATION, True)
         # TODO optional agruments
 
-    def tets_check_lunch_options
+    def tets_check_lunch_options(self):
+        lb = Lunchbreak(self.MOCK_LOCATION, True)

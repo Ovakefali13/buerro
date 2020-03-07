@@ -42,7 +42,7 @@ class Lunchbreak:
         ### Check Weather ###
         weather_adapter = WeatherAdapter.instance()
         weather_adapter.update(city)
-        will_be_bad_weather = weather_adapter.willBeBadWeather(hours_until_lunch)
+        will_be_bad_weather = weather_adapter.will_be_bad_weather(hours_until_lunch)
 
         ### suggest 10 nearest restaurants that meet preferences ###
         yelp_service = YelpService.instance()
