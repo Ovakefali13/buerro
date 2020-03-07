@@ -47,17 +47,18 @@ class TestWeatherService(unittest.TestCase):
         self.weatherAdapter.setRemote(self.remote)
         self.weatherAdapter.update(self.city)
         temp = self.weatherAdapter.getCurrentTemperature()
-        self.assertEqual(temp, 2.34)
+        self.assertGreater(temp, -50)
+        self.assertLess(temp, 50)
 
     def test_getCurrentWeather(self):
         self.weatherAdapter.update(self.city)
         weather = self.weatherAdapter.getCurrentWeather()
-        self.assertEquals(weather, 'Clouds')
+        self.assertIsInstance(weather, str)
 
     def test_getForecastWeather(self):
         self.weatherAdapter.update(self.city)
         weather = self.weatherAdapter.getForecastWeather(3)
-        self.assertEquals(weather, 'Clouds')
+        self.assertIsInstance(weather, str)
 
     def test_isBadWeather(self):
         self.weatherAdapter.update(self.city)
@@ -65,6 +66,7 @@ class TestWeatherService(unittest.TestCase):
         self.assertTrue(isWeatherBad)
 
     def test_willBeBadWeather(self):
+        #TODO How to test
         self.weatherAdapter.update(self.city)
         willBeBadWeather = self.weatherAdapter.willBeBadWeather(3)
         self.assertTrue(willBeBadWeather)

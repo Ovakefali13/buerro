@@ -15,8 +15,7 @@ class YelpServiceModule(ABC):
         pass
 
 class YelpServiceRemote(YelpServiceModule):
-    CLIENT_ID = 'A5Kch4F4A_1vSRVEEkgMnw'
-    API_TOKEN = 'AA4LFvZbdhM3IgESoZAlBJSpsvKSHzVbYmpdbo7hehlsrBY-ZdzZIo9ZT7-hRSnlD3RLwnFR8sakmKVTb3xLcrYB3FM6j13KoOiEPh28uGESSgIPFbHdffk4UMZcXnYx'
+    API_TOKEN = PrefService().get_specific_pref('yelpAPIKey')
     headers = {
         'Authorization': 'Bearer %s' % API_TOKEN,
     }

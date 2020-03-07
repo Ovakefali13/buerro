@@ -16,10 +16,10 @@ class WeatherAdapterModule(ABC):
 
 
 class WeatherAdapterRemote(WeatherAdapterModule):
-    API_TOKEN = '716b047d4b59fba6550709d60756b0fd'
+    API_TOKEN = PrefService().get_specific_pref('openWeatherMapAPIKey')
+
     def updateCurrentWeatherByCity(self, city):
         req = 'https://api.openweathermap.org/data/2.5/weather?q=' +  city + '&units=metric&appid=' + self.API_TOKEN
-        print(req)
         resp = requests.get(req)
         if resp.status_code != 200:
             raise ApiError('GET /tasks/ {}'.format(resp.status_code))
@@ -100,8 +100,6 @@ class WeatherAdapter:
         code = self.getCurrentWeatherID()
         wind = self.getCurrentWind()
 
-        #print("Code: " + str(code) + "\nTemp: " + str(temp) + "\nWind: " + str(wind) +"\n")
-
         if(((code > 200) & (code  < 799)) | (temp < self.MIN_TEMP) | (wind > self.MAX_WIND)):
             return True
         else:
@@ -112,8 +110,6 @@ class WeatherAdapter:
         temp = self.getForecastTemperature(hours)
         code = self.getForecastWeatherID(hours)
         wind = self.getForecastWind(hours)
-
-        #print("Code: " + str(code) + "\nTemp: " + str(temp) + "\nWind: " + str(wind) + "\n")
 
         if (((code > 200) & (code < 799)) | (temp < self.MIN_TEMP) | (wind > self.MAX_WIND)):
             return True

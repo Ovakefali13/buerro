@@ -37,7 +37,7 @@ class TestYelpService(unittest.TestCase):
         self.yelpService = YelpService.instance()
         self.yelpService.setRemote(self.remote)
         self.yelpService.setRadius(60, True)
-        self.yelpService.requestBusinesses(1583160868, 'Stuttgart')
+        self.yelpService.requestBusinesses(1583160868, 'Jägerstraße 56, 70174 Stuttgart')
         shortInformation = self.yelpService.getShortInformationOfRestaurants()
         self.assertEquals(shortInformation[0]['name'], 'Gasthaus Bären')
 
@@ -47,7 +47,7 @@ class TestYelpService(unittest.TestCase):
         self.yelpService = YelpService.instance()
         self.yelpService.setRemote(self.remote)
         self.yelpService.setRadius(60, False)
-        self.yelpService.requestBusinesses(1583160868, 'Stuttgart')
+        self.yelpService.requestBusinesses(1583160868, 'Jägerstraße 56, 70174 Stuttgart')
         shortInformation = self.yelpService.getShortInformationOfRestaurants()
         self.yelpService.requestBusiness(shortInformation[0]['id'])
         shortInfoFocused = self.yelpService.getBusinessInformation()
@@ -59,8 +59,8 @@ class TestYelpService(unittest.TestCase):
         self.yelpService = YelpService.instance()
         self.yelpService.setRemote(self.remote)
         self.yelpService.setRadius(60, False)
-        self.yelpService.requestBusinesses(1583160868, 'Stuttgart')
+        self.yelpService.requestBusinesses(1583160868, 'Jägerstraße 56, 70174 Stuttgart')
 
-        nextDelivery = self.yelpService.getNextBusiness()
+        nextRestaurant = self.yelpService.getNextBusiness()
 
-        self.assertEquals(nextDelivery['name'], 'Gasthaus Bären')
+        self.assertEquals(nextRestaurant['name'], 'Gasthaus Bären')
