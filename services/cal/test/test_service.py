@@ -9,6 +9,7 @@ import pytz
 from .. import CalService, CaldavRemote, iCloudCaldavRemote, Event
 
 class MockCaldavRemote(CaldavRemote):
+    local_tz = pytz.timezone('Europe/Berlin')
     def __init__(self):
         self.calendar = Calendar()
         self.calendar.add('prodid', '-//My calendar product//mxm.dk//')
@@ -17,6 +18,13 @@ class MockCaldavRemote(CaldavRemote):
         self.calendar.add_component(event)
     def events(self):
         return self.calendar.subcomponents
+    def date_search(self, start, end):
+        start = start.astimezone(self.local_tz)
+        end = end.astimezone(self.local_tz)
+        events = self.calendar.subcomponents
+        return list(
+           filter(lambda e: end > e['dtstart'].dt
+                   and e['dtstart'].dt > start, events))
 
 class TestCalService(unittest.TestCase):
     local_tz = pytz.timezone('Europe/Berlin')
