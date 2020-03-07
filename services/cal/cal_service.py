@@ -1,4 +1,4 @@
-from datetime import datetime as dt
+from datetime import datetime as dt, timedelta
 import caldav
 from caldav.elements import dav, cdav
 from dotenv import load_dotenv
@@ -54,11 +54,15 @@ class iCloudCaldavRemote(CaldavRemote):
         ical = "BEGIN:VCALENDAR\n"+event.to_ical()+"\nEND:VCALENDAR"
         self.calendar.add_event(ical)
 
+    def from_caldav(self, caldav_events):
+        return list(filter(lambda e : e is not None,
+            map(Event.from_caldav, caldav_events)))
+
     def events(self):
-        caldav_events = self.calendar.events()
-        ical_events = list(map(Event.from_caldav, caldav_events))
-        ical_events = list(filter(lambda e : e is not None, ical_events))
-        return ical_events
+        return self.from_caldav(self.calendar.events())
+
+    def date_search(self, start:dt, end:dt):
+        return self.from_caldav(self.calendar.date_search(start, end))
 
 class CalService:
 
@@ -69,22 +73,11 @@ class CalService:
         #TODO
         pass
 
-    def get_events_in_next_minutes(self, minutes:int):
-        now = datetime.now()
-        in_min = now + timedelta(minutes=minutes)
-        return self.remote.date_search(now, in_min)
-
-    def get_events_in_next_hours(self, hours:int):
-        now = datetime.now()
-        in_h = now + timedelta(hours=hours)
-        return self.remote.date_search(now, in_h)
-
     def get_events_between(self, start:dt, end:dt):
         return self.remote.date_search(start, end)
 
     def get_all_events(self):
         return self.remote.events()
-
 
     def add_event(self, event:Event):
         self.remote.add_event(event)

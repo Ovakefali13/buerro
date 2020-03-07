@@ -2,8 +2,10 @@ import datetime
 from datetime import timedelta, datetime as dt
 from icalendar import Event as iCalEvent
 from icalendar import Alarm, vDatetime
+import pytz
 
 class Event(iCalEvent):
+    local_tz = pytz.timezone('Europe/Berlin')
 
     def __init__(self, ical_ev:iCalEvent=None):
         if ical_ev:
@@ -13,14 +15,10 @@ class Event(iCalEvent):
                 self.add(key, ical_ev[key])
         else:
             super().__init__()
-            now = dt.now()
+            now = dt.now(tz=self.local_tz)
             self.add('dtstamp', now)
             self.add('uid', vDatetime(now).to_ical().decode('utf-8')+'@buerro.com')
             #self.add('uid', '00008')
-
-    def format_date(self, dt):
-        #2020-02-26T18:00:00Z
-        return dt.strftime("%Y-%m-%dT%H:%M:%SZ")
 
     def to_ical(self):
         ical = super().to_ical()
