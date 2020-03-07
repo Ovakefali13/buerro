@@ -1,7 +1,7 @@
 {
 	"general": {
 		"spoonacularAPIKey": "0a3a6b562932438aaab0cb05460096de",
-		"yelAPIKey": "AA4LFvZbdhM3IgESoZAlBJSpsvKSHzVbYmpdbo7hehlsrBY",
+		"yelpAPIKey": "AA4LFvZbdhM3IgESoZAlBJSpsvKSHzVbYmpdbo7hehlsrBY",
 		"yelpClientKey": "A5Kch4F4A_1vSRVEEkgMnw",
 		"openWeatherMapAPIKey": "716b047d4b59fba6550709d60756b0fd",
 		"demo_location": "Jägerstraße 56, 70174 Stuttgart"
