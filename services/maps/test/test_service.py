@@ -76,5 +76,5 @@ class TestGeocodingService(unittest.TestCase):
 
 
     def test_get_address_from_coords(self):
-        address = self.geocoding_service.get_address_from_cords(self.dhbw[1])
+        address = self.geocoding_service.get_address_from_coords(self.dhbw[1])
         self.assertEqual(address, self.dhbw[0])    

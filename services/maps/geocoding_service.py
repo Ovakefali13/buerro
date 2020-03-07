@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from opencage.geocoder import OpenCageGeocode, InvalidInputError, RateLimitExceededError, UnknownError
 from services.Singleton import Singleton
-from ..preferences.pref_service import PrefService, PrefJSONRemote, PrefRemote
+from services.preferences import PrefService, PrefJSONRemote
 
 class GeocodingRemote(ABC):
     @abstractmethod
@@ -49,7 +49,7 @@ class GeocodingService:
         return [latitude, longitude]        
 
 
-    def get_address_from_cords(self, coords:list):            
+    def get_address_from_coords(self, coords:list):            
         results = self.remote.get_information_from_coords(coords)
         
         return results[0]['formatted']
