@@ -12,9 +12,9 @@ class Lunchbreak:
     def __init__(self, location, mock:bool=False):
         if mock:
             weather_adapter = WeatherAdapter.instance()
-            weather_adapter.setRemote(WeatherMock())
+            weather_adapter.set_remote(WeatherMock())
             yelp_service = YelpService.instance()
-            yelp_service.setRemote(YelpMock())
+            yelp_service.set_remote(YelpMock())
         #self.triggerUseCase(location)
 
     def trigger_use_case(self, location):
@@ -46,15 +46,15 @@ class Lunchbreak:
 
         ### suggest 10 nearest restaurants that meet preferences ###
         yelp_service = YelpService.instance()
-        yelp_service.setLocation(location)
-        yelp_service.setTime(lunch_timestamp)
-        yelp_service.setRadius(duration, will_be_bad_weather)
-        yelp_service.setRadius(500, False)
+        yelp_service.set_location(location)
+        yelp_service.set_time(lunch_timestamp)
+        yelp_service.set_radius(duration, will_be_bad_weather)
+        yelp_service.set_radius(500, False)
         yelp_service.setLimit(50)
 
-        yelp_service.requestBusinesses()
+        yelp_service.request_businesses()
 
-        self.restaurants = yelp_service.getShortInformationOfRestaurants()
+        self.restaurants = yelp_service.get_short_information_of_restaurants()
         for x in self.restaurants:
             print(x['name'])
         return self.restaurants

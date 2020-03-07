@@ -7,11 +7,11 @@ import json
 
 class YelpServiceModule(ABC):
     @abstractmethod
-    def requestBusinesses(self):
+    def request_businesses(self):
         pass
 
     @abstractmethod
-    def requestBusiness(self, id:int):
+    def request_business(self, id:int):
         pass
 
 class YelpServiceRemote(YelpServiceModule):
@@ -20,15 +20,15 @@ class YelpServiceRemote(YelpServiceModule):
         'Authorization': 'Bearer %s' % API_TOKEN,
     }
 
-    def requestBusinesses(self, searchParam):
+    def request_businesses(self, search_param):
         req = 'https://api.yelp.com/v3/businesses/search'
-        response = requests.request('GET', req, headers=self.headers, params=searchParam)
+        response = requests.request('GET', req, headers=self.headers, params=search_param)
         if response.status_code != 200:
             raise ApiError('GET /tasks/ {}'.format(response.status_code))
             print('Error')
         return response.json()
 
-    def requestBusiness(self, id):
+    def request_business(self, id):
         req = 'https://api.yelp.com/v3/businesses/' + id
         response = requests.request('GET', req, headers=self.headers)
         if response.status_code != 200:
@@ -41,8 +41,8 @@ class YelpServiceRemote(YelpServiceModule):
 class YelpService:
     remote = None
     restaurants = []
-    focusedRestaurant = []
-    searchParams = {}
+    focused_restaurant = []
+    search_params = {}
     pref = None
 
     def __init__(self):
@@ -51,7 +51,7 @@ class YelpService:
         self.pref = PrefService()
         print(self.pref.get_preferences('lunchbreak'))
 
-        self.searchParams = {
+        self.search_params = {
             'term': 'food',
             'location': 'Jägerstraße 56, 70174 Stuttgart',
             'price': self.pref.get_specific_pref('price'),
@@ -61,37 +61,37 @@ class YelpService:
             'sort_by' : 'distance'
         }
 
-    def setRemote(self, remote):
+    def set_remote(self, remote):
         self.remote = remote
 
-    def setLocation(self, location):
-        self.searchParams['location'] = location
+    def set_location(self, location):
+        self.search_params['location'] = location
 
-    def setTime(self, time):
-        self.searchParams['open_at'] = int(time)
+    def set_time(self, time):
+        self.search_params['open_at'] = int(time)
 
-    def setRadius(self, time, isBadWeather):
+    def set_radius(self, time, isBadWeather):
         if(isBadWeather):
-            self.searchParams['radius'] = int((self.pref.get_specific_pref('base_radius') + ((time/10) * self.pref.get_specific_pref('ten_min_radius'))) / 2)
+            self.search_params['radius'] = int((self.pref.get_specific_pref('base_radius') + ((time / 10) * self.pref.get_specific_pref('ten_min_radius'))) / 2)
         else:
-            self.searchParams['radius'] = int(self.pref.get_specific_pref('base_radius') + ((time/10) * self.pref.get_specific_pref('ten_min_radius')))
+            self.search_params['radius'] = int(self.pref.get_specific_pref('base_radius') + ((time / 10) * self.pref.get_specific_pref('ten_min_radius')))
 
     def requestBusinesses(self, time, location):
-        self.setLocation(location)
-        self.setTime(time)
-        self.requestBusinesses()
+        self.set_location(location)
+        self.set_time(time)
+        self.request_businesses()
 
-    def requestBusinesses(self):
-        self.restaurants = self.remote.requestBusinesses(self.searchParams)
+    def request_businesses(self):
+        self.restaurants = self.remote.request_businesses(self.search_params)
 
-    def requestBusiness(self, id):
-        self.focusedRestaurant = self.remote.requestBusiness(id)
+    def request_business(self, id):
+        self.focused_restaurant = self.remote.request_business(id)
 
-    def getBusinessInformation(self):
-        return self.focusedRestaurant
+    def get_business_information(self):
+        return self.focused_restaurant
 
-    def getShortInformationOfRestaurants(self):
-        nameList = []
+    def get_short_information_of_restaurants(self):
+        name_list = []
         for x in self.restaurants['businesses']:
             info = {
                 'name' : x['name'],
@@ -103,11 +103,11 @@ class YelpService:
                 'city' : x['location']['city'],
                 'url': x['url'],
             }
-            nameList.append(info)
-        return nameList
+            name_list.append(info)
+        return name_list
 
 
-    def getNextBusiness(self):
+    def get_next_business(self):
         info = {
             'name': self.restaurants['businesses'][0]['name'],
             'id': self.restaurants['businesses'][0]['id'],

@@ -30,7 +30,7 @@ class TestWeatherService(unittest.TestCase):
         remote = WeatherMock()
 
     weatherAdapter = WeatherAdapter.instance()
-    weatherAdapter.setRemote(remote)
+    weatherAdapter.set_remote(remote)
 
     #def test_update(self):
     #   self.weatherAdapter.update('Stuttgart')
@@ -44,7 +44,7 @@ class TestWeatherService(unittest.TestCase):
 
 
     def test_getCurrentTemperature(self):
-        self.weatherAdapter.setRemote(self.remote)
+        self.weatherAdapter.set_remote(self.remote)
         self.weatherAdapter.update(self.city)
         temp = self.weatherAdapter.getCurrentTemperature()
         self.assertGreater(temp, -50)
