@@ -30,14 +30,14 @@ class TestCalService(unittest.TestCase):
 
     def test_add_and_get_event(self):
         summary = ''.join(random.choices(string.ascii_uppercase + string.digits,k=6))
-        event = Event(summary,
-            start=datetime(2020, 2, 26, 18, 00),
-            end=datetime(2020, 2, 26, 19, 00),
-            location="My Hood")
+        event = Event()
+        event.add('summary', summary)
+        event.add('dtstart', datetime(2020, 2, 26, 18, 00))
+        event.add('dtend', datetime(2020, 2, 26, 19, 00))
+        event.add('location', "My Hood")
 
         self.cal_service.add_event(event)
         all_events = self.cal_service.get_all_events()
         self.assertTrue(len(all_events) > 0)
         self.assertIsInstance(all_events[0], Event)
-        self.assertTrue(len(list(
-            filter(lambda e: e['summary'] == summary, all_events))) > 0)
+        self.assertTrue(any(e['summary'] == summary for e in all_events))

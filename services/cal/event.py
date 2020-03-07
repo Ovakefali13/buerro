@@ -5,17 +5,18 @@ from icalendar import Alarm, vDatetime
 
 class Event(iCalEvent):
 
-    def __init__(self, title:str, start:dt, end:dt, location:str=""):
-        super().__init__()
-        self.add('summary', title)
-        self.add('dtstart', start)
-        self.add('dtend', end)
-        self.add('location', location)
-
-        now = dt.now()
-        self.add('dtstamp', now)
-        self.add('uid', vDatetime(now).to_ical().decode('utf-8')+'@buerro.com')
-        #self.add('uid', '00008')
+    def __init__(self, ical_ev:iCalEvent=None):
+        if ical_ev:
+            # TODO losing some information here
+            super().__init__()
+            for key in ical_ev:
+                self.add(key, ical_ev[key])
+        else:
+            super().__init__()
+            now = dt.now()
+            self.add('dtstamp', now)
+            self.add('uid', vDatetime(now).to_ical().decode('utf-8')+'@buerro.com')
+            #self.add('uid', '00008')
 
     def format_date(self, dt):
         #2020-02-26T18:00:00Z
@@ -34,3 +35,24 @@ class Event(iCalEvent):
         alarm.add('action', 'AUDIO')
         #TODO alarm.add('repeat', 2)
         self.add_component(alarm)
+
+    @classmethod
+    def from_ical(self, st):
+        return self(super().from_ical(st))
+
+    @classmethod
+    def from_caldav(self, icloud_ev):
+        if icloud_ev.vobject_instance:
+            obj = icloud_ev.vobject_instance
+            if obj.name.lower() == 'vcalendar':
+                vevents = list(filter(lambda child: child.name.lower() == 'vevent',
+                    obj.getChildren()))
+                if len(vevents) == 0:
+                    raise Exception("Found no VEVENT")
+                if len(vevents) > 1:
+                    raise Exception("Unexpectedly found two VEVENT in a "
+                        +"VCALENDER")
+                vevent = vevents[0]
+                ev = self().from_ical(vevent.serialize())
+                return ev
+        return None

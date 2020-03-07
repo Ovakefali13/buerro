@@ -55,8 +55,10 @@ class iCloudCaldavRemote(CaldavRemote):
         self.calendar.add_event(ical)
 
     def events(self):
-        return self.calendar.events()
-
+        caldav_events = self.calendar.events()
+        ical_events = list(map(Event.from_caldav, caldav_events))
+        ical_events = list(filter(lambda e : e is not None, ical_events))
+        return ical_events
 
 class CalService:
 
