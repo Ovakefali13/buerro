@@ -39,7 +39,10 @@ class Cooking:
         self.todoist_service = TodoistService(TodoistJSONRemote())
         ingredients = self.spoonacle_service.get_ingredients()
         self.todoist_service.set_shopping_list(ingredients)
+<<<<<<< HEAD
         ### add ingredients to the todo list ###
+=======
+>>>>>>> develop
 
     def set_calender(self):
         cookingTime = self.spoonacle_service.get_cookingTime()

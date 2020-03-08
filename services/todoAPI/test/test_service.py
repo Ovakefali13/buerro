@@ -1,6 +1,6 @@
 import unittest
 from .. import TodoistService, TodoistRemote, TodoistJSONRemote
-from ...preferences.pref_service import PrefService, PrefJSONRemote
+from services.preferences import PrefService, PrefJSONRemote
 import os
 import json
 

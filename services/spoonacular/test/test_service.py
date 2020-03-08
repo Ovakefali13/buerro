@@ -45,9 +45,6 @@ class TestSpoonacularService(unittest.TestCase):
         remote = SpoonacularMOCKRemote()
     spoonacular_service = SpoonacularService(remote, 'pork')
 
-    def test_apiKey(self):
-        self.assertEqual(self.remote.api_token, "0a3a6b562932438aaab0cb05460096de")
-    
     def test_get_sourceURL(self):
         self.assertEqual(self.spoonacular_service.get_sourceURL(), "http://www.food.com/recipe/pork-piccata-224998")
     
@@ -71,7 +68,3 @@ class TestSpoonacularService(unittest.TestCase):
     
     def test_get_vegan(self):
         self.assertEqual(self.spoonacular_service.get_vegan(), False)
-
-    def test_get_search_options(self):
-        search_options = self.remote.get_search_options('pork')
-        self.assertEqual(search_options, "includeIngredients=pork&diet=omnivore&maxReadyTime=90&apiKey=0a3a6b562932438aaab0cb05460096de")

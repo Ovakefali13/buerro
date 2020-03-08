@@ -8,14 +8,14 @@ from .. import YelpService,YelpServiceRemote, YelpServiceModule
 
 class YelpMock(YelpServiceModule):
 
-    def requestBusinesses(self):
+    def request_businesses(self, search_param):
         dirname = os.path.dirname(__file__)
         with open(os.path.join(dirname, 'mock_yelp_restaurants.json'), 'r') as mockRestaurant_f:
             mockRestaurant = json.load(mockRestaurant_f)
         return mockRestaurant
 
 
-    def requestBusiness(self, id):
+    def request_business(self, id):
         dirname = os.path.dirname(__file__)
         with open(os.path.join(dirname, 'mock_yelp_restaurants_focused.json'), 'r') as mockFRestaurant_f:
             mockFocusedRestaurant = json.load(mockFRestaurant_f)
@@ -30,26 +30,37 @@ class TestYelpService(unittest.TestCase):
         remote = YelpMock()
 
 
-    yelpService = None
+    yelp_service = None
 
 
-    def test_getShortInformationOfRestaurants(self):
-        self.yelpService = YelpService.instance()
-        self.yelpService.setRemote(self.remote)
-        self.yelpService.setRadius(60, True)
-        self.yelpService.requestBusinesses(1583160868, 'Stuttgart')
-        shortInformation = self.yelpService.getShortInformationOfRestaurants()
-        self.assertEquals(shortInformation[0]['name'], 'Gasthaus Bären')
+    def test_get_short_information_of_restaurants(self):
+        self.yelp_service = YelpService.instance()
+        self.yelp_service.set_remote(self.remote)
+        self.yelp_service.set_radius(60, True)
+        self.yelp_service.request_businesses(1583160868, 'Jägerstraße 56, 70174 Stuttgart')
+        short_information = self.yelp_service.get_short_information_of_restaurants()
+        self.assertEquals(short_information[0]['name'], 'Gasthaus Bären')
 
 
 
-    def test_getShortInformationOfRestaurant(self):
-        self.yelpService = YelpService.instance()
-        self.yelpService.setRemote(self.remote)
-        self.yelpService.setRadius(60, False)
-        self.yelpService.requestBusinesses(1583160868, 'Stuttgart')
-        shortInformation = self.yelpService.getShortInformationOfRestaurants()
-        self.yelpService.requestBusiness(shortInformation[0]['id'])
-        shortInfoFocused = self.yelpService.getBusinessInformation()
+    def test_get_short_information_of_restaurant(self):
+        self.yelp_service = YelpService.instance()
+        self.yelp_service.set_remote(self.remote)
+        self.yelp_service.set_radius(60, False)
+        self.yelp_service.request_businesses(1583160868, 'Jägerstraße 56, 70174 Stuttgart')
+        short_information = self.yelp_service.get_short_information_of_restaurants()
+        self.yelp_service.request_business(short_information[0]['id'])
+        short_info_focused = self.yelp_service.get_business_information()
 
-        self.assertEquals(shortInfoFocused['name'], 'Gasthaus Bären')
+        self.assertEquals(short_info_focused['name'], 'Gasthaus Bären')
+
+
+    def test_get_next_business(self):
+        self.yelp_service = YelpService.instance()
+        self.yelp_service.set_remote(self.remote)
+        self.yelp_service.set_radius(60, False)
+        self.yelp_service.request_businesses(1583160868, 'Jägerstraße 56, 70174 Stuttgart')
+
+        next_restaurant = self.yelp_service.get_next_business()
+
+        self.assertEquals(next_restaurant['name'], 'Gasthaus Bären')
