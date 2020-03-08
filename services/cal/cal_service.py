@@ -38,7 +38,7 @@ class iCloudCaldavRemote(CaldavRemote):
         )
 
         if not all([var in environ for var in required_env]):
-            raise EnvironmentError("Did not set all of these environmet variables: ", required_env)
+            raise EnvironmentError("Did not set all of these environment variables: ", required_env)
 
         client = caldav.DAVClient(
             environ['CALDAV_URL'],

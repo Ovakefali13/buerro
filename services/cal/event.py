@@ -2,11 +2,8 @@ import datetime
 from datetime import timedelta, datetime as dt
 from icalendar import Event as iCalEvent
 from icalendar import Alarm, vDatetime
-import pytz
 
 class Event(iCalEvent):
-    local_tz = pytz.timezone('Europe/Berlin')
-
     def __init__(self, ical_ev:iCalEvent=None):
         if ical_ev:
             # TODO losing some information here
@@ -15,7 +12,7 @@ class Event(iCalEvent):
                 self.add(key, ical_ev[key])
         else:
             super().__init__()
-            now = dt.now(tz=self.local_tz)
+            now = dt.now().astimezone()
             self.add('dtstamp', now)
             self.add('uid', vDatetime(now).to_ical().decode('utf-8')+'@buerro.com')
             #self.add('uid', '00008')
