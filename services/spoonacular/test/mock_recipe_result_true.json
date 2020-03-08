@@ -1,0 +1,288 @@
+{
+	"vegetarian": false,
+	"vegan": false,
+	"glutenFree": false,
+	"dairyFree": true,
+	"veryHealthy": false,
+	"cheap": false,
+	"veryPopular": false,
+	"sustainable": false,
+	"weightWatcherSmartPoints": 6,
+	"gaps": "no",
+	"lowFodmap": false,
+	"preparationMinutes": 10,
+	"cookingMinutes": 7,
+	"sourceUrl": "http://www.food.com/recipe/pork-piccata-224998",
+	"spoonacularSourceUrl": "https://spoonacular.com/pork-piccata-111364",
+	"aggregateLikes": 2,
+	"spoonacularScore": 66.0,
+	"healthScore": 17.0,
+	"creditsText": "Food.com",
+	"sourceName": "Food.com",
+	"pricePerServing": 175.71,
+	"extendedIngredients": [{
+		"id": 1002030,
+		"aisle": "Spices and Seasonings",
+		"image": "pepper.jpg",
+		"consitency": "solid",
+		"name": "black pepper",
+		"original": "1/8 teaspoon black pepper",
+		"originalString": "1/8 teaspoon black pepper",
+		"originalName": "black pepper",
+		"amount": 0.125,
+		"unit": "teaspoon",
+		"meta": ["black"],
+		"metaInformation": ["black"],
+		"measures": {
+			"us": {
+				"amount": 0.125,
+				"unitShort": "tsps",
+				"unitLong": "teaspoons"
+			},
+			"metric": {
+				"amount": 0.125,
+				"unitShort": "tsps",
+				"unitLong": "teaspoons"
+			}
+		}
+	}, {
+		"id": 2054,
+		"aisle": "Canned and Jarred",
+		"image": "capers.jpg",
+		"consitency": "solid",
+		"name": "capers",
+		"original": "2 teaspoons capers",
+		"originalString": "2 teaspoons capers",
+		"originalName": "capers",
+		"amount": 2.0,
+		"unit": "teaspoons",
+		"meta": [],
+		"metaInformation": [],
+		"measures": {
+			"us": {
+				"amount": 2.0,
+				"unitShort": "tsps",
+				"unitLong": "teaspoons"
+			},
+			"metric": {
+				"amount": 2.0,
+				"unitShort": "tsps",
+				"unitLong": "teaspoons"
+			}
+		}
+	}, {
+		"id": 6194,
+		"aisle": "Canned and Jarred",
+		"image": "chicken-broth.png",
+		"consitency": "liquid",
+		"name": "chicken broth",
+		"original": "1 cup chicken broth",
+		"originalString": "1 cup chicken broth",
+		"originalName": "chicken broth",
+		"amount": 1.0,
+		"unit": "cup",
+		"meta": [],
+		"metaInformation": [],
+		"measures": {
+			"us": {
+				"amount": 1.0,
+				"unitShort": "cup",
+				"unitLong": "cup"
+			},
+			"metric": {
+				"amount": 236.588,
+				"unitShort": "ml",
+				"unitLong": "milliliters"
+			}
+		}
+	}, {
+		"id": 11297,
+		"aisle": "Produce",
+		"image": "parsley.jpg",
+		"consitency": "solid",
+		"name": "fresh parsley",
+		"original": "3 tablespoons fresh parsley , chopped and divided",
+		"originalString": "3 tablespoons fresh parsley , chopped and divided",
+		"originalName": "fresh parsley , chopped and divided",
+		"amount": 3.0,
+		"unit": "tablespoons",
+		"meta": ["fresh", "divided", "chopped"],
+		"metaInformation": ["fresh", "divided", "chopped"],
+		"measures": {
+			"us": {
+				"amount": 3.0,
+				"unitShort": "Tbsps",
+				"unitLong": "Tbsps"
+			},
+			"metric": {
+				"amount": 3.0,
+				"unitShort": "Tbsps",
+				"unitLong": "Tbsps"
+			}
+		}
+	}, {
+		"id": 18376,
+		"aisle": "Bakery/Bread;Oil, Vinegar, Salad Dressing;Baking",
+		"image": "breadcrumbs.jpg",
+		"consitency": "solid",
+		"name": "italian seasoned breadcrumbs",
+		"original": "1/3 cup italian seasoned breadcrumbs",
+		"originalString": "1/3 cup italian seasoned breadcrumbs",
+		"originalName": "italian seasoned breadcrumbs",
+		"amount": 0.3333333333333333,
+		"unit": "cup",
+		"meta": ["italian"],
+		"metaInformation": ["italian"],
+		"measures": {
+			"us": {
+				"amount": 0.333,
+				"unitShort": "cups",
+				"unitLong": "cups"
+			},
+			"metric": {
+				"amount": 78.863,
+				"unitShort": "ml",
+				"unitLong": "milliliters"
+			}
+		}
+	}, {
+		"id": 9152,
+		"aisle": "Produce",
+		"image": "lemon-juice.jpg",
+		"consitency": "liquid",
+		"name": "lemon juice",
+		"original": "1 tablespoon fresh lemon juice",
+		"originalString": "1 tablespoon fresh lemon juice",
+		"originalName": "fresh lemon juice",
+		"amount": 1.0,
+		"unit": "tablespoon",
+		"meta": ["fresh"],
+		"metaInformation": ["fresh"],
+		"measures": {
+			"us": {
+				"amount": 1.0,
+				"unitShort": "Tbsp",
+				"unitLong": "Tbsp"
+			},
+			"metric": {
+				"amount": 1.0,
+				"unitShort": "Tbsp",
+				"unitLong": "Tbsp"
+			}
+		}
+	}, {
+		"id": 9156,
+		"aisle": "Produce",
+		"image": "zest-lemon.jpg",
+		"consitency": "solid",
+		"name": "lemon rind",
+		"original": "1 teaspoon grated lemon rind",
+		"originalString": "1 teaspoon grated lemon rind",
+		"originalName": "grated lemon rind",
+		"amount": 1.0,
+		"unit": "teaspoon",
+		"meta": ["grated"],
+		"metaInformation": ["grated"],
+		"measures": {
+			"us": {
+				"amount": 1.0,
+				"unitShort": "tsp",
+				"unitLong": "teaspoon"
+			},
+			"metric": {
+				"amount": 1.0,
+				"unitShort": "tsp",
+				"unitLong": "teaspoon"
+			}
+		}
+	}, {
+		"id": 4053,
+		"aisle": "Oil, Vinegar, Salad Dressing",
+		"image": "olive-oil.jpg",
+		"consitency": "liquid",
+		"name": "olive oil",
+		"original": "1 tablespoon olive oil",
+		"originalString": "1 tablespoon olive oil",
+		"originalName": "olive oil",
+		"amount": 1.0,
+		"unit": "tablespoon",
+		"meta": [],
+		"metaInformation": [],
+		"measures": {
+			"us": {
+				"amount": 1.0,
+				"unitShort": "Tbsp",
+				"unitLong": "Tbsp"
+			},
+			"metric": {
+				"amount": 1.0,
+				"unitShort": "Tbsp",
+				"unitLong": "Tbsp"
+			}
+		}
+	}, {
+		"id": 10010062,
+		"aisle": "Meat",
+		"image": "pork-chops.jpg",
+		"consitency": "solid",
+		"name": "pork chops",
+		"original": "4 (4 ounce) boneless center cut pork chops , trimmed",
+		"originalString": "4 (4 ounce) boneless center cut pork chops , trimmed",
+		"originalName": "boneless center cut pork chops , trimmed",
+		"amount": 16.0,
+		"unit": "ounce",
+		"meta": ["boneless", "trimmed"],
+		"metaInformation": ["boneless", "trimmed"],
+		"measures": {
+			"us": {
+				"amount": 16.0,
+				"unitShort": "oz",
+				"unitLong": "ounces"
+			},
+			"metric": {
+				"amount": 453.592,
+				"unitShort": "g",
+				"unitLong": "grams"
+			}
+		}
+	}, {
+		"id": 11677,
+		"aisle": "Produce",
+		"image": "shallots.jpg",
+		"consitency": "solid",
+		"name": "shallot",
+		"original": "1/4 cup shallot , chopped",
+		"originalString": "1/4 cup shallot , chopped",
+		"originalName": "shallot , chopped",
+		"amount": 0.25,
+		"unit": "cup",
+		"meta": ["chopped"],
+		"metaInformation": ["chopped"],
+		"measures": {
+			"us": {
+				"amount": 0.25,
+				"unitShort": "cups",
+				"unitLong": "cups"
+			},
+			"metric": {
+				"amount": 59.147,
+				"unitShort": "ml",
+				"unitLong": "milliliters"
+			}
+		}
+	}],
+	"id": 111364,
+	"title": "Pork Piccata",
+	"readyInMinutes": 17,
+	"servings": 4,
+	"image": "https://spoonacular.com/recipeImages/111364-556x370.png",
+	"imageType": "png",
+	"summary": "Pork Piccatan is a <b>dairy free</b> main course. This recipe serves 4. For <b>$1.76 per serving</b>, this recipe <b>covers 19%</b> of your daily requirements of vitamins and minerals. One serving contains <b>251 calories</b>, <b>26g of protein</b>, and <b>12g of fat</b>. 2 people have made this recipe and would make it again. A mixture of pepper, center cut pork chops, chicken broth, and a handful of other ingredients are all it takes to make this recipe so tasty. To use up the lemon rind you could follow this main course with the <a href=\"https://spoonacular.com/recipes/lemon-almond-cake-with-lemon-curd-filling-198923\">Lemon-Almond Cake with Lemon Curd Filling</a> as a dessert. From preparation to the plate, this recipe takes approximately <b>17 minutes</b>. All things considered, we decided this recipe <b>deserves a spoonacular score of 68%</b>. This score is good. Similar recipes include <a href=\"https://spoonacular.com/recipes/pork-piccata-my-way-111393\">Pork Piccata My Way</a>, <a href=\"https://spoonacular.com/recipes/pork-piccata-111568\">Pork Piccata</a>, and <a href=\"https://spoonacular.com/recipes/pork-piccata-708193\">Pork Piccata</a>.",
+	"cuisines": [],
+	"dishTypes": ["lunch", "main course", "main dish", "dinner"],
+	"diets": ["dairy free"],
+	"occasions": [],
+	"winePairing": {},
+	"instructions": null,
+	"analyzedInstructions": []
+}
