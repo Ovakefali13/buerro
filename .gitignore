@@ -1,6 +1,8 @@
 # Temporary Vim Files
 .*.swp
 
+#Testing file
+Example.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

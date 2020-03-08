@@ -9,8 +9,9 @@
 		"openrouteserviceAPIKey": "5b3ce3597851110001cf62488ef50484ef524d228826ecc7b35f5df1"
 	},
 	"cooking": {
-		"cooking1": "prefCooking1",
-		"cooking2": "prefCooking2"
+		"diet": "omnivore",
+		"intolerances": "Shellfish",
+		"maxCookingTime": 90
 	},
 	"github": {
 		"github1": "prefGithub1",

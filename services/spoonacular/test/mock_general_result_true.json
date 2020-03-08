@@ -1,0 +1,80 @@
+{
+	"results": [{
+		"id": 111364,
+		"title": "Pork Piccata",
+		"readyInMinutes": 17,
+		"servings": 4,
+		"image": "pork-piccata-2-111364.png",
+		"imageUrls": ["pork-piccata-2-111364.png"]
+	}, {
+		"id": 113888,
+		"title": "Pork Adobo",
+		"readyInMinutes": 180,
+		"servings": 4,
+		"image": "pork-adobo-113888.jpg",
+		"imageUrls": ["pork-adobo-113888.jpg", "pork_adobo-113888.jpg", "pork-adobo-2-113888.png"]
+	}, {
+		"id": 469367,
+		"title": "Mushroom Pork",
+		"readyInMinutes": 40,
+		"servings": 3,
+		"image": "Mushroom-Pork-469367.jpg",
+		"imageUrls": ["Mushroom-Pork-469367.jpg"]
+	}, {
+		"id": 56730,
+		"title": "Fruited Pork Tenderloin",
+		"readyInMinutes": 45,
+		"servings": 4,
+		"image": "fruited-pork-tenderloin-56730.jpg",
+		"imageUrls": ["fruited-pork-tenderloin-56730.jpg"]
+	}, {
+		"id": 81828,
+		"title": "Molasses-Roasted Pork",
+		"readyInMinutes": 30,
+		"servings": 4,
+		"image": "molasses-roasted-pork-81828.jpg",
+		"imageUrls": ["molasses-roasted-pork-81828.jpg"]
+	}, {
+		"id": 108145,
+		"title": "Chipotle Pork Stew",
+		"readyInMinutes": 135,
+		"servings": 4,
+		"image": "chipotle-pork-stew-2-108145.jpg",
+		"imageUrls": ["chipotle-pork-stew-2-108145.jpg", "chipotle_pork_stew-108145.jpg"]
+	}, {
+		"id": 113995,
+		"title": "Pork Fried Rice",
+		"readyInMinutes": 15,
+		"servings": 2,
+		"image": "pork-fried-rice-2-113995.jpg",
+		"imageUrls": ["pork-fried-rice-2-113995.jpg"]
+	}, {
+		"id": 146322,
+		"title": "Pork Roast-Meat As I Like It!",
+		"readyInMinutes": 150,
+		"servings": 6,
+		"image": "pork-roast-meat-as-i-like-it-2-146322.jpg",
+		"imageUrls": ["pork-roast-meat-as-i-like-it-2-146322.jpg", "pork_roast-meat_as_i_like_it-146322.jpg"]
+	}, {
+		"id": 146450,
+		"title": "Pork Patty Melts",
+		"readyInMinutes": 30,
+		"servings": 4,
+		"image": "pork-patty-melts-2-146450.jpg",
+		"imageUrls": ["pork-patty-melts-2-146450.jpg", "pork_patty_melts-146450.jpg"]
+	}, {
+		"id": 146482,
+		"title": "Rosemary Pork Chops",
+		"readyInMinutes": 35,
+		"servings": 6,
+		"image": "rosemary-pork-chops-2-146482.jpg",
+		"imageUrls": ["rosemary-pork-chops-2-146482.jpg", "rosemary_pork_chops-146482.jpg"]
+	}],
+	"baseUri": "https://spoonacular.com/recipeImages/",
+	"offset": 0,
+	"number": 10,
+	"totalResults": 301,
+	"processingTimeMs": 397,
+	"expires": 1583543205988,
+	"isStale": false
+}
