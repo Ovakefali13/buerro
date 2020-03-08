@@ -1,4 +1,4 @@
-from datetime import datetime as dt
+from datetime import datetime as dt, timedelta
 import caldav
 from caldav.elements import dav, cdav
 from dotenv import load_dotenv
@@ -18,8 +18,15 @@ class CaldavRemote(ABC):
         pass
 
 
-class iCloudCaldavRemote:
+class iCloudCaldavRemote(CaldavRemote):
     def __init__(self):
+        def _get_named_calendar(calendars, name):
+            calendars = principal.calendars()
+            for cal in calendars:
+                properties = cal.get_properties([dav.DisplayName(), ])
+                display_name = properties['{DAV:}displayname']
+                if(display_name == name):
+                    return cal
 
         load_dotenv()
 
@@ -31,24 +38,31 @@ class iCloudCaldavRemote:
         )
 
         if not all([var in environ for var in required_env]):
-            raise EnvironmentError("Did not set all of these environmet variables: ", required_env)
+            raise EnvironmentError("Did not set all of these environment variables: ", required_env)
 
-        client = caldav.DAVClient(environ['CALDAV_URL'], username=environ['USERNAME'], password=environ['PASSWORD'])
+        client = caldav.DAVClient(
+            environ['CALDAV_URL'],
+            username=environ['USERNAME'],
+            password=environ['PASSWORD'])
+
         principal = client.principal()
-        self.calendar = principal.calendar(environ['CALENDAR'], environ['CALENDAR_ID'])
-
+        self.calendar = _get_named_calendar(principal.calendars(), environ['CALENDAR'])
         if self.calendar is None:
             raise EnvironmentError('Provided CALENDAR could not be found')
-        from nose.tools import set_trace; set_trace()
-        print(self.calendar.events())
 
     def add_event(self, event:Event):
         ical = "BEGIN:VCALENDAR\n"+event.to_ical()+"\nEND:VCALENDAR"
         self.calendar.add_event(ical)
 
-    def events(self):
-        return self.calendar.events()
+    def from_caldav(self, caldav_events):
+        return list(filter(lambda e : e is not None,
+            map(Event.from_caldav, caldav_events)))
 
+    def events(self):
+        return self.from_caldav(self.calendar.events())
+
+    def date_search(self, start:dt, end:dt):
+        return self.from_caldav(self.calendar.date_search(start, end))
 
 class CalService:
 
@@ -59,22 +73,11 @@ class CalService:
         #TODO
         pass
 
-    def get_events_in_next_minutes(self, minutes:int):
-        now = datetime.now()
-        in_min = now + timedelta(minutes=minutes)
-        return self.remote.date_search(now, in_min)
-
-    def get_events_in_next_hours(self, hours:int):
-        now = datetime.now()
-        in_h = now + timedelta(hours=hours)
-        return self.remote.date_search(now, in_h)
-
     def get_events_between(self, start:dt, end:dt):
         return self.remote.date_search(start, end)
 
     def get_all_events(self):
         return self.remote.events()
-
 
     def add_event(self, event:Event):
         self.remote.add_event(event)
