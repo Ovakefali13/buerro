@@ -1,5 +1,4 @@
 from datetime import datetime, timezone
-import pytz
 from copy import copy
 
 class Journey:
@@ -11,7 +10,6 @@ class Journey:
     duration = None
     transportation = None
     legs = [] # array of JourneyInfo
-    local_tz = pytz.timezone('Europe/Berlin')
 
     def __init__(self, origin=None, dest=None,
         dep_time:datetime=None, arr_time:datetime=None):
@@ -61,9 +59,7 @@ class Journey:
 
     def from_vvs(self, vvs_journey:dict):
         def from_utc_to_local(utc_dt):
-            #return self.local_tz.localize(utc_dt)
-            #return utc_dt.replace(tzinfo=self.local_tz)
-            return utc_dt.replace(tzinfo=timezone.utc).astimezone(tz=None)
+            return utc_dt.replace(tzinfo=timezone.utc).astimezone()
 
         def parse_vvs_time(datestr:str):
             datestr = datestr.replace("Z", "+00:00")
