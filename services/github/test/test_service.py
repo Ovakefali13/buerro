@@ -5,7 +5,7 @@ from datetime import datetime
 
 class GithubMockRemote(GithubRemote):
     def get_notifications(self):
-        return {'type': "Notification type", 'title': "Notification Title"}
+        return [{'type': "Notification type", 'title': "Notification Title"}]
 
     def connect(self):
         pass
