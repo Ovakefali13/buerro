@@ -1,6 +1,7 @@
 {
 	"general": {
 		"spoonacularAPIKey": "0a3a6b562932438aaab0cb05460096de",
+		"todoistAPIKey": "2140845bf7131e21f43038f0db8e3090d8fd9ffc",
 		"yelpAPIKey": "AA4LFvZbdhM3IgESoZAlBJSpsvKSHzVbYmpdbo7hehlsrBY",
 		"yelpClientKey": "A5Kch4F4A_1vSRVEEkgMnw",
 		"openWeatherMapAPIKey": "716b047d4b59fba6550709d60756b0fd",

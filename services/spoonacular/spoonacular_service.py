@@ -39,7 +39,6 @@ class SpoonacularJSONRemote(SpoonacularRemote):
         search_options += '&diet=' + self.diet
         search_options += '&maxReadyTime=' + str(self.maxCookingTime)
         search_options += '&apiKey=' + self.api_token
-        print(search_options)
         return search_options
     
     def search_recipe_by_id(self, id):
