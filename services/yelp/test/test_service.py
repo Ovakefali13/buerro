@@ -8,7 +8,7 @@ from .. import YelpService,YelpServiceRemote, YelpServiceModule
 
 class YelpMock(YelpServiceModule):
 
-    def request_businesses(self):
+    def request_businesses(self, search_param):
         dirname = os.path.dirname(__file__)
         with open(os.path.join(dirname, 'mock_yelp_restaurants.json'), 'r') as mockRestaurant_f:
             mockRestaurant = json.load(mockRestaurant_f)
