@@ -33,7 +33,6 @@ def getIngredientListById(id):
     ingredient_list = []
     for ingredient in recipe_json['extendedIngredients']:
         ingredient_list.append(ingredient['name'] + ' ' + str(ingredient['amount']) + ' ' + ingredient['unit'])
-    print(recipe_json)
     return ingredient_list
 
 # extracts the ingreidients out of a recipe by a given ingedient (first recipe)
