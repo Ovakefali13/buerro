@@ -2,8 +2,8 @@ ROOT_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 PYTHON ?= $(ROOT_DIR)/venv/bin/python3.7
 SERVICE := cal
 
-all: test_single_service
-#all: test_services test_usecase
+all: test_services test_usecase
+#all: test_single_service
 
 .PHONY: set_buerro_path
 set_buerro_path:
