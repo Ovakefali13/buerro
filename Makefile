@@ -22,6 +22,8 @@ test_services: test
 
 test_usecase: MODULE=usecase
 test_usecase: test
+test_controller: MODULE=controller
+test_controller: test
 
 test_single_service: MODULE=services.$(SERVICE)
 test_single_service: test
