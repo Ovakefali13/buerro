@@ -1,0 +1,40 @@
+[
+    {
+       "bounds":{
+          "northeast":{
+             "lat":48.773771,
+             "lng":9.1714166
+          },
+          "southwest":{
+             "lat":48.7732805,
+             "lng":9.1707963
+          }
+       },
+       "components":{
+          "ISO_3166-1_alpha-2":"DE",
+          "ISO_3166-1_alpha-3":"DEU",
+          "_category":"building",
+          "_type":"building",
+          "city":"Stuttgart",
+          "city_district":"Stuttgart-Mitte",
+          "continent":"Europe",
+          "country":"Deutschland",
+          "country_code":"de",
+          "county":"Stuttgart",
+          "house_number":"41",
+          "neighbourhood":"Rathaus",
+          "pedestrian":"Rotebühlplatz",
+          "political_union":"European Union",
+          "postcode":"70178",
+          "state":"Baden-Württemberg",
+          "state_code":"BW",
+          "suburb":"Stuttgart-Mitte"
+       },
+       "confidence":10,
+       "formatted":"Rotebühlplatz 41, 70178 Stuttgart, Deutschland",
+       "geometry":{
+          "lat":48.7735115,
+          "lng":9.1710448
+       }
+    }
+ ]
