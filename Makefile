@@ -1,5 +1,5 @@
 ROOT_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
-PYTHON:=$(ROOT_DIR)/venv/bin/python3.7
+PYTHON ?= $(ROOT_DIR)/venv/bin/python3.7
 
 all: test_services test_usecase
 
