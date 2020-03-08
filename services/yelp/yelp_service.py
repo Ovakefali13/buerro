@@ -7,7 +7,7 @@ import json
 
 class YelpServiceModule(ABC):
     @abstractmethod
-    def request_businesses(self):
+    def request_businesses(self, search_param):
         pass
 
     @abstractmethod
@@ -47,9 +47,7 @@ class YelpService:
 
     def __init__(self):
         self.remote = YelpServiceRemote()
-        print('Init Yelp Service')
         self.pref = PrefService()
-        print(self.pref.get_preferences('lunchbreak'))
 
         self.search_params = {
             'term': 'food',
@@ -76,12 +74,9 @@ class YelpService:
         else:
             self.search_params['radius'] = int(self.pref.get_specific_pref('base_radius') + ((time / 10) * self.pref.get_specific_pref('ten_min_radius')))
 
-    def requestBusinesses(self, time, location):
+    def request_businesses(self, time, location):
         self.set_location(location)
         self.set_time(time)
-        self.request_businesses()
-
-    def request_businesses(self):
         self.restaurants = self.remote.request_businesses(self.search_params)
 
     def request_business(self, id):
