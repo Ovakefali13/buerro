@@ -1,6 +1,7 @@
 from services.preferences.pref_service import PrefService, PrefRemote, PrefJSONRemote
 from services.spoonacular.spoonacular_service import SpoonacularService, SpoonacularJSONRemote, SpoonacularRemote
 from services.todoAPI.todoist_service import TodoistService, TodoistRemote, TodoistJSONRemote
+from services.yelp.yelp_service import YelpService, YelpRequest
 
 class Cooking:
     ingredient = 'pork'
@@ -8,6 +9,7 @@ class Cooking:
     pref_service = None
     spoonacle_service = None
     todoist_service = None
+    yelp_service = None
     response_message = ''
 
     def __init__(self, ingredient):
@@ -25,7 +27,7 @@ class Cooking:
     def check_for_time(self):
         maxCookingTime = self.preferences_json['maxCookingTime']
         ### Todo: Check in calender for 'maxCookingTime' time
-        return True
+        return False
 
     def load_preferences(self):
         self.pref_service = PrefService(PrefJSONRemote())
@@ -45,10 +47,14 @@ class Cooking:
         ### add time to calender ###
     
     def not_time_to_cook(self):
-        ### not functioning
-        #self.yelp_service = YelpService.instance()
-        #return self.yelp_service.get_next_business()
-        print("Hello World")
+        ### not functioning API error ###
+        search_params = YelpRequest()
+        search_params.set_location('Jägerstraße 56, 70174 Stuttgart')
+        search_params.set_time(1583160868)
+        search_params.search_params['radius'] = 10
+        
+        self.yelp_service = YelpService.instance()
+        return self.yelp_service.get_next_business(search_params)
 
     def get_response(self):
         return self.response_message

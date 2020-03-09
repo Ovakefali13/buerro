@@ -24,7 +24,7 @@ class TestYelpService(unittest.TestCase):
     if 'DONOTMOCK' in os.environ:
         remote = YelpServiceRemote()
     else:
-        print("Mocking remotes... test")
+        print("Mocking remotes...")
         remote = YelpMock()
 
     yelp_service = None
