@@ -1,7 +1,6 @@
 from services.preferences.pref_service import PrefService, PrefRemote, PrefJSONRemote
 from services.spoonacular.spoonacular_service import SpoonacularService, SpoonacularJSONRemote, SpoonacularRemote
 from services.todoAPI.todoist_service import TodoistService, TodoistRemote, TodoistJSONRemote
-from services.yelp.yelp_service import YelpService, YelpServiceRemote, YelpServiceModule
 
 class Cooking:
     ingredient = 'pork'
@@ -9,7 +8,6 @@ class Cooking:
     pref_service = None
     spoonacle_service = None
     todoist_service = None
-    yelp_service = None
     response_message = ''
 
     def __init__(self, ingredient):
@@ -40,7 +38,7 @@ class Cooking:
     def set_shopping_list(self):
         self.todoist_service = TodoistService(TodoistJSONRemote())
         ingredients = self.spoonacle_service.get_ingredients()
-        self.todoist_service.set_shopping_list(ingredients)
+        self.todoist_service.set_project_todo(ingredients, "Shopping List")
 
     def set_calender(self):
         cookingTime = self.spoonacle_service.get_cookingTime()
@@ -50,6 +48,7 @@ class Cooking:
         ### not functioning
         #self.yelp_service = YelpService.instance()
         #return self.yelp_service.get_next_business()
+        print("Hello World")
 
     def get_response(self):
         return self.response_message
