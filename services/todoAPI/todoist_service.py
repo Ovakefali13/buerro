@@ -50,56 +50,20 @@ class TodoistService:
             response.append(project['name'])
         return response
 
-    def get_shopping_list_id(self):
+    def get_project_id(self, name):
         response = None
         for project in self.remote.get_projects():
-            if project['name'] == 'Shopping List':
+            if project['name'] == name:
                 response = project['id']
         return response
 
-    def get_shopping_list_items(self):
+    def get_project_items(self, name):
         response = []
-        project = self.remote.get_todos(self.get_shopping_list_id())
-        for item in project['items']:
-            response.append(item['content'])
-        return response
-
-    def get_software_engineering_id(self):
-        response = None
-        for project in self.remote.get_projects():
-            if project['name'] == 'Software Engineering':
-                response = project['id']
-        return response
-
-    def get_software_engineering_items(self):
-        response = []
-        project = self.remote.get_todos(self.get_software_engineering_id())
-        for item in project['items']:
-            response.append(item['content'])
-        return response
-
-    def get_data_science_id(self):
-        response = None
-        for project in self.remote.get_projects():
-            if project['name'] == 'Data Science':
-                response = project['id']
-        return response
-
-    def get_data_science_items(self):
-        response = []
-        project = self.remote.get_todos(self.get_data_science_id())
+        project = self.remote.get_todos(self.get_project_id(name))
         for item in project['items']:
             response.append(item['content'])
         return response
     
-    def set_shopping_list(self, items):
-        project_id = self.get_shopping_list_id()
-        return self.remote.set_todos(items, project_id)
-    
-    def set_data_science(self, items):
-        project_id = self.get_data_science_id()
-        return self.remote.set_todos(items, project_id)
-    
-    def set_software_enigneering(self, items):
-        project_id = self.get_software_engineering_id()
+    def set_project_todo(self, items, name):
+        project_id = self.get_project_id(name)
         return self.remote.set_todos(items, project_id)
