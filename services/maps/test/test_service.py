@@ -25,7 +25,8 @@ class TestMapService(unittest.TestCase):
         print("Mocking remotes...")
         remote = MapMockRemote.instance()
 
-    map_service = MapService(remote)
+    map_service = MapService.instance()
+    map_service.set_remote(remote)
 
     dhbw = [48.773563, 9.170963]
     mensa = [48.780834, 9.169989]
@@ -68,7 +69,9 @@ class TestGeocodingService(unittest.TestCase):
         print("Mocking remotes...")
         remote = GeocodingMockRemote.instance()
 
-    geocoding_service = GeocodingService(remote)
+    geocoding_service = GeocodingService.instance()
+    geocoding_service.set_remote(remote)
+
     dhbw = ['Rotebühlplatz 41, 70178 Stuttgart, Deutschland', [48.7735115, 9.1710448]]
 
     def test_get_coords_from_adress(self):
