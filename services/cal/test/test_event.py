@@ -23,6 +23,15 @@ DTSTAMP:2020-02-26T16:00:00Z
 UID:0123456788
 END:VEVENT"""
 
+ical_corr_from_ical="""BEGIN:VEVENT
+SUMMARY:Test Event
+DTSTART:2020-02-26 18:00:00+00:00
+DTEND:2020-02-26 19:00:00+00:00
+LOCATION:Test Location
+DTSTAMP:2020-02-26T16:00:00Z
+UID:0123456788
+END:VEVENT"""
+
 ical_corr_with_alarm="""BEGIN:VEVENT
 SUMMARY:Test Event
 DTSTART;VALUE=DATE-TIME:20200226T180000
@@ -61,7 +70,7 @@ class TestEvent(unittest.TestCase):
         event = Event(ical_event)
         in_ical = event.to_ical()
 
-        self.assertEqual(self.filter_ical(ical_corr),
+        self.assertEqual(self.filter_ical(ical_corr_from_ical),
             self.filter_ical(in_ical))
 
     def test_returns_correct_ical(self):
@@ -88,6 +97,12 @@ class TestEvent(unittest.TestCase):
         self.assertEqual(self.filter_ical(ical_corr_with_alarm),
             self.filter_ical(in_ical))
 
+    def test_summarize(self):
+        event = Event()
+        event.add("summary", "Test Event")
+        event.add("dtstart", datetime(2020, 2, 26, 18, 00))
+        event.add("dtend", datetime(2020, 2, 26, 19, 00))
+        event.add("location", "Test Location")
 
-if __name__ == '__main__':
-    unittest.main()
+        expected = "Test Event from 18:00 until 19:00 at Test Location"
+        self.assertEqual(expected, event.summarize())

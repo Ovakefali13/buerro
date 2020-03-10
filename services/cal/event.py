@@ -2,6 +2,9 @@ import datetime
 from datetime import timedelta, datetime as dt
 from icalendar import Event as iCalEvent
 from icalendar import Alarm, vDatetime
+import pytz
+import random
+import string
 
 class Event(iCalEvent):
     def __init__(self, ical_ev:iCalEvent=None):
@@ -9,12 +12,24 @@ class Event(iCalEvent):
             # TODO losing some information here
             super().__init__()
             for key in ical_ev:
-                self.add(key, ical_ev[key])
+                if 'DT' in key:
+                    if ical_ev[key] is None:
+                        breakpoint()
+                    date = ical_ev[key]
+                    if hasattr(date, 'dt'):
+                        date = date.dt
+                    if not date.tzinfo:
+                        self[key] = pytz.utc.localize(date)
+                    else:
+                        self[key] = date
+                else:
+                    self.add(key, ical_ev[key])
         else:
             super().__init__()
             now = dt.now().astimezone()
             self.add('dtstamp', now)
-            self.add('uid', vDatetime(now).to_ical().decode('utf-8')+'@buerro.com')
+            random_id = ''.join(random.choices(string.ascii_uppercase + string.digits,k=12))
+            self.add('uid', vDatetime(now).to_ical().decode('utf-8')+random_id+'@buerro.com')
             #self.add('uid', '00008')
 
     def to_ical(self):
@@ -34,4 +49,25 @@ class Event(iCalEvent):
     @classmethod
     def from_ical(self, st):
         return self(super().from_ical(st))
+
+    def check_parameters_and_raise(self):
+        min_params = ('summary', 'dtstart', 'dtend')
+        has_min = all(key in self for key in min_params)
+        if not has_min:
+            raise Exception("Event does not have minimal parameters "
+                    +min_params)
+
+    def summarize(self):
+        self.check_parameters_and_raise()
+        start = self['dtstart'].dt.strftime("%H:%M")
+        end = self['dtend'].dt.strftime("%H:%M")
+        if 'location' in self:
+            location = ' at '+self['location']
+        else:
+            location = ''
+        return "{summary} from {start} until {end}{location}".format(
+            summary=self['summary'],
+            start=start, end=end,
+            location=location)
+
 
