@@ -1,10 +1,9 @@
 from services.weatherAPI.weather_service import WeatherAdapter
 from services.preferences import PrefService, PrefJSONRemote
 from services.maps import GeocodingService, MapService
-from services.maps.test.test_service import GeocodingMockRemote, MapMockRemote
 from services.vvs import VVSService, VVSEfaJSONRemote
 from multiprocessing import Process
-import time
+from datetime import datetime
 
 class Transport: 
     transport_info = {
@@ -14,17 +13,25 @@ class Transport:
         'Car': None,
         'Walking': None,
         'VVS': None,
-        'Weather': None
+        'WeatherGood': None,
+        'ArrDep': None,
+        'Time': None
     }
     
     def __init__(self):
-        self.trigger_use_case([],[],0)
+        self.trigger_use_case([48.773563, 9.170963],[48.780834, 9.169989],'dep')
     
             
-    def trigger_use_case(self, start:list, dest:list, travel_time:int):
+    def trigger_use_case(self, start:list, dest:list, arr_dep:str, time:datetime=datetime.now()):
         print('trigger_use_case')
+
+        self.transport_info['Start'] = start
+        self.transport_info['Dest'] = dest
+        self.transport_info['ArrDep'] = arr_dep
+        self.transport_info['Time'] = time
+
         self.load_preferences()
-        self.get_transport_information([48.773563, 9.170963],[48.780834, 9.169989],20)
+        self.get_transport_information()
     
 
     def load_preferences(self):
@@ -33,35 +40,41 @@ class Transport:
         self.preferences_json = self.pref_service.get_preferences('transport')   
 
 
-    def get_transport_information(self, start:list, dest:list, travel_time:int):
+    def get_transport_information(self):
         print('get_transport_options')        
+        geo = GeocodingService.instance()    
 
-        geo = GeocodingService.instance()
         
         def weather_service(self):
-            wea = WeatherAdapter.instance()
-            wea.update(geo.get_city_from_coords(start))
+            wea = WeatherAdapter.instance()            
+            wea.update(geo.get_city_from_coords(self.transport_info['Start']))
             
-            self.transport_info['Weather'] = wea.is_bad_weather()
+            self.transport_info['WeatherGood'] = wea.is_bad_weather()
 
 
         def map_service(self):
-            maps = MapService.instance()
-
             args = {
                 'Car': 'driving-car',
-                'Cycling': 'cycling',
+                'Cycling': 'cycling-regular',
                 'Walking': 'foot-walking'
             }
 
-            for name, mode in tuple(args):
-                self.transport_info[name] = maps.get_route_summary(start, dest, mode)
+            maps = MapService.instance()            
+
+            for name, mode in args.items():
+                print(name, mode)
+
+                self.transport_info[name] = maps.get_route_summary(self.transport_info['Start'], self.transport_info['Dest'], mode)
 
 
         def vvs_service(self):
             vvs = VVSService(VVSEfaJSONRemote())
-            #vvs.get_journeys()
-            self.transport_info['VVS'] = 3
+            start = geo.get_address_from_coords(self.transport_info['Start'])
+            dest = geo.get_address_from_coords(self.transport_info['Dest'])
+            arr_dep = self.transport_info['ArrDep']
+            time = self.transport_info['Time']
+            
+            self.transport_info['VVS'] = vvs.get_journeys(start, dest, arr_dep, time)
             
 
         def runInParallel(*fns):
@@ -74,6 +87,7 @@ class Transport:
                 p.join()            
 
         runInParallel(weather_service(self), map_service(self), vvs_service(self))
+        print(self.transport_info)
         
 
     def compare_transport_options(self):
