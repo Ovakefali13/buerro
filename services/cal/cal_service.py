@@ -55,8 +55,24 @@ class iCloudCaldavRemote(CaldavRemote):
         self.calendar.add_event(ical)
 
     def from_caldav(self, caldav_events):
+        def _ev_from_caldav(icloud_ev):
+            if icloud_ev.vobject_instance:
+                obj = icloud_ev.vobject_instance
+                if obj.name.lower() == 'vcalendar':
+                    vevents = list(filter(lambda child: child.name.lower() == 'vevent',
+                        obj.getChildren()))
+                    if len(vevents) == 0:
+                        raise Exception("Found no VEVENT")
+                    if len(vevents) > 1:
+                        raise Exception("Unexpectedly found two VEVENT in a "
+                            +"VCALENDER")
+                    vevent = vevents[0]
+                    ev = Event().from_ical(vevent.serialize())
+                    return ev
+            return None
+
         return list(filter(lambda e : e is not None,
-            map(Event.from_caldav, caldav_events)))
+            map(_ev_from_caldav, caldav_events)))
 
     def events(self):
         return self.from_caldav(self.calendar.events())

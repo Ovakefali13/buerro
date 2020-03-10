@@ -35,19 +35,3 @@ class Event(iCalEvent):
     def from_ical(self, st):
         return self(super().from_ical(st))
 
-    @classmethod
-    def from_caldav(self, icloud_ev):
-        if icloud_ev.vobject_instance:
-            obj = icloud_ev.vobject_instance
-            if obj.name.lower() == 'vcalendar':
-                vevents = list(filter(lambda child: child.name.lower() == 'vevent',
-                    obj.getChildren()))
-                if len(vevents) == 0:
-                    raise Exception("Found no VEVENT")
-                if len(vevents) > 1:
-                    raise Exception("Unexpectedly found two VEVENT in a "
-                        +"VCALENDER")
-                vevent = vevents[0]
-                ev = self().from_ical(vevent.serialize())
-                return ev
-        return None
