@@ -19,14 +19,10 @@ class MapMockRemote():
 
 
 class TestMapService(unittest.TestCase):
-    if 'DONOTMOCK' in os.environ:
-        remote = MapJSONRemote.instance()
-    else:
-        print("Mocking remotes...")
-        remote = MapMockRemote.instance()
-
     map_service = MapService.instance()
-    map_service.set_remote(remote)
+
+    if not 'DONOTMOCK' in os.environ:
+        map_service.remote = MapMockRemote.instance()
 
     dhbw = [48.773563, 9.170963]
     mensa = [48.780834, 9.169989]
@@ -64,14 +60,10 @@ class GeocodingMockRemote():
 
 
 class TestGeocodingService(unittest.TestCase):
-    if 'DONOTMOCK' in os.environ:
-        remote = GeocodingJSONRemote.instance()
-    else:
-        print("Mocking remotes...")
-        remote = GeocodingMockRemote.instance()
-
     geocoding_service = GeocodingService.instance()
-    geocoding_service.set_remote(remote)
+
+    if not 'DONOTMOCK' in os.environ:
+        geocoding_service.remote = GeocodingMockRemote.instance()
 
     dhbw = ['Rotebühlplatz 41, 70178 Stuttgart, Deutschland', [48.7735115, 9.1710448]]
 
