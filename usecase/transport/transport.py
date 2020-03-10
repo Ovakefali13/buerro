@@ -1,6 +1,6 @@
-from services.weatherAPI.weather_service import WeatherAdapter, WeatherAdapterRemote
+from services.weatherAPI.weather_service import WeatherAdapter
 from services.preferences import PrefService, PrefJSONRemote
-from services.maps import GeocodingService, GeocodingJSONRemote, MapService, MapJSONRemote
+from services.maps import GeocodingService, MapService
 from services.maps.test.test_service import GeocodingMockRemote, MapMockRemote
 from services.vvs import VVSService, VVSEfaJSONRemote
 from multiprocessing import Process
@@ -36,23 +36,23 @@ class Transport:
 
     def get_transport_information(self, start:list, dest:list, travel_time:int):
         print('get_transport_options')        
+
+        geocoding_service = GeocodingService.instance()
         
-        def weather_api_call(self):
+        def weather_service(self):
             weather_adapter = WeatherAdapter.instance()
-            
+            weather_adapter.update('')
 
             self.transport_info['Weather'] = 1
 
 
-        def map_api_call(self):
+        def map_service(self):
             map_service = MapService.instance()
-            map_service.set_remote(GeocodingMockRemote.instance())
             self.transport_info['Car'] = 2
 
 
-        def geocoding_api_call(self):
-            geocoding_service = GeocodingService.instance()
-            geocoding_service.set_remote(GeocodingMockRemote.instance())
+        def vvs_service(self):
+            geocoding_service = VVSService(VVSEfaJSONRemote())
             self.transport_info['Cycling'] = 3
             
 
@@ -65,7 +65,7 @@ class Transport:
             for p in proc:
                 p.join()            
 
-        runInParallel(map_api_call(self), geocoding_api_call(self), weather_api_call(self))
+        runInParallel(weather_service(self), map_service(self), vvs_service(self))
         
 
     def compare_transport_options(self):
