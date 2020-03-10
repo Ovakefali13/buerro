@@ -1,7 +1,7 @@
 from datetime import datetime as dt
 import pytz
 
-from usecase import Usecase, StateMachine
+from usecase import Usecase, Reply, StateMachine
 from services.Singleton import Singleton
 from services.todoAPI import TodoistService
 from services.vvs import VVSService
@@ -41,7 +41,7 @@ class WorkSession(Usecase):
         self.fsm.reset()
 
     def advance(self, data):
-        return self.fsm.advance(data)
+        return Reply(self.fsm.advance(data))
 
     def is_finished(self):
         return self.fsm.finished

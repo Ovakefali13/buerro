@@ -50,8 +50,8 @@ class TestWorkSession(unittest.TestCase):
 
         reply = self.usecase.advance(None)
         expected = "Your next appointment is too close to start working:"
-        self.assertIn(expected, reply['message'])
-        self.assertIn('too soon event', reply['message']) # also displays event
+        self.assertIn(expected, reply.message)
+        self.assertIn('too soon event', reply.message) # also displays event
         self.assertTrue(self.usecase.is_finished())
 
     def test_ask_wether_we_can_make_it_there(self):
@@ -66,14 +66,22 @@ class TestWorkSession(unittest.TestCase):
 
         reply = self.usecase.advance(None)
         expected = "Your next appointment might be too close to start working:"
-        self.assertIn(expected, reply['message'])
-        self.assertIn('possibly too soon event', reply['message']) # also displays event
-        self.assertIn('Do you still want to start working?', reply['message'])
+        self.assertIn(expected, reply.message)
+        self.assertIn('possibly too soon event', reply.message) # also displays event
+        self.assertIn('Do you still want to start working?', reply.message)
 
+    def test_no_upcoming_events(self):
+        reply = self.usecase.advance(None)
+        expected = "You have no upcoming events."
+        self.assertIn(expected, reply.message)
+
+    def test_creates_reminder_for_upcoming(self):
+        # TODO creates a reminder for when to get going to reach an event in
+        # time
 
     def test_advances_correctly(self):
         states = {
-            'rem_music': "I created reminders for you. Do you want music?",
+            'music': "Do you want music?",
             'music_rec': "How about this Spotify playlist?",
 
             'project': "Which project do you want to work on?",
@@ -96,39 +104,39 @@ class TestWorkSession(unittest.TestCase):
         uc = self.usecase
 
         reply = uc.advance(None)
-        self.assertIn(states.rem_music, reply['message'])
+        self.assertIn(states['rem_music'], reply.message)
 
         reply = uc.advance({'message': 'yes'})
-        self.assertIn(state.music_rec, reply['message'])
+        self.assertIn(states['music_rec'], reply.message)
         self.assertNotNone(reply.link)
         self.assertTrue(self.uri_valid(reply.link))
-        self.assertIn(state.project, reply['message'])
+        self.assertIn(states['project'], reply.message)
         self.assertNotNone(reply.list) # list of projects
 
         reply = uc.advance({'message': 'Software Engineering'})
-        self.assertIn(state.todos, reply['message'])
+        self.assertIn(states['todos'], reply.message)
         self.assertNotNone(reply.list)
         self.assertTrue(len(reply.list) > 0)
-        self.assertIn(state.which_todo, reply['message'])
+        self.assertIn(states['which_todo'], reply.message)
 
         reply = uc.advance({'message': 'Test Hello'})
-        self.assertIn(state.pomodoro, reply['message'])
+        self.assertIn(states['pomodoro'], reply.message)
 
         for pomodoro in (True, False):
             with self.subTest('Pomodoro? '+str(pomodoro)):
                 if not pomodoro:
                     reply = uc.advance({'message': 'no'})
-                    self.assertIn(states.fin_no_pom, reply['message'])
+                    self.assertIn(states['fin_no_pom'], reply.message)
                     self.assertTrue(uc.is_finished())
                 else:
                     for i in range(0, 5):
                         #TODO set pomodoro limit
                         reply = uc.advance({'message': 'yes'})
-                        self.assertIn(states.pom_start, reply['message'])
+                        self.assertIn(states['pom_start'], reply.message)
                         # before finish yields nothing
                         for i in range(1,10):
                             reply = uc.advance({'message': 'asdfpoijw'})
-                            self.assertIn(states.pom_block, reply['message'])
+                            self.assertIn(states['pom_block'], reply.message)
 
                         uc.finish_pomodoro()
                         #TODO assert notification reached Notification Handler
@@ -139,11 +147,11 @@ class TestWorkSession(unittest.TestCase):
                             with self.subTest('Break? '+str(take_break)):
                                 if take_break:
                                     reply = uc.advance({'message': 'I want to take a break'})
-                                    self.assertIn(states.break_start, reply['message'])
+                                    self.assertIn(states['break_start'], reply.message)
 
                                     for i in range(1,10):
                                         reply = uc.advance({'message': 'asdfpoijw'})
-                                        self.assertIn(states.break_block, reply['message'])
+                                        self.assertIn(states['break_block'], reply.message)
 
                                     uc.finish_break()
                                     #TODO assert notification reached Notification Handler
@@ -154,24 +162,24 @@ class TestWorkSession(unittest.TestCase):
 
                         #TODO should also ask for which project to work on
                         #reply = reply || notification
-                        #self.assertIn(states.which_project, notification.message)
-                        self.assertIn(states.project, reply['message'])
+                        #self.assertIn(states['which_project'], notification.message)
+                        self.assertIn(states['project'], reply.message)
                         self.assertNotNone(reply.list) # list of projects
 
                         reply = uc.advance({'message': 'Software Engineering'})
-                        self.assertIn(state.todos, reply['message'])
+                        self.assertIn(states['todos'], reply.message)
                         self.assertNotNone(reply.list)
                         self.assertTrue(len(reply.list) > 0)
-                        self.assertIn(state.which_todo, reply['message'])
+                        self.assertIn(states['which_todo'], reply.message)
 
                         reply = uc.advance({'message': 'Test Hello'})
-                        self.assertIn(state.pomodoro, reply['message'])
+                        self.assertIn(states['pomodoro'], reply.message)
 
                     # finally no more pomodoros...
                     reply = uc.advance({'message': 'no'})
-                    self.assertIn(states.fin_no_pom, reply['message'])
+                    self.assertIn(states['fin_no_pom'], reply.message)
                     self.assertTrue(uc.is_finished())
 
                 # starts over...
                 reply = uc.advance(None)
-                self.assertIn(states.rem_music, reply['message'])
+                self.assertIn(states['rem_music'], reply.message)
