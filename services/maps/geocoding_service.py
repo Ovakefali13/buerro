@@ -56,3 +56,9 @@ class GeocodingService:
         return results[0]['formatted']
 
 
+    def get_city_from_coords(self, coords:list):
+        results = self.remote.get_information_from_coords(coords)
+
+        return results[0]['components']['city']
+
+

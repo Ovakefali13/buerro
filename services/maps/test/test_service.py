@@ -59,7 +59,8 @@ class GeocodingMockRemote():
             dirname = os.path.dirname(__file__)            
             with open(os.path.join(dirname, 'mock_from_coords.json'), 'r') as f:
                 mock_from_coords = json.load(f)
-            return mock_from_coords
+            return mock_from_coords    
+
 
 
 class TestGeocodingService(unittest.TestCase):
@@ -81,4 +82,9 @@ class TestGeocodingService(unittest.TestCase):
 
     def test_get_address_from_coords(self):
         address = self.geocoding_service.get_address_from_coords(self.dhbw[1])
-        self.assertEqual(address, self.dhbw[0])    
+        self.assertEqual(address, self.dhbw[0])
+
+
+    def test_get_city_from_coords(self):
+        city = self.geocoding_service.get_city_from_coords(self.dhbw[1])
+        self.assertEqual(city, 'Stuttgart')
