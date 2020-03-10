@@ -21,6 +21,18 @@ class Event(iCalEvent):
             self.add('uid', vDatetime(now).to_ical().decode('utf-8')+random_id+'@buerro.com')
             #self.add('uid', '00008')
 
+    def get_title(self):
+        return self['summary']
+
+    def get_start(self):
+        return self['dtstart'].dt
+
+    def get_end(self):
+        return self['dtstart'].dt
+
+    def get_location(self):
+        return self['location']
+
     def to_ical(self):
         ical = super().to_ical()
         ical = ical.replace(b'\r\n',b'\n').strip()
