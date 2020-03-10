@@ -23,16 +23,19 @@ class BuerroBot(ChatbotBehaviour):
         if prompt == None or prompt == "":
             return "$$undefined_behaviour"
         prompt = prompt.lower()
-        for key in self.keyword_dict.keys():
+        response = self.parse_dic(self.keyword_dict, prompt)
+        if type(response) is str:
+            return response
+        else:
+            return "$$undefined_behaviour"
+    
+    def parse_dic(self, dic, prompt):
+        for key in dic.keys():
             if key in prompt:
-                if type(self.keyword_dict[key]) is str:
-                    return self.keyword_dict[key]
+                if type(dic[key]) is str:
+                    return dic[key]
                 else:
-                    for key_n in self.keyword_dict[key].keys():
-                        if key_n in prompt:
-                            if type(self.keyword_dict[key][key_n]) is str:
-                                return self.keyword_dict[key][key_n]
-        return "$$undefined_behaviour"
+                    return self.parse_dic(dic[key], prompt)
     
     def clear_context(self):
         context = None
