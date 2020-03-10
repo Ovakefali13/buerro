@@ -61,7 +61,3 @@ class GeocodingService:
 
         return results[0]['components']['city']
 
-
-geo = GeocodingService.instance()
-
-print(geo.get_city_from_coords([48.773563, 9.170963]))

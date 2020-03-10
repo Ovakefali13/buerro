@@ -63,8 +63,5 @@ class MapService:
 
 
     def get_route_link(self, start:list, dest:list):
-        if isinstance(start, list) and isinstance(dest, list):
-            return f'https://routing.openstreetmap.de/?loc={start[0]}%2C{start[1]}&loc={dest[0]}%2C{dest[1]}&hl=de'
-        else:
-            print(f'Start and dest must be given as coordinates: [lat, long]')
-
+        return f'https://routing.openstreetmap.de/?loc={start[0]}%2C{start[1]}&loc={dest[0]}%2C{dest[1]}&hl=de'
+        
