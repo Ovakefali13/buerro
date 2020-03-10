@@ -1,9 +1,10 @@
 import unittest
 import os
 import json
+from services.Singleton import Singleton
 from .. import MapService, MapRemote, MapJSONRemote, GeocodingService, GeocodingRemote, GeocodingJSONRemote
 
-
+@Singleton
 class MapMockRemote():
 
     def get_route_information(self, start:list, dest:list, travel_mode:str):
@@ -19,12 +20,13 @@ class MapMockRemote():
 
 class TestMapService(unittest.TestCase):
     if 'DONOTMOCK' in os.environ:
-        remote = MapJSONRemote()
+        remote = MapJSONRemote.instance()
     else:
         print("Mocking remotes...")
-        remote = MapMockRemote()
+        remote = MapMockRemote.instance()
 
-    map_service = MapService(remote)
+    map_service = MapService.instance()
+    map_service.set_remote(remote)
 
     dhbw = [48.773563, 9.170963]
     mensa = [48.780834, 9.169989]
@@ -39,7 +41,7 @@ class TestMapService(unittest.TestCase):
         link = self.map_service.get_route_link(self.dhbw, self.mensa)
         self.assertEqual(link, 'https://routing.openstreetmap.de/?loc=48.773563%2C9.170963&loc=48.780834%2C9.169989&hl=de')
 
-
+@Singleton
 class GeocodingMockRemote():    
     dhbw = ['Rotebühlplatz 41, 70178 Stuttgart, Deutschland', [48.7735115, 9.1710448]]
 
@@ -62,12 +64,14 @@ class GeocodingMockRemote():
 
 class TestGeocodingService(unittest.TestCase):
     if 'DONOTMOCK' in os.environ:
-        remote = GeocodingJSONRemote()
+        remote = GeocodingJSONRemote.instance()
     else:
         print("Mocking remotes...")
-        remote = GeocodingMockRemote()
+        remote = GeocodingMockRemote.instance()
 
-    geocoding_service = GeocodingService(remote)
+    geocoding_service = GeocodingService.instance()
+    geocoding_service.set_remote(remote)
+
     dhbw = ['Rotebühlplatz 41, 70178 Stuttgart, Deutschland', [48.7735115, 9.1710448]]
 
     def test_get_coords_from_adress(self):

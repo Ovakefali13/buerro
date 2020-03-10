@@ -34,10 +34,11 @@ class GeocodingJSONRemote(GeocodingRemote):
         except RateLimitExceededError as ex:
             print(ex)
 
-
+@Singleton
 class GeocodingService:
+    
 
-    def __init__(self, remote):
+    def set_remote(self, remote:GeocodingRemote):
         self.remote = remote
 
 
