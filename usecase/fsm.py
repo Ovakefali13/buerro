@@ -35,7 +35,11 @@ class StateMachine:
             except:
                 raise Exception("new state has not been added")
 
-        (new_state, data) = handler(data)
+        ret = handler(data)
+        if not isinstance(ret, tuple):
+            raise Exception("return of a transition should be a tuple of "
+                + "(new_state, data)")
+        (new_state, data) = ret
         new_state = new_state.upper()
 
         if new_state in self.endStates:
