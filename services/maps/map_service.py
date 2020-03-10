@@ -46,7 +46,7 @@ class MapJSONRemote(MapRemote):
 class MapService:
     
 
-    def set_remote(self, remote:MapRemote):
+    def set_remote(self, remote:MapRemote=MapJSONRemote.instance()):
         self.remote = remote
 
 
