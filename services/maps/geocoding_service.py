@@ -38,7 +38,7 @@ class GeocodingJSONRemote(GeocodingRemote):
 class GeocodingService:
     
 
-    def set_remote(self, remote:GeocodingRemote=GeocodingJSONRemote.instance()):
+    def __init__(self, remote:GeocodingRemote=GeocodingJSONRemote.instance()):
         self.remote = remote
 
 
@@ -62,3 +62,6 @@ class GeocodingService:
         return results[0]['components']['city']
 
 
+geo = GeocodingService.instance()
+
+print(geo.get_city_from_coords([48.773563, 9.170963]))
