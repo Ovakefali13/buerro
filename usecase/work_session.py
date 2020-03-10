@@ -84,8 +84,9 @@ class WorkSession(Usecase):
                 return next_state, {'message': msg}
 
             def _event_possibly_too_close(event):
-                msg = "Your next appointment might be too close to start working."
-                msg += " Your next appointment: \n" + event.summarize()
+                msg = "Your next appointment might be too close to start working:\n"
+                msg += event.summarize()
+                msg += "\nDo you still want to start working?"
                 return "end_state", {'message': msg}
 
             next_events = self.calService.get_next_events()

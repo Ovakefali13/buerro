@@ -21,15 +21,32 @@ class Event(iCalEvent):
             self.add('uid', vDatetime(now).to_ical().decode('utf-8')+random_id+'@buerro.com')
             #self.add('uid', '00008')
 
+    def set_title(self, title:str):
+        self['summary'] = title
+    def set_start(self, start:dt):
+        self['dtstart'] = start
+    def set_end(self, end:dt):
+        self['dtend'] = end
+    def set_location(self, location:str):
+        self['location'] = location
+    def set_reminder(self, reminder:timedelta):
+        # all types: https://github.com/collective/icalendar/blob/2aa726714ff4a17e47b256da529640b201ebf66b/src/icalendar/prop.py 
+        alarm = Alarm()
+        alarm.add('trigger', -reminder)
+        alarm.add('action', 'AUDIO')
+        #TODO alarm.add('repeat', 2)
+        self.add_component(alarm)
+
     def get_title(self):
         return self['summary']
-
     def get_start(self):
-        return self['dtstart'].dt
-
+        if hasattr(self['dtstart'], 'dt'):
+            return self['dtstart'].dt
+        return self['dtstart']
     def get_end(self):
-        return self['dtstart'].dt
-
+        if hasattr(self['dtend'], 'dt'):
+            return self['dtend'].dt
+        return self['dtend']
     def get_location(self):
         return self['location']
 
@@ -38,14 +55,6 @@ class Event(iCalEvent):
         ical = ical.replace(b'\r\n',b'\n').strip()
         ical = ical.decode('utf-8')
         return ical
-
-    def set_reminder(self, reminder:timedelta):
-        # all types: https://github.com/collective/icalendar/blob/2aa726714ff4a17e47b256da529640b201ebf66b/src/icalendar/prop.py 
-        alarm = Alarm()
-        alarm.add('trigger', -reminder)
-        alarm.add('action', 'AUDIO')
-        #TODO alarm.add('repeat', 2)
-        self.add_component(alarm)
 
     @classmethod
     def from_ical(self, st):
@@ -60,8 +69,8 @@ class Event(iCalEvent):
 
     def summarize(self):
         self.check_parameters_and_raise()
-        start = self['dtstart'].dt.strftime("%H:%M")
-        end = self['dtend'].dt.strftime("%H:%M")
+        start = self.get_start().strftime("%H:%M")
+        end = self.get_end().strftime("%H:%M")
         if 'location' in self:
             location = ' at '+self['location']
         else:
