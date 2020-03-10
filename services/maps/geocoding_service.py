@@ -38,7 +38,7 @@ class GeocodingJSONRemote(GeocodingRemote):
 class GeocodingService:
     
 
-    def set_remote(self, remote:GeocodingRemote):
+    def set_remote(self, remote:GeocodingRemote=GeocodingJSONRemote.instance()):
         self.remote = remote
 
 
