@@ -4,7 +4,7 @@ from services.preferences import PrefService, PrefJSONRemote
 import os
 import json
 
-class TodoistMOCKRemote(TodoistRemote):
+class TodoistMockRemote(TodoistRemote):
     api_token = ''
     pref_service = PrefService(PrefJSONRemote())
     api = None
@@ -33,7 +33,7 @@ class TestTodoistService(unittest.TestCase):
         remote = TodoistJSONRemote()
     else:
         print("Mocking remotes...")
-        remote = TodoistMOCKRemote()
+        remote = TodoistMockRemote()
     todoist_service = TodoistService(remote)
 
 
