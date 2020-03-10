@@ -26,7 +26,9 @@ class TodoistMOCKRemote(TodoistRemote):
         return response_json
 
     def set_todos(self, items, p_id):
-        return str(items) + str(p_id)
+        pass
+    def delete_todo(self, item, p_id):
+        pass
 
 class TestTodoistService(unittest.TestCase):
     if 'DONOTMOCK' in os.environ:
@@ -35,7 +37,6 @@ class TestTodoistService(unittest.TestCase):
         print("Mocking remotes...")
         remote = TodoistMOCKRemote()
     todoist_service = TodoistService(remote)
-
 
     def test_get_project_names(self):
         projects = self.todoist_service.get_project_names()
@@ -46,9 +47,13 @@ class TestTodoistService(unittest.TestCase):
         self.assertEqual(id, 2230670456)
     
     def test_get_project_items(self):
-        list = self.todoist_service.get_project_items("Shopping List")
-        self.assertEqual(list, ['Schokolade', 'Nutella', 'Tote Menschen'])
-    
-    def test_set_project_todo(self):
-        return_string = self.todoist_service.set_project_todo(['Test', 'Test2'], "Shopping List")
-        self.assertEqual(return_string, "['Test', 'Test2']2230670456")
+        test_string = 'nutella'
+        project_name = "Shopping List"
+
+        self.todoist_service.set_project_todo([test_string], project_name)
+        response = False
+        text = str(self.todoist_service.get_project_items(project_name))
+        if text.find(test_string) >= 0:
+            response = True
+        self.assertIs(response, True)
+        self.todoist_service.delete_project_todo(test_string, project_name)
