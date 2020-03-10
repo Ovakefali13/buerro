@@ -12,18 +12,7 @@ class Event(iCalEvent):
             # TODO losing some information here
             super().__init__()
             for key in ical_ev:
-                if 'DT' in key:
-                    if ical_ev[key] is None:
-                        breakpoint()
-                    date = ical_ev[key]
-                    if hasattr(date, 'dt'):
-                        date = date.dt
-                    if not date.tzinfo:
-                        self[key] = pytz.utc.localize(date)
-                    else:
-                        self[key] = date
-                else:
-                    self.add(key, ical_ev[key])
+                self.add(key, ical_ev[key])
         else:
             super().__init__()
             now = dt.now().astimezone()

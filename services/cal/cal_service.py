@@ -96,7 +96,7 @@ class CalService:
 
     def get_next_events(self):
         events = self.remote.date_search(dt.now(pytz.utc))
-        return sorted(events, key=lambda e: e['dtstart'])
+        return sorted(events, key=lambda e: e['dtstart'].dt)
 
     def get_events_between(self, start:dt, end:dt=None):
         return self.remote.date_search(start, end)

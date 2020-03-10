@@ -28,7 +28,7 @@ class CaldavMockRemote(CaldavRemote):
             end = pytz.utc.localize(dt.max)
 
         def _starts_between(e:Event, start, end):
-            return end > e['dtstart'] and e['dtstart'] > start
+            return end > e['dtstart'].dt and e['dtstart'].dt > start
 
         return list(filter(lambda e: _starts_between(e, start, end), events))
 
