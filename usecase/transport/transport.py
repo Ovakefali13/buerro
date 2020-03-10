@@ -37,26 +37,24 @@ class Transport:
     def get_transport_information(self, start:list, dest:list, travel_time:int):
         print('get_transport_options')        
         
-        def weather_api_call():
+        def weather_api_call(self):
             weather_adapter = WeatherAdapter.instance()
-            weather_adapter.set_remote(WeatherAdapterRemote())
-            print('Weather')
+            
+
             self.transport_info['Weather'] = 1
 
 
-        def map_api_call():
+        def map_api_call(self):
             map_service = MapService.instance()
             map_service.set_remote(GeocodingMockRemote.instance())
-            print('Map')
             self.transport_info['Car'] = 2
 
 
-        def geocoding_api_call():
+        def geocoding_api_call(self):
             geocoding_service = GeocodingService.instance()
             geocoding_service.set_remote(GeocodingMockRemote.instance())
-            print('Geocoding')
             self.transport_info['Cycling'] = 3
-
+            
 
         def runInParallel(*fns):
             proc = []
@@ -67,10 +65,10 @@ class Transport:
             for p in proc:
                 p.join()            
 
-        runInParallel(map_api_call, geocoding_api_call, weather_api_call)
-        print(self.transport_info)
+        runInParallel(map_api_call(self), geocoding_api_call(self), weather_api_call(self))
         
 
     def compare_transport_options(self):
         pass
 
+Transport()
