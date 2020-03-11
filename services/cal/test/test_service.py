@@ -108,6 +108,9 @@ class TestCalService(unittest.TestCase):
         self.assertEqual(next_events[1]['summary'], summary2)
 
     def test_get_max_available_time_between(self):
+        def _chop_dt(date:dt):
+            return date.replace(microsecond=0)
+
         start_time = self.now()
         end_time = self.now() + timedelta(hours=4)
 
@@ -138,7 +141,7 @@ class TestCalService(unittest.TestCase):
             max_time, before, after = self.cal_service.get_max_available_time_between(
                 start_time, end_time)
             self.assertGreater(max_time, timedelta(minutes=30))
-            self.assertEqual(before.get_start(), event2.get_start())
+            self.assertEqual(_chop_dt(before.get_start()), _chop_dt(event2.get_start()))
             self.assertIsNone(after)
 
         with self.subTest(msg="rest of the day with events of shorter delta"):
@@ -157,5 +160,5 @@ class TestCalService(unittest.TestCase):
             max_time, before, after = self.cal_service.get_max_available_time_between(
                 start_time, end_time)
             self.assertEqual(timedelta(minutes=30), max_time)
-            self.assertEqual(before.get_start(), event1.get_start())
-            self.assertEqual(after.get_start(), event2.get_start())
+            self.assertEqual(_chop_dt(before.get_start()), _chop_dt(event1.get_start()))
+            self.assertEqual(_chop_dt(after.get_start()), _chop_dt(event2.get_start()))
