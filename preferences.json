@@ -9,6 +9,12 @@
 		"opencagegeocodingAPIKey": "2642206c773e4b06aedabd0a0e876a2f",
 		"openrouteserviceAPIKey": "5b3ce3597851110001cf62488ef50484ef524d228826ecc7b35f5df1"
 	},
+        "cal": {
+                "caldav_url": "https://p36-caldav.icloud.com/17167915149/calendars",
+                "calendar": "Work",
+                "username": "buerro@icloud.com",
+                "password": "gxuu-sgbx-jovu-qhao"
+        },
 	"cooking": {
 		"diet": "omnivore",
 		"intolerances": "Shellfish",
@@ -20,7 +26,7 @@
 	},
 	"work_session": {
 		"min_work_period_minutes": 30,
-        "be_minutes_early": 10
+                "be_minutes_early": 10
 	},
 	"transport": {
 		"minTemp": 10,
