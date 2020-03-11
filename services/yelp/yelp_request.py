@@ -33,11 +33,17 @@ class YelpRequest:
     def set_time(self, time):
         self.search_params['open_at'] = int(time)
 
+    #Set radius in accordance to weather and time available
     def set_radius(self, time, isBadWeather):
         if(isBadWeather):
             self.search_params['radius'] = int((self.pref.get_specific_pref('base_radius') + ((time / 10) * self.pref.get_specific_pref('ten_min_radius'))) / 2)
         else:
             self.search_params['radius'] = int(self.pref.get_specific_pref('base_radius') + ((time / 10) * self.pref.get_specific_pref('ten_min_radius')))
+
+    #Set radius in meter
+    def set_radius(self, meter):
+        self.search_params['radius'] = meter
+
 
     def get_search_param(self):
         return self.search_params

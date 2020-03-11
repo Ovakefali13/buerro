@@ -3,7 +3,7 @@ import datetime
 from usecase.lunchbreak import Lunchbreak
 
 class TestLunchbreak(unittest.TestCase):
-    MOCK_LOCATION = 'Jägerstraße 56, 70174 Stuttgart'
+    MOCK_LOCATION = [48.76533759999999, 9.161932799999999]
 
     def test_check_lunch_options(self):
         lb = Lunchbreak(True)
@@ -26,7 +26,7 @@ class TestLunchbreak(unittest.TestCase):
         lb = Lunchbreak(True)
         nearby_restaurants = lb.check_lunch_options(self.MOCK_LOCATION)
 
-        google_link = lb.open_maps_route(1)
+        google_link = lb.open_maps_route(1,self.MOCK_LOCATION, nearby_restaurants)
         self.assertIsInstance(google_link, str)
 
     def test_notify(self):
