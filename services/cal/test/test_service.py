@@ -118,8 +118,8 @@ class TestCalService(unittest.TestCase):
             max_time, before, after = self.cal_service.get_max_available_time_between(
                 start_time, end_time)
             self.assertEqual(max_time, end_time - start_time)
-            self.assertIsNone(before)
-            self.assertIsNone(after)
+            self.assertEqual(before, start_time)
+            self.assertEqual(after, end_time)
 
         event1 = Event()
         summary = ''.join(random.choices(string.ascii_uppercase + string.digits,k=6))
@@ -141,8 +141,8 @@ class TestCalService(unittest.TestCase):
             max_time, before, after = self.cal_service.get_max_available_time_between(
                 start_time, end_time)
             self.assertGreater(max_time, timedelta(minutes=30))
-            self.assertEqual(_chop_dt(before.get_start()), _chop_dt(event2.get_start()))
-            self.assertIsNone(after)
+            self.assertEqual(_chop_dt(before), _chop_dt(event2.get_end()))
+            self.assertEqual(after, end_time)
 
         with self.subTest(msg="rest of the day with events of shorter delta"):
             # each of which are 15 minutes apart
@@ -160,5 +160,5 @@ class TestCalService(unittest.TestCase):
             max_time, before, after = self.cal_service.get_max_available_time_between(
                 start_time, end_time)
             self.assertEqual(timedelta(minutes=30), max_time)
-            self.assertEqual(_chop_dt(before.get_start()), _chop_dt(event1.get_start()))
-            self.assertEqual(_chop_dt(after.get_start()), _chop_dt(event2.get_start()))
+            self.assertEqual(_chop_dt(before), _chop_dt(event1.get_end()))
+            self.assertEqual(_chop_dt(after), _chop_dt(event2.get_start()))

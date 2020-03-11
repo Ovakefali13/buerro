@@ -113,23 +113,23 @@ class CalService:
         events = self.get_events_between(start, end)
 
         if not events:
-            return end - start, None, None
+            return end - start, start, end
 
         max_delta = events[0].get_start() - start
-        event_before = None
-        event_after = events[0]
+        before = start
+        after = events[0].get_start()
 
         time_until_end = end - events[-1].get_end()
         if time_until_end > max_delta:
             max_delta = time_until_end
-            event_before = events[-1]
-            event_after = None
+            before = events[-1].get_end()
+            after = end
 
         for previous, current in zip(events, events[1:]):
             delta = current.get_start() - previous.get_end()
             if delta > max_delta:
                 max_delta = delta
-                event_before = previous
-                event_after = current
+                before = previous.get_end()
+                after = current.get_start()
 
-        return max_delta, event_before, event_after
+        return max_delta, before, after
