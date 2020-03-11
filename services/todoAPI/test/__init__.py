@@ -1,1 +1,1 @@
-from .test_service import TestTodoistService
+from .test_service import TodoistMockRemote

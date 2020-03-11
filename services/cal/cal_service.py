@@ -1,4 +1,5 @@
 from datetime import datetime as dt, timedelta
+import pytz
 import caldav
 from caldav.elements import dav, cdav
 from dotenv import load_dotenv
@@ -17,6 +18,9 @@ class CaldavRemote(ABC):
     def events(self):
         pass
 
+    @abstractmethod
+    def date_search(self, start:dt, end:dt=None):
+        pass
 
 class iCloudCaldavRemote(CaldavRemote):
     def __init__(self):
@@ -77,25 +81,31 @@ class iCloudCaldavRemote(CaldavRemote):
     def events(self):
         return self.from_caldav(self.calendar.events())
 
-    def date_search(self, start:dt, end:dt):
+    def date_search(self, start:dt, end:dt=None):
         return self.from_caldav(self.calendar.date_search(start, end))
+
+    def purge(self):
+        for event in self.calendar.events():
+            if event.vobject_instance: # don't delete the calendar object
+                event.delete()
 
 class CalService:
 
     def __init__(self, remote:CaldavRemote):
         self.remote = remote
 
-    def get_next_event(self):
-        #TODO
-        pass
+    def get_next_events(self):
+        events = self.remote.date_search(dt.now(pytz.utc))
+        return sorted(events, key=lambda e: e['dtstart'].dt)
 
-    def get_events_between(self, start:dt, end:dt):
+    def get_events_between(self, start:dt, end:dt=None):
         return self.remote.date_search(start, end)
 
     def get_all_events(self):
         return self.remote.events()
 
     def add_event(self, event:Event):
+        event.check_parameters_and_raise()
         self.remote.add_event(event)
 
 
