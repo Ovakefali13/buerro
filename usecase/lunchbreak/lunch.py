@@ -81,8 +81,6 @@ class Lunchbreak:
     def find_longest_timeslot_between_hours(self, search_start, search_end):
         cal_service = CalService(iCloudCaldavRemote())
         time, before, after = cal_service.get_max_available_time_between(search_start, search_end)
-        print(str(time.total_seconds() / 60) + ";" + str(before) + ";" + str(after))
-
         return int((time.total_seconds() / 60)), before, after
 
     def notify(self):
@@ -93,9 +91,8 @@ class Lunchbreak:
         lunch_timestamp = datetime.timestamp(lunch_start)
 
         hours_until_lunch = self.time_diff_in_hours(lunch_start, datetime.now(pytz.utc))
-
         if(hours_until_lunch < 3):
-            True
+            return True
         else:
-            False
+            return False
 
