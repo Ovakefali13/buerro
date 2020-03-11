@@ -95,11 +95,11 @@ class CalService:
         self.remote = remote
 
     def get_next_events(self):
-        events = self.remote.date_search(dt.now(pytz.utc))
-        return sorted(events, key=lambda e: e['dtstart'].dt)
+        return self.get_events_between(dt.now(pytz.utc))
 
     def get_events_between(self, start:dt, end:dt=None):
-        return self.remote.date_search(start, end)
+        events = self.remote.date_search(start, end)
+        return sorted(events, key=lambda e: e['dtstart'].dt)
 
     def get_all_events(self):
         return self.remote.events()
@@ -108,4 +108,20 @@ class CalService:
         event.check_parameters_and_raise()
         self.remote.add_event(event)
 
+    def get_max_available_time_between(self, start:dt, end:dt):
+        events = self.get_events_between(start, end)
 
+        if not events:
+            return end - start
+
+        time_until_first = events[0].get_start() - start
+        time_until_end = end - events[-1].get_end()
+
+        max_delta = max((time_until_first, time_until_end))
+        for previous, current in zip(events, events[1:]):
+            delta = current.get_start() - previous.get_end()
+            if delta > max_delta:
+                max_delta = delta
+
+
+        return max_delta
