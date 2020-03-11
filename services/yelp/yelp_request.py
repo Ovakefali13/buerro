@@ -22,6 +22,13 @@ class YelpRequest:
 
     def set_location(self, location):
         self.search_params['location'] = location
+        self.search_params.pop('latitude', None)
+        self.search_params.pop('longitude', None)
+
+    def set_coordinates(self, coords:list):
+        self.search_params['latitude'] = coords[0]
+        self.search_params['longitude'] = coords[1]
+        self.search_params.pop('location', None)
 
     def set_time(self, time):
         self.search_params['open_at'] = int(time)

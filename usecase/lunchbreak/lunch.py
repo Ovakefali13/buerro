@@ -51,7 +51,8 @@ class Lunchbreak:
         will_be_bad_weather = weather_adapter.will_be_bad_weather(hours_until_lunch)
 
         search_params = YelpRequest()
-        search_params.set_location(location)
+        #search_params.set_location(location)
+        search_params.set_coordinates(self.current_location_coords)
         search_params.set_time(lunch_timestamp)
         search_params.set_radius(duration, will_be_bad_weather)
 
