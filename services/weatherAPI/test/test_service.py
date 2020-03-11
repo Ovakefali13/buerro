@@ -59,7 +59,7 @@ class TestWeatherService(unittest.TestCase):
         self.weather_adapter.set_remote(self.remote)
         self.weather_adapter.update(self.city)
         is_weather_bad = self.weather_adapter.is_bad_weather()
-        self.assertIsInstance(is_weather_bad, str)
+        self.assertIsInstance(is_weather_bad, bool)
 
     def test_will_be_bad_weather(self):
         #TODO How to test
