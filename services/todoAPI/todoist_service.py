@@ -13,7 +13,11 @@ class TodoistRemote(ABC):
         pass
 
     @abstractmethod
-    def set_todos(self):
+    def set_todos(self, project_id:int):
+        pass
+
+    @abstractmethod
+    def delete_todo(self, delete_item:str, p_id:int):
         pass
 
 class TodoistJSONRemote(TodoistRemote):
@@ -36,6 +40,13 @@ class TodoistJSONRemote(TodoistRemote):
     def set_todos(self, items, p_id):
         for item in items:
             self.api.items.add(item, project_id=p_id)
+        self.api.commit()
+    
+    def delete_todo(self, delete_item, p_id):
+        items_list = self.get_todos(p_id)
+        for item in items_list['items']:
+            if item['content'] == delete_item:
+                self.api.items.get_by_id(item['id']).delete() 
         self.api.commit()
 
 class TodoistService:
@@ -64,6 +75,10 @@ class TodoistService:
             response.append(item['content'])
         return response
     
-    def set_project_todo(self, items, name):
-        project_id = self.get_project_id(name)
-        return self.remote.set_todos(items, project_id)
+    def set_project_todo(self, items, project_name):
+        project_id = self.get_project_id(project_name)
+        self.remote.set_todos(items, project_id)
+
+    def delete_project_todo(self, item, project_name):
+        project_id = self.get_project_id(project_name)
+        self.remote.delete_todo(item, project_id)
