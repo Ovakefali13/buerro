@@ -88,6 +88,12 @@ class TestEvent(unittest.TestCase):
         self.assertEqual(self.filter_ical(ical_corr_with_alarm),
             self.filter_ical(in_ical))
 
+    def test_summarize(self):
+        event = Event()
+        event.add("summary", "Test Event")
+        event.add("dtstart", datetime(2020, 2, 26, 18, 00))
+        event.add("dtend", datetime(2020, 2, 26, 19, 00))
+        event.add("location", "Test Location")
 
-if __name__ == '__main__':
-    unittest.main()
+        expected = "Test Event from 18:00 until 19:00 at Test Location"
+        self.assertEqual(expected, event.summarize())

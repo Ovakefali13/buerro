@@ -18,9 +18,9 @@
 		"github1": "prefGithub1",
 		"github2": "prefGithub2"
 	},
-	"workday": {
-		"workday1": "prefWorkday1",
-		"workday2": "prefWorkday2"
+	"work_session": {
+		"min_work_period_minutes": 30,
+        "be_minutes_early": 10
 	},
 	"transport": {
 		"minTemp": 10,
