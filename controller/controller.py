@@ -36,7 +36,7 @@ def ControllerFromArgs(chatbot:Chatbot, usecaseByContext:dict):
                 _shutdown()
             else:
                 intent = self.chatbot.get_intent(msg)
-                usecase = self.usecaseByContext.get(intent.context)
+                usecase = self.usecaseByContext.get(intent.context, None)
                 if usecase:
                     usecase = usecase.instance()
                     reply = usecase.advance(intent.entities)
@@ -46,6 +46,7 @@ def ControllerFromArgs(chatbot:Chatbot, usecaseByContext:dict):
                 else:
                     _set_headers(400)
             del msg
+
     return CustomController
 
 

@@ -7,11 +7,11 @@ from threading import Thread, Event
 
 from services.Singleton import Singleton
 from controller import ControllerFromArgs
-from chatbot import Chatbot, Intent
+from chatbot import ChatbotBehavior, Chatbot, Intent
 from usecase import Usecase
 
 @Singleton
-class MockChatbot(Chatbot):
+class MockChatbotBehavior(ChatbotBehavior):
 
     def get_intent(self, message:str):
        return Intent("mock_work", [])
@@ -53,7 +53,7 @@ class TestController(unittest.TestCase):
         self.serverPort = 9149
         self.server_url = "http://" + self.hostName + ":" + str(self.serverPort)
 
-        chatbot = MockChatbot.instance()
+        chatbot = Chatbot(MockChatbot.instance())
         usecaseByContext = {
             "mock_work": MockUsecase
         }

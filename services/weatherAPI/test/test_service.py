@@ -2,23 +2,22 @@ import unittest
 import os
 import json
 
-from .. import WeatherAdapter, WeatherAdapterRemote
-#from . import WeatherAdapterRemote, WeatherAdapter
+from .. import WeatherAdapter, WeatherAdapterRemote, WeatherAdapterModule
 
-class WeatherMock():
+class WeatherMock(WeatherAdapterModule):
 
-    def updateCurrentWeatherByCity(self, city):
+    def update_current_weather_by_city(self, city):
         dirname = os.path.dirname(__file__)
         with open(os.path.join(dirname, 'mock_weather.json'), 'r') as mockWeather_f:
-            mockWeather = json.load(mockWeather_f)
-        return mockWeather
+            mock_weather = json.load(mockWeather_f)
+        return mock_weather
 
 
-    def updateWeatherForecastByCity(self, city):
+    def update_weather_forecast_by_city(self, city):
         dirname = os.path.dirname(__file__)
         with open(os.path.join(dirname, 'mock_weather_forecast.json'), 'r') as mockWeather_f:
-            mockWeatherForecast = json.load(mockWeather_f)
-        return mockWeatherForecast
+            mock_weather_forecast = json.load(mockWeather_f)
+        return mock_weather_forecast
 
 
 class TestWeatherService(unittest.TestCase):
@@ -30,45 +29,51 @@ class TestWeatherService(unittest.TestCase):
         print("Mocking remotes...")
         remote = WeatherMock()
 
-    weatherAdapter = WeatherAdapter.instance()
-    weatherAdapter.setRemote(remote)
+    weather_adapter = WeatherAdapter.instance()
+    weather_adapter.set_remote(remote)
 
-    #def test_update(self):
-    #   self.weatherAdapter.update('Stuttgart')
+    def test_get_current_temperature(self):
+        self.weather_adapter = WeatherAdapter.instance()
+        self.weather_adapter.set_remote(self.remote)
+        self.weather_adapter.update(self.city)
+        temp = self.weather_adapter.get_current_temperature()
+        self.assertGreater(temp, -50)
+        self.assertLess(temp, 50)
 
-    #def test_updateCurrentWeatherByCity(self):
-    #    weather = self.weatherAdapter.updateCurrentWeatherByCity(self.city)
+    def test_get_current_weather(self):
+        self.weather_adapter = WeatherAdapter.instance()
+        self.weather_adapter.set_remote(self.remote)
+        self.weather_adapter.update(self.city)
+        weather = self.weather_adapter.get_current_weather()
+        self.assertIsInstance(weather, str)
 
+    def test_get_forecast_weather(self):
+        self.weather_adapter = WeatherAdapter.instance()
+        self.weather_adapter.set_remote(self.remote)
+        self.weather_adapter.update(self.city)
+        weather = self.weather_adapter.get_forecast_weather(3)
+        self.assertIsInstance(weather, str)
 
-    #def test_updateWeatherForecastByCity(self):
-    #    weatherForecast = self.weatherAdapter.updateWeatherForecastByCity(self.city)
+    def test_is_bad_weather(self):
+        self.weather_adapter = WeatherAdapter.instance()
+        self.weather_adapter.set_remote(self.remote)
+        self.weather_adapter.update(self.city)
+        is_weather_bad = self.weather_adapter.is_bad_weather()
+        self.assertTrue(is_weather_bad)
 
+    def test_will_be_bad_weather(self):
+        #TODO How to test
+        self.weather_adapter = WeatherAdapter.instance()
+        self.weather_adapter.set_remote(self.remote)
+        self.weather_adapter.update(self.city)
+        will_be_bad_weather = self.weather_adapter.will_be_bad_weather(3)
+        self.assertTrue(will_be_bad_weather)
 
-    def test_getCurrentTemperature(self):
-        self.weatherAdapter.update(self.city)
-        temp = self.weatherAdapter.getCurrentTemperature()
-        self.assertEqual(temp, 2.34)
+        will_be_bad_weather = self.weather_adapter.will_be_bad_weather(6)
+        self.assertTrue(will_be_bad_weather)
 
-    def test_getCurrentWeather(self):
-        self.weatherAdapter.update(self.city)
-        weather = self.weatherAdapter.getCurrentWeather()
-        self.assertEquals(weather, 'Clouds')
-
-    def test_isBadWeather(self):
-        self.weatherAdapter.update(self.city)
-        isWeatherBad = self.weatherAdapter.isBadWeather()
-        self.assertTrue(isWeatherBad)
-
-    def test_willBeBadWeather(self):
-        self.weatherAdapter.update(self.city)
-        willBeBadWeather = self.weatherAdapter.willBeBadWeather(3)
-        self.assertTrue(willBeBadWeather)
-
-        willBeBadWeather = self.weatherAdapter.willBeBadWeather(6)
-        self.assertTrue(willBeBadWeather)
-
-        willBeBadWeather = self.weatherAdapter.willBeBadWeather(9)
-        self.assertTrue(willBeBadWeather)
+        will_be_bad_weather = self.weather_adapter.will_be_bad_weather(9)
+        self.assertTrue(will_be_bad_weather)
 
 
 
