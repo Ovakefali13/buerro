@@ -52,6 +52,7 @@ class VVAEfaXMLRemote(VVSRemote):
     base_url = "http://efastatic.vvs.de/vvs"
     outputFormat = "XML"
 """
+
 class VVSService:
     remote = None
 
