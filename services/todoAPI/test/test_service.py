@@ -26,7 +26,9 @@ class TodoistMockRemote(TodoistRemote):
         return response_json
 
     def set_todos(self, items, p_id):
-        return str(items) + str(p_id)
+        pass
+    def delete_todo(self, item, p_id):
+        pass
 
 class TestTodoistService(unittest.TestCase):
     if 'DONOTMOCK' in os.environ:
@@ -36,43 +38,22 @@ class TestTodoistService(unittest.TestCase):
         remote = TodoistMockRemote()
     todoist_service = TodoistService(remote)
 
-
     def test_get_project_names(self):
         projects = self.todoist_service.get_project_names()
         self.assertEqual(projects, ['Inbox', 'Shopping List', 'Data Science', 'Software Engineering'])
     
-    def test_get_shopping_list_id(self):
-        id = self.todoist_service.get_shopping_list_id()
+    def test_get_project_id(self):
+        id = self.todoist_service.get_project_id("Shopping List")
         self.assertEqual(id, 2230670456)
     
-    def test_get_shopping_list_items(self):
-        list = self.todoist_service.get_shopping_list_items()
-        self.assertEqual(list, ['Schokolade', 'Nutella', 'Tote Menschen'])
+    def test_get_project_items(self):
+        test_string = 'nutella'
+        project_name = "Shopping List"
 
-    def test_get_software_engineering_id(self):
-        id = self.todoist_service.get_software_engineering_id()
-        self.assertEqual(id, 2230686946)
-    
-    def test_get_software_engineering_items(self):
-        list = self.todoist_service.get_software_engineering_items()
-        self.assertEqual(list, ['Hello World', 'Test Hello', 'Hello World', 'Test Hello', 'Hello World', 'Test Hello', 'Hello World', 'Test Hello'])
-
-    def test_get_data_science_id(self):
-        id = self.todoist_service.get_data_science_id()
-        self.assertEqual(id, 2230686957)
-    
-    def test_get_data_science_items(self):
-        list = self.todoist_service.get_data_science_items()
-        self.assertEqual(list, [])
-    
-    def test_set_shopping_list(self):
-        return_string = self.todoist_service.set_shopping_list(['Test', 'Test2'])
-        self.assertEqual(return_string, "['Test', 'Test2']2230670456")
-
-    def test_set_data_science(self):
-        return_string = self.todoist_service.set_data_science(['Test', 'Test2'])
-        self.assertEqual(return_string, "['Test', 'Test2']2230686957")
-    
-    def test_set_software_enigneering(self):
-        return_string = self.todoist_service.set_software_enigneering(['Test', 'Test2'])
-        self.assertEqual(return_string, "['Test', 'Test2']2230686946")
+        self.todoist_service.set_project_todo([test_string], project_name)
+        response = False
+        text = str(self.todoist_service.get_project_items(project_name))
+        if text.find(test_string) >= 0:
+            response = True
+        self.assertIs(response, True)
+        self.todoist_service.delete_project_todo(test_string, project_name)

@@ -1,9 +1,10 @@
 import unittest
 import os
 import json
+from services.Singleton import Singleton
 from .. import MapService, MapRemote, MapJSONRemote, GeocodingService, GeocodingRemote, GeocodingJSONRemote
 
-
+@Singleton
 class MapMockRemote():
 
     def get_route_information(self, start:list, dest:list, travel_mode:str):
@@ -18,13 +19,10 @@ class MapMockRemote():
 
 
 class TestMapService(unittest.TestCase):
-    if 'DONOTMOCK' in os.environ:
-        remote = MapJSONRemote()
-    else:
-        print("Mocking remotes...")
-        remote = MapMockRemote()
+    map_service = MapService.instance()
 
-    map_service = MapService(remote)
+    if not 'DONOTMOCK' in os.environ:
+        map_service.remote = MapMockRemote.instance()
 
     dhbw = [48.773563, 9.170963]
     mensa = [48.780834, 9.169989]
@@ -39,7 +37,7 @@ class TestMapService(unittest.TestCase):
         link = self.map_service.get_route_link(self.dhbw, self.mensa)
         self.assertEqual(link, 'https://routing.openstreetmap.de/?loc=48.773563%2C9.170963&loc=48.780834%2C9.169989&hl=de')
 
-
+@Singleton
 class GeocodingMockRemote():    
     dhbw = ['Rotebühlplatz 41, 70178 Stuttgart, Deutschland', [48.7735115, 9.1710448]]
 
@@ -57,17 +55,16 @@ class GeocodingMockRemote():
             dirname = os.path.dirname(__file__)            
             with open(os.path.join(dirname, 'mock_from_coords.json'), 'r') as f:
                 mock_from_coords = json.load(f)
-            return mock_from_coords
+            return mock_from_coords    
+
 
 
 class TestGeocodingService(unittest.TestCase):
-    if 'DONOTMOCK' in os.environ:
-        remote = GeocodingJSONRemote()
-    else:
-        print("Mocking remotes...")
-        remote = GeocodingMockRemote()
+    geocoding_service = GeocodingService.instance()
 
-    geocoding_service = GeocodingService(remote)
+    if not 'DONOTMOCK' in os.environ:
+        geocoding_service.remote = GeocodingMockRemote.instance()
+
     dhbw = ['Rotebühlplatz 41, 70178 Stuttgart, Deutschland', [48.7735115, 9.1710448]]
 
     def test_get_coords_from_adress(self):
@@ -77,4 +74,9 @@ class TestGeocodingService(unittest.TestCase):
 
     def test_get_address_from_coords(self):
         address = self.geocoding_service.get_address_from_coords(self.dhbw[1])
-        self.assertEqual(address, self.dhbw[0])    
+        self.assertEqual(address, self.dhbw[0])
+
+
+    def test_get_city_from_coords(self):
+        city = self.geocoding_service.get_city_from_coords(self.dhbw[1])
+        self.assertEqual(city, 'Stuttgart')

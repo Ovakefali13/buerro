@@ -13,7 +13,11 @@ class TodoistRemote(ABC):
         pass
 
     @abstractmethod
-    def set_todos(self):
+    def set_todos(self, project_id:int):
+        pass
+
+    @abstractmethod
+    def delete_todo(self, delete_item:str, p_id:int):
         pass
 
 class TodoistJSONRemote(TodoistRemote):
@@ -37,6 +41,13 @@ class TodoistJSONRemote(TodoistRemote):
         for item in items:
             self.api.items.add(item, project_id=p_id)
         self.api.commit()
+    
+    def delete_todo(self, delete_item, p_id):
+        items_list = self.get_todos(p_id)
+        for item in items_list['items']:
+            if item['content'] == delete_item:
+                self.api.items.get_by_id(item['id']).delete() 
+        self.api.commit()
 
 class TodoistService:
     remote = None
@@ -50,56 +61,24 @@ class TodoistService:
             response.append(project['name'])
         return response
 
-    def get_shopping_list_id(self):
+    def get_project_id(self, name):
         response = None
         for project in self.remote.get_projects():
-            if project['name'] == 'Shopping List':
+            if project['name'] == name:
                 response = project['id']
         return response
 
-    def get_shopping_list_items(self):
+    def get_project_items(self, name):
         response = []
-        project = self.remote.get_todos(self.get_shopping_list_id())
-        for item in project['items']:
-            response.append(item['content'])
-        return response
-
-    def get_software_engineering_id(self):
-        response = None
-        for project in self.remote.get_projects():
-            if project['name'] == 'Software Engineering':
-                response = project['id']
-        return response
-
-    def get_software_engineering_items(self):
-        response = []
-        project = self.remote.get_todos(self.get_software_engineering_id())
-        for item in project['items']:
-            response.append(item['content'])
-        return response
-
-    def get_data_science_id(self):
-        response = None
-        for project in self.remote.get_projects():
-            if project['name'] == 'Data Science':
-                response = project['id']
-        return response
-
-    def get_data_science_items(self):
-        response = []
-        project = self.remote.get_todos(self.get_data_science_id())
+        project = self.remote.get_todos(self.get_project_id(name))
         for item in project['items']:
             response.append(item['content'])
         return response
     
-    def set_shopping_list(self, items):
-        project_id = self.get_shopping_list_id()
-        return self.remote.set_todos(items, project_id)
-    
-    def set_data_science(self, items):
-        project_id = self.get_data_science_id()
-        return self.remote.set_todos(items, project_id)
-    
-    def set_software_enigneering(self, items):
-        project_id = self.get_software_engineering_id()
-        return self.remote.set_todos(items, project_id)
+    def set_project_todo(self, items, project_name):
+        project_id = self.get_project_id(project_name)
+        self.remote.set_todos(items, project_id)
+
+    def delete_project_todo(self, item, project_name):
+        project_id = self.get_project_id(project_name)
+        self.remote.delete_todo(item, project_id)

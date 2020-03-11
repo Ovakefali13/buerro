@@ -8,7 +8,7 @@ def main(arg_module=None):
     if arg_module:
         modules = [arg_module]
     else:
-        modules = ['services', 'usecase']
+        modules = ['services', 'usecase', 'chatbot']
 
     cov = coverage.Coverage(source=modules, branch=True)
     cov.start()

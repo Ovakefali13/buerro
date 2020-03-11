@@ -42,11 +42,13 @@ class MapJSONRemote(MapRemote):
             self.__set_travel_mode__(travel_mode)        
         return self.clnt.directions(**self.request_params)
 
-
+@Singleton
 class MapService:
     
-    def __init__(self, remote):
+
+    def __init__(self, remote:MapRemote=MapJSONRemote.instance()):
         self.remote = remote
+
 
     def get_route_summary(self, start:list, dest:list, travel_mode:str=None):
         route = self.remote.get_route_information(start, dest, travel_mode)
@@ -59,9 +61,7 @@ class MapService:
                 'distance': summary['distance'],
                 'duration':  summary['duration']}
 
-    def get_route_link(self, start:list, dest:list):
-        if isinstance(start, list) and isinstance(dest, list):
-            return f'https://routing.openstreetmap.de/?loc={start[0]}%2C{start[1]}&loc={dest[0]}%2C{dest[1]}&hl=de'
-        else:
-            print(f'Start and dest must be given as coordinates: [lat, long]')
 
+    def get_route_link(self, start:list, dest:list):
+        return f'https://routing.openstreetmap.de/?loc={start[0]}%2C{start[1]}&loc={dest[0]}%2C{dest[1]}&hl=de'
+        
