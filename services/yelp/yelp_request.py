@@ -1,4 +1,5 @@
 from services.preferences.pref_service import PrefService
+from datetime import datetime
 
 class YelpRequest:
 
@@ -12,7 +13,7 @@ class YelpRequest:
             'location' : 'Jägerstraße 56, 70174 Stuttgart',
             'price': self.pref.get_specific_pref('price'),
             'radius': 2000,
-            'open_at': 1583160868,
+            'open_at': datetime.timestamp(datetime.now().replace(hour=12, minute=0, second=0, microsecond=0)),
             'limit' : 10,
             'sort_by' : 'distance'
         }
