@@ -112,8 +112,11 @@ class TestCalService(unittest.TestCase):
         end_time = self.now() + timedelta(hours=4)
 
         with self.subTest("no events today"):
-            max_time = self.cal_service.get_max_available_time_between(start_time, end_time)
+            max_time, before, after = self.cal_service.get_max_available_time_between(
+                start_time, end_time)
             self.assertEqual(max_time, end_time - start_time)
+            self.assertIsNone(before)
+            self.assertIsNone(after)
 
         event1 = Event()
         summary = ''.join(random.choices(string.ascii_uppercase + string.digits,k=6))
@@ -132,8 +135,11 @@ class TestCalService(unittest.TestCase):
         self.cal_service.add_event(event2)
 
         with self.subTest(msg="rest of the day is empty"):
-            max_time = self.cal_service.get_max_available_time_between(start_time, end_time)
+            max_time, before, after = self.cal_service.get_max_available_time_between(
+                start_time, end_time)
             self.assertGreater(max_time, timedelta(minutes=30))
+            self.assertEqual(before.get_start(), event2.get_start())
+            self.assertIsNone(after)
 
         with self.subTest(msg="rest of the day with events of shorter delta"):
             # each of which are 15 minutes apart
@@ -148,5 +154,8 @@ class TestCalService(unittest.TestCase):
 
                 next_event_start_time = next_event.get_end() + timedelta(minutes=15)
 
-            max_time = self.cal_service.get_max_available_time_between(start_time, end_time)
+            max_time, before, after = self.cal_service.get_max_available_time_between(
+                start_time, end_time)
             self.assertEqual(timedelta(minutes=30), max_time)
+            self.assertEqual(before.get_start(), event1.get_start())
+            self.assertEqual(after.get_start(), event2.get_start())
