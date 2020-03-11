@@ -21,7 +21,6 @@ class YelpServiceRemote(YelpServiceModule):
     }
 
     def request_businesses(self, search_param):
-        print(self.headers)
         req = 'https://api.yelp.com/v3/businesses/search'
         response = requests.request('GET', req, headers=self.headers, params=search_param)
         if response.status_code != 200:
