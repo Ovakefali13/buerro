@@ -1,13 +1,14 @@
 import unittest
 import datetime
-from usecase.cooking import Cooking
+from usecase.cooking import Cook
 
 class TestCooking(unittest.TestCase):
     MOCK_LOCATION = 'Jägerstraße 56, 70174 Stuttgart'
     use_case = None
 
-    def __init__(self):
-        self.use_case = Cooking()
+    @classmethod
+    def setUpClass(self):
+        self.use_case = Cook()
 
     def test_trigger_usecase(self):
         self.use_case.trigger_use_case('pork')

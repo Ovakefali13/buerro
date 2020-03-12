@@ -30,16 +30,17 @@ class Cook:
     def trigger_use_case(self, ingredient):
         self.ingredient = ingredient
         self.load_preferences()
-        if self.check_for_time():
-            self.response_message = self.get_recipe()
+        #if self.check_for_time():
+        if True:
+            self.check_for_time()
+            self.get_recipe()
             self.set_shopping_list()
             self.set_calender()
         else:
-            self.response_message = self.not_time_to_cook()
+            self.not_time_to_cook()
         
     def check_for_time(self):
         now = datetime.now(pytz.utc)
-        #naive = dt.replace(tzinfo=None)
         end_of_day = datetime.now(pytz.utc).replace(hour=23, minute=59, second=59)
         max_time, self.event_time_start, self.event_time_end = self.cal_service.get_max_available_time_between(now, end_of_day)
         self.max_cooking_time = self.preferences_json['maxCookingTime']
@@ -52,23 +53,24 @@ class Cook:
 
     def get_recipe(self):
         self.spoonacle_service = SpoonacularService(SpoonacularJSONRemote(), self.ingredient)
-        return self.spoonacle_service.get_summary()
+        self.response_message = self.spoonacle_service.get_summary()
 
     def set_shopping_list(self):
         ingredients = self.spoonacle_service.get_ingredients()
         self.todoist_service.set_project_todo(ingredients, "Shopping List")
 
     def set_calender(self):
-        '''cooking_time = self.spoonacle_service.get_cookingTime()
+        cooking_time = self.spoonacle_service.get_cookingTime()
 
         cooking_event = Event()
         cooking_event.set_title('Cooking')
         cooking_event.set_location('Home')
-        cooking_event.set_start(self.event_time_start + timedelta(minutes=15))
-        cooking_event.set_end(cooking_event.get_start() + timedelta(minutes=cooking_time))
+        #self.event_time_start + timedelta(minutes=15)
+        cooking_event.set_start(datetime.now(pytz.utc))
+        #cooking_event.get_start() + timedelta(minutes=cooking_time)
+        cooking_event.set_end(datetime.now(pytz.utc) + timedelta(minutes=15))
         
         return self.cal_service.add_event(cooking_event)
-        '''
     def not_time_to_cook(self):   
         cooking_time = datetime.fromisoformat(str(datetime.utcnow().date()))
         cooking_timestamp = datetime.timestamp(cooking_time)
@@ -77,11 +79,8 @@ class Cook:
         search_params.set_location('Jägerstraße 56, 70174 Stuttgart')
         search_params.set_time(cooking_timestamp)
         search_params.search_params['radius'] = 1000
-        
-        
         return_json = self.yelp_service.get_next_business(search_params)
         self.response_message = "A restaurant nearby is " + return_json['name'] + "and you can reach them at " + return_json['address'] + "(" + return_json['phone'] + ")"
-
     def get_response(self):
         return self.response_message
 
