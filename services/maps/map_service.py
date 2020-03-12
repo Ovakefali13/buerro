@@ -1,6 +1,6 @@
 from openrouteservice import client
 from abc import ABC, abstractmethod
-from services.Singleton import Singleton
+from services.singleton import Singleton
 from services.preferences import PrefService, PrefJSONRemote
 
 
