@@ -12,6 +12,9 @@ from services.music import MusicService
 
 @Singleton
 class WorkSession(Usecase):
+    """This use case should best be understood with a flow chart:
+    https://preview.tinyurl.com/uvsyfyk
+    """
 
     def __init__(self):
         super().__init__()
@@ -129,15 +132,15 @@ class WorkSession(Usecase):
             self.projects = self.todo_service.get_project_names()
             msg += str(self.projects)
             reply = {**reply, 'message': msg}
-            return "project", reply
+            return "todo", reply
 
-        def project_trans(data):
-            return
+        def todo_trans(data):
+            return "end_state", None
 
         m = self.fsm
         m.add_state("start", start_trans)
         m.set_start("start")
         m.add_state("music", music_trans)
-        m.add_state("project", project_trans)
+        m.add_state("todo", todo_trans)
         m.add_state("error_state", None, end_state=True)
         m.add_state("end_state", None, end_state=True)

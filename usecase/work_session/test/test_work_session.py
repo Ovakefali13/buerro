@@ -15,6 +15,9 @@ from services.todoAPI.test import TodoistMockRemote
 from services.preferences import PrefService
 
 class TestWorkSession(unittest.TestCase):
+    """This use case should best be understood with a flow chart:
+    https://preview.tinyurl.com/uvsyfyk
+    """
 
     @classmethod
     def setUp(self):
@@ -136,6 +139,8 @@ class TestWorkSession(unittest.TestCase):
         self.assertTrue(self.uri_valid(reply.link))
         self.assertIn(states['project'], reply.message)
         #self.assertIsNotNone(reply.list) # list of projects
+
+        # TODO
         return
 
         reply = uc.advance({'message': 'Software Engineering'})
@@ -143,6 +148,7 @@ class TestWorkSession(unittest.TestCase):
         self.assertIsNotNone(reply.list)
         self.assertTrue(len(reply.list) > 0)
         self.assertIn(states['which_todo'], reply.message)
+
 
         reply = uc.advance({'message': 'Test Hello'})
         self.assertIn(states['pomodoro'], reply.message)

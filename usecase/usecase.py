@@ -23,11 +23,12 @@ class Reply(CaselessDict):
     attributes = ('message', 'link', 'list', 'dict')
 
     def __init__(self, values:dict):
-        for key in values:
-            if key not in self.attributes:
-                raise Exception('Provided an undefined reply attribute, '
-                    + 'only allowed attributes: ' + self.attributes)
-            self[key] = values[key]
+        if values:
+            for key in values:
+                if key not in self.attributes:
+                    raise Exception('Provided an undefined reply attribute, '
+                        + 'only allowed attributes: ' + self.attributes)
+                self[key] = values[key]
 
     def __setitem__(self, key, value):
         if key not in self.attributes:
