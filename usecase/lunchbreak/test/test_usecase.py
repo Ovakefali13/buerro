@@ -19,7 +19,7 @@ class TestLunchbreak(unittest.TestCase):
         end_iso = datetime.fromisoformat(end)
 
         diff_hours = lb.time_diff_in_hours(start_iso, end_iso)
-
+        print(diff_hours)
         self.assertEqual(diff_hours, 24)
 
     def test_open_maps_route(self):

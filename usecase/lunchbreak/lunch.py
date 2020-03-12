@@ -41,8 +41,9 @@ class Lunchbreak:
         hours_until_lunch = self.time_diff_in_hours(lunch_start, datetime.now(pytz.utc))
 
         geocoding = GeocodingService.instance()
+        print(location)
         city = geocoding.get_city_from_coords(location)
-
+        print(city)
         ### Check Weather ###
         weather_adapter = WeatherAdapter.instance()
         weather_adapter.update(city)
