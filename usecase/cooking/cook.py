@@ -10,6 +10,7 @@ import pytz
 
 class Cook:
     ingredient = 'pork'
+    ingredient_list = []
     preferences_json = ''
     pref_service = None
     spoonacle_service = None
@@ -56,8 +57,8 @@ class Cook:
         self.response_message = self.spoonacle_service.get_summary()
 
     def set_shopping_list(self):
-        ingredients = self.spoonacle_service.get_ingredients()
-        self.todoist_service.set_project_todo(ingredients, "Shopping List")
+        self.ingredient_list = self.spoonacle_service.get_ingredients()
+        self.todoist_service.set_project_todo(self.ingredient_list, "Shopping List")
 
     def set_calender(self):
         cooking_time = self.spoonacle_service.get_cookingTime()
@@ -65,12 +66,11 @@ class Cook:
         cooking_event = Event()
         cooking_event.set_title('Cooking')
         cooking_event.set_location('Home')
-        #self.event_time_start + timedelta(minutes=15)
-        cooking_event.set_start(datetime.now(pytz.utc))
-        #cooking_event.get_start() + timedelta(minutes=cooking_time)
-        cooking_event.set_end(datetime.now(pytz.utc) + timedelta(minutes=15))
+        cooking_event.set_start(self.event_time_start + timedelta(minutes=15))
+        cooking_event.set_end(cooking_event.get_start() + timedelta(minutes=cooking_time))
         
         return self.cal_service.add_event(cooking_event)
+    
     def not_time_to_cook(self):   
         cooking_time = datetime.fromisoformat(str(datetime.utcnow().date()))
         cooking_timestamp = datetime.timestamp(cooking_time)
@@ -81,7 +81,10 @@ class Cook:
         search_params.search_params['radius'] = 1000
         return_json = self.yelp_service.get_next_business(search_params)
         self.response_message = "A restaurant nearby is " + return_json['name'] + "and you can reach them at " + return_json['address'] + "(" + return_json['phone'] + ")"
+    
     def get_response(self):
         return self.response_message
 
+    def get_ingredient_list(self):
+        return self.get_ingredient_list
     
