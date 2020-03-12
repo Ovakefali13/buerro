@@ -7,7 +7,8 @@ from .. import WorkSession
 from services.todoAPI import TodoistService
 from services.vvs import VVSService
 from services.cal import CalService, Event
-#from services.music import MusicService
+from services.music import MusicService
+from services.music.test import MusicMockRemote
 from services.cal.test import CaldavMockRemote
 from services.vvs.test import VVSMockRemote
 from services.todoAPI.test import TodoistMockRemote
@@ -27,7 +28,12 @@ class TestWorkSession(unittest.TestCase):
         usecase.set_cal_service(self.cal_service)
         usecase.set_vvs_service(VVSService(VVSMockRemote()))
         usecase.set_todo_service(TodoistService(TodoistMockRemote()))
-        #usecase.set_music_service(MusicService(MusicMockRemote()))
+
+        music_service = MusicService.instance()
+        music_service.set_remote(MusicMockRemote.instance())
+        usecase.set_music_service(music_service)
+
+
         usecase.reset()
         self.usecase = usecase
 
@@ -99,7 +105,7 @@ class TestWorkSession(unittest.TestCase):
 
     def test_advances_correctly(self):
         states = {
-            'music': "Do you want music?",
+            'music': "Would you like to listen to music?",
             'music_rec': "How about this Spotify playlist?",
 
             'project': "Which project do you want to work on?",
@@ -119,24 +125,22 @@ class TestWorkSession(unittest.TestCase):
             'break_fin': "Your break is over. Let's get back to work. "
         }
 
-        # TODO
-        return
-
         uc = self.usecase
 
         reply = uc.advance(None)
-        self.assertIn(states['rem_music'], reply.message)
+        self.assertIn(states['music'], reply.message)
 
         reply = uc.advance({'message': 'yes'})
         self.assertIn(states['music_rec'], reply.message)
-        self.assertNotNone(reply.link)
+        self.assertIsNotNone(reply.link)
         self.assertTrue(self.uri_valid(reply.link))
         self.assertIn(states['project'], reply.message)
-        self.assertNotNone(reply.list) # list of projects
+        #self.assertIsNotNone(reply.list) # list of projects
+        return
 
         reply = uc.advance({'message': 'Software Engineering'})
         self.assertIn(states['todos'], reply.message)
-        self.assertNotNone(reply.list)
+        self.assertIsNotNone(reply.list)
         self.assertTrue(len(reply.list) > 0)
         self.assertIn(states['which_todo'], reply.message)
 
@@ -185,11 +189,11 @@ class TestWorkSession(unittest.TestCase):
                         #reply = reply || notification
                         #self.assertIn(states['which_project'], notification.message)
                         self.assertIn(states['project'], reply.message)
-                        self.assertNotNone(reply.list) # list of projects
+                        self.assertIsNotNone(reply.list) # list of projects
 
                         reply = uc.advance({'message': 'Software Engineering'})
                         self.assertIn(states['todos'], reply.message)
-                        self.assertNotNone(reply.list)
+                        self.assertIsNotNone(reply.list)
                         self.assertTrue(len(reply.list) > 0)
                         self.assertIn(states['which_todo'], reply.message)
 

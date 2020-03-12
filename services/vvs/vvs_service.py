@@ -56,7 +56,7 @@ class VVAEfaXMLRemote(VVSRemote):
 class VVSService:
     remote = None
 
-    def __init__(self, remote):
+    def __init__(self, remote:VVSRemote=VVSEfaJSONRemote()):
         self.remote = remote
 
     def get_location_id(self, location:str):

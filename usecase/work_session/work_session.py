@@ -7,7 +7,7 @@ from services.todoAPI import TodoistService
 from services.vvs import VVSService
 from services.cal import CalService
 from services.preferences import PrefService
-#from services.music import MusicService
+from services.music import MusicService
 #from usecase import TransportUsecase
 
 @Singleton
@@ -16,12 +16,12 @@ class WorkSession(Usecase):
     def __init__(self):
         super().__init__()
 
-        self.cal_service = None
-        self.vvs_service = None
+        self.cal_service = CalService()
+        self.vvs_service = VVSService()
         # TODO self.transport_usecase = None
-        self.todo_service = None
-        #self.music_service = None
-        self.pref = None
+        self.todo_service = TodoistService()
+        self.music_service = MusicService.instance()
+        self.pref = PrefService()
 
         self.fsm = StateMachine()
         self.define_state_transitions()
@@ -36,6 +36,8 @@ class WorkSession(Usecase):
         self.vvs_service = service
     def set_todo_service(self, service:TodoistService):
         self.todo_service = service
+    def set_music_service(self, service:MusicService):
+        self.music_service = service
 
     def reset(self):
         self.fsm.reset()
@@ -97,7 +99,10 @@ class WorkSession(Usecase):
                     if minutes_until < min_work_period:
                         return _event_too_close(next_event, journey)
 
-                    self.cal_service.add_event(journey.to_event())
+                    journey_event = journey.to_event()
+                    reminder = self.pref['remind_min_before_leaving']
+                    journey_event.set_reminder(timedelta(minutes=reminder))
+                    self.cal_service.add_event(journey_event)
 
                     # TODO create notification
                     msg = "I created a reminder for when you have to get going to reach:\n"
@@ -112,8 +117,27 @@ class WorkSession(Usecase):
                 msg += '\nWould you like to listen to music?'
                 return "music", {'message': msg}
 
+        def music_trans(data):
+            msg =""
+            reply = {}
+            if 'yes' in data['message']:
+                link = self.music_service.get_playlist_for_mood('focus')
+                msg += "How about this Spotify playlist?"
+                reply = {**reply, 'link': link}
+
+            msg += "\nWhich project do you want to work on?\n"
+            self.projects = self.todo_service.get_project_names()
+            msg += str(self.projects)
+            reply = {**reply, 'message': msg}
+            return "project", reply
+
+        def project_trans(data):
+            return
+
         m = self.fsm
         m.add_state("start", start_trans)
         m.set_start("start")
+        m.add_state("music", music_trans)
+        m.add_state("project", project_trans)
         m.add_state("error_state", None, end_state=True)
         m.add_state("end_state", None, end_state=True)

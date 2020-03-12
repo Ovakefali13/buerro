@@ -36,12 +36,12 @@ class TodoistJSONRemote(TodoistRemote):
 
     def get_todos(self, project_id):
         return self.api.projects.get_data(project_id)
-    
+
     def set_todos(self, items, p_id):
         for item in items:
             self.api.items.add(item, project_id=p_id)
         self.api.commit()
-    
+
     def delete_todo(self, delete_item, p_id):
         items_list = self.get_todos(p_id)
         for item in items_list['items']:
@@ -52,9 +52,9 @@ class TodoistJSONRemote(TodoistRemote):
 class TodoistService:
     remote = None
 
-    def __init__(self, remote):
+    def __init__(self, remote:TodoistRemote=TodoistJSONRemote()):
         self.remote = remote
-    
+
     def get_project_names(self):
         response = []
         for project in self.remote.get_projects():
@@ -64,7 +64,7 @@ class TodoistService:
     def get_project_id(self, name):
         response = None
         for project in self.remote.get_projects():
-            if project['name'] == name:
+            if project['name'].lower() == name.lower():
                 response = project['id']
         return response
 
@@ -74,7 +74,7 @@ class TodoistService:
         for item in project['items']:
             response.append(item['content'])
         return response
-    
+
     def set_project_todo(self, items, project_name):
         project_id = self.get_project_id(project_name)
         self.remote.set_todos(items, project_id)

@@ -92,7 +92,7 @@ class iCloudCaldavRemote(CaldavRemote):
 
 class CalService:
 
-    def __init__(self, remote:CaldavRemote):
+    def __init__(self, remote:CaldavRemote=iCloudCaldavRemote()):
         self.remote = remote
 
     def get_next_events(self):
