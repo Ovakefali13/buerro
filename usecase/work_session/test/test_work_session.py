@@ -76,9 +76,26 @@ class TestWorkSession(unittest.TestCase):
         self.assertIn(expected, reply.message)
 
     def test_creates_reminder_for_upcoming(self):
-        # TODO creates a reminder for when to get going to reach an event in
-        # time
-        return
+        event = Event()
+        event.set_start(dt.now(pytz.utc) + timedelta(minutes=270))
+        event.set_end(event.get_start() + timedelta(minutes=30))
+        event.set_title('upcoming event')
+        event.set_location('Stuttgart Hauptbahnhof')
+        self.cal_service.add_event(event)
+
+        reply = self.usecase.advance(None)
+        expected = "I created a reminder for when you have to get going to reach:"
+        self.assertIn(expected, reply.message)
+        self.assertIn('upcoming event', reply.message)
+        self.assertIn('until', reply.message)
+        self.assertIn('takes', reply.message)
+
+        events = self.cal_service.get_all_events()
+        events = list(filter(lambda e: 'Hauptbahnhof' in e.get_title(), events))
+        self.assertIsNotNone(events)
+
+        # TODO assert reminder is set
+        # self.notificationHandler.get_notifications().contains()
 
     def test_advances_correctly(self):
         states = {

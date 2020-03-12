@@ -1,6 +1,8 @@
 from datetime import datetime, timezone
 from copy import copy
 
+from services.cal import Event
+
 class Journey:
 
     origin = None
@@ -56,6 +58,14 @@ class Journey:
             description += "\n" + str(leg)
 
         return description
+
+    def to_event(self):
+        event = Event()
+        event.set_title('VVS: ' + self.origin + ' - ' + self.dest)
+        event.set_start(self.dep_time)
+        event.set_end(self.arr_time)
+        event.set_description(str(self))
+        return event
 
     def from_vvs(self, vvs_journey:dict):
         def from_utc_to_local(utc_dt):

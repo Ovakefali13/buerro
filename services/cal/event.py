@@ -29,6 +29,8 @@ class Event(iCalEvent):
         self['dtend'] = end
     def set_location(self, location:str):
         self['location'] = location
+    def set_description(self, description:str):
+        self['description'] = description
     def set_reminder(self, reminder:timedelta):
         # all types: https://github.com/collective/icalendar/blob/2aa726714ff4a17e47b256da529640b201ebf66b/src/icalendar/prop.py 
         alarm = Alarm()

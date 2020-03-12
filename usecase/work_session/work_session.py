@@ -1,4 +1,4 @@
-from datetime import datetime as dt
+from datetime import datetime as dt, timedelta
 import pytz
 
 from usecase import Usecase, Reply, StateMachine
@@ -16,11 +16,11 @@ class WorkSession(Usecase):
     def __init__(self):
         super().__init__()
 
-        self.calService = None
-        self.vvsService = None
-        # TODO self.transportUsecase = None
-        self.todoService = None
-        # self.musicService = None
+        self.cal_service = None
+        self.vvs_service = None
+        # TODO self.transport_usecase = None
+        self.todo_service = None
+        #self.music_service = None
         self.pref = None
 
         self.fsm = StateMachine()
@@ -31,11 +31,11 @@ class WorkSession(Usecase):
         self.pref = service.get_preferences('work_session')
 
     def set_cal_service(self, service:CalService):
-        self.calService = service
+        self.cal_service = service
     def set_vvs_service(self, service:VVSService):
-        self.vvsService = service
+        self.vvs_service = service
     def set_todo_service(self, service:TodoistService):
-        self.todoService = service
+        self.todo_service = service
 
     def reset(self):
         self.fsm.reset()
@@ -63,7 +63,7 @@ class WorkSession(Usecase):
                 msg += "\nDo you still want to start working?"
                 return "end_state", {'message': msg}
 
-            next_events = self.calService.get_next_events()
+            next_events = self.cal_service.get_next_events()
             if next_events:
                 next_event = next_events[0]
                 now = pytz.utc.localize(dt.now())
@@ -76,23 +76,41 @@ class WorkSession(Usecase):
                     if minutes_until < 120:
                         return _event_possibly_too_close(next_event)
                 else:
-                    origin = "Hauptbahnhof Stuttgart" # TODO determine current location
-                    dest = next_event['location'] # TODO for sure that it's valid?
+                    origin = "Rotebühlplatz" # TODO determine current location
+                    dest = next_event['location']
+
+                    origin_id = self.vvs_service.get_location_id(origin)
+                    dest_id = self.vvs_service.get_location_id(dest)
+                    if not origin_id or not dest_id:
+                        return _event_possibly_too_close(next_event)
+
                     min_early = self.pref['be_minutes_early']
                     arrive_by = next_event['dtstart'].dt - timedelta(minutes=min_early)
-                    journeys = self.vvsService.get_journeys(origin, dest,
-                        "arr", arrive_by)
-                    journey = self.recommend_journey_to_event(journey, next_event)
+
+                    journeys = self.vvs_service.get_journeys_for_id(
+                        origin_id, dest_id, "arr", arrive_by)
+                    journey = self.vvs_service.recommend_journey_to_arrive_by(journeys,
+                        next_event.get_start())
 
                     now = pytz.utc.localize(dt.now())
                     minutes_until = (journey.dep_time - now).seconds / 60
                     if minutes_until < min_work_period:
                         return _event_too_close(next_event, journey)
+
+                    self.cal_service.add_event(journey.to_event())
+
+                    # TODO create notification
+                    msg = "I created a reminder for when you have to get going to reach:\n"
+                    msg += next_event.summarize()
+                    msg += "\n using this VVS journey:\n"
+                    msg += str(journey)
+                    msg += '\nWould you like to listen to music?'
+
+                    return "music", {'message': msg}
             else:
                 msg = 'You have no upcoming events.'
-                return "next_state", {'message': msg}
-
-            return
+                msg += '\nWould you like to listen to music?'
+                return "music", {'message': msg}
 
         m = self.fsm
         m.add_state("start", start_trans)
