@@ -1,15 +1,15 @@
 from abc import ABC, abstractmethod
 
-class ChatbotBehaviour(ABC):
+class ChatbotBehavior(ABC):
     @abstractmethod
-    def get_response(self, prompt):
+    def get_intent(self, prompt):
         pass
 
     @abstractmethod
     def clear_context(self):
         pass
 
-class BuerroBot(ChatbotBehaviour):
+class BuerroBot(ChatbotBehavior):
 
     context = None
     keyword_dict = {
@@ -19,7 +19,7 @@ class BuerroBot(ChatbotBehaviour):
         "kalender": "$$next_calendar_event"
     }
 
-    def get_response(self, prompt):
+    def get_intent(self, prompt):
         if prompt == None or prompt == "":
             return "$$undefined_behaviour"
         prompt = prompt.lower()
@@ -46,5 +46,5 @@ class Chatbot:
     def __init__(self, behaviour):
         self.behaviour = behaviour
 
-    def get_response(self, prompt):
-        return self.behaviour.get_response(prompt)
+    def get_intent(self, prompt):
+        return self.behaviour.get_intent(prompt)

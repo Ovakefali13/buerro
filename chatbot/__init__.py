@@ -1,1 +1,2 @@
-from .chatbot import Chatbot, ChatbotBehaviour, BuerroBot
+from .intent import Intent
+from .chatbot import Chatbot, ChatbotBehavior, BuerroBot
