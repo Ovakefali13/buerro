@@ -1,7 +1,8 @@
 import requests
 import unittest
 import time
-
+from urllib.parse import urljoin
+import concurrent.futures
 from http.server import HTTPServer
 from threading import Thread, Event
 
@@ -14,13 +15,16 @@ from usecase import Usecase
 class MockChatbotBehavior(ChatbotBehavior):
 
     def get_intent(self, message:str):
-       return Intent("mock_work", [])
+        return Intent("mock_work", [])
+
+    def clear_context(self):
+        pass
 
 
 @Singleton
 class MockUsecase(Usecase):
     def __init__(self):
-        self.count == 0
+        self.count = 0
 
     def advance(self, entities):
         self.count += 1
@@ -53,7 +57,7 @@ class TestController(unittest.TestCase):
         self.serverPort = 9149
         self.server_url = "http://" + self.hostName + ":" + str(self.serverPort)
 
-        chatbot = Chatbot(MockChatbot.instance())
+        chatbot = Chatbot(MockChatbotBehavior.instance())
         usecaseByContext = {
             "mock_work": MockUsecase
         }
@@ -92,6 +96,26 @@ class TestController(unittest.TestCase):
         self.assertIn(b"Which project do you want to work on?", res)
         res = _query("ASE")
         self.assertIn(b"Todo", res)
+
+    def test_notification(self):
+        def _wait_for_notification():
+            return requests.get(urljoin(self.server_url, 'notification'))
+
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            notification_future = executor.submit(_wait_for_notification)
+
+            time.sleep(0.0001)
+
+            breakpoint()
+
+            self.assertFalse(notification_future.done())
+
+            notification = 'Test Notification'
+            self.notification_handler.notify(notification)
+
+            self.assertTrue(notification_future.done())
+            self.assertEqual(notification_future.result(), notification)
+
 
     @classmethod
     def tearDownClass(self):
