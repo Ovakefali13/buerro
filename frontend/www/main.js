@@ -48,33 +48,53 @@ function urlBase64ToUint8Array(base64String) {
     return outputArray;
 }
 
+swRegistration = null;
+
+function subscribeUser() {
+
+    const subscribeOptions = {
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(
+            "BMMA-CffOzTP-pSgzGqrgISf1hKXs9rgELQU1NZmq-_G7aeSiZktA68GdJtlEkKOwMaazkXFolRW8uBRpPKOexA"
+        )
+    }
+
+    swRegistration.pushManager.subscribe(subscribeOptions)
+    .then(pushSubscription => {
+        console.log('Received PushSubscription: ', pushSubscription); 
+        try {
+            sendSubscriptionToBackEnd(pushSubscription);
+            console.log('Successfully sent subscription to backend');
+            isSubscribed = true;
+        } catch(err) {
+            console.error(err);
+            pushSubscription.unsubscribe();
+        }
+    });
+}
+
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', function() {
+
         navigator.serviceWorker.register('/service-worker.js')
-            .then((registration) => {
-                console.log('ServiceWorker registration successful: ', registration);
-
-                const subscribeOptions = {
-                    userVisibleOnly: true,
-                    applicationServerKey: urlBase64ToUint8Array(
-                        "BMMA-CffOzTP-pSgzGqrgISf1hKXs9rgELQU1NZmq-_G7aeSiZktA68GdJtlEkKOwMaazkXFolRW8uBRpPKOexA"
-                    )
-                }
-
-                return registration.pushManager.subscribe(subscribeOptions);
-            }, err => {
-                console.error(err);
-            })
-            .then(pushSubscription => {
-                console.log('Received PushSubscription: ', pushSubscription); 
-                try {
-                    sendSubscriptionToBackEnd(pushSubscription);
-                    console.log('Successfully sent subscription to backend');
-                    subscribed = true;
-                } catch(err) {
-                    console.error(err);
-                }
-            });
+        .then((registration) => {
+            console.log('ServiceWorker registration successful: ', registration);
+            swRegistration = registration
+            return registration.pushManager.getSubscription()
+        }, err => {
+            console.error(err);
+        })
+        .then((subscription) => {
+            isSubscribed = !(subscription === null)
+            if(isSubscribed) {
+                console.log('User is subscribed.');
+            } else {
+                console.log('User is not subscribed.');
+                subscribeUser();
+            }
+        }, err => {
+            console.error(err);
+        });
     });
 
 }

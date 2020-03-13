@@ -18,10 +18,12 @@ def ControllerFromArgs(chatbot:Chatbot, usecaseByContext:dict):
             conn = sqlite3.connect('buerro.db')
             c = conn.cursor()
             c.execute('''CREATE TABLE IF NOT EXISTS subscription
-                            (endpoint text, p256dh text, auth text)''')
+                            (endpoint text not null primary key,
+                            p256dh text,
+                            auth text)''')
             values = (subscription['endpoint'], subscription['keys']['p256dh'],
                 subscription['keys']['auth'])
-            c.execute('INSERT INTO subscription VALUES (?,?,?)', values)
+            c.execute('INSERT OR REPLACE INTO subscription VALUES (?,?,?)', values)
             conn.commit()
             conn.close()
 
