@@ -1,12 +1,14 @@
-from http.server import SimpleHTTPRequestHandler, HTTPServer
+from http.server import BaseHTTPRequestHandler, HTTPServer
 import urllib
 import sqlite3
 import re
+import json
 
 from chatbot import Chatbot, Intent
 
+
 def ControllerFromArgs(chatbot:Chatbot, usecaseByContext:dict):
-    class CustomController(SimpleHTTPRequestHandler):
+    class CustomController(BaseHTTPRequestHandler):
         def __init__(self, *args, **kwargs):
             self.chatbot = chatbot
             self.usecaseByContext = usecaseByContext
@@ -19,15 +21,15 @@ def ControllerFromArgs(chatbot:Chatbot, usecaseByContext:dict):
                             (endpoint text, p256dh text, auth text)''')
             values = (subscription['endpoint'], subscription['keys']['p256dh'],
                 subscription['keys']['auth'])
-            c.execute('INSERT INTO subscription VALUES ?', (values,))
+            c.execute('INSERT INTO subscription VALUES (?,?,?)', values)
             conn.commit()
             conn.close()
 
         def end_headers(self):
             self.send_header('Access-Control-Allow-Origin', '*')
             self.send_header('Access-Control-Allow-Methods','GET, POST, OPTIONS')
-            self.send_header('Access-Control-Allow-Headers', 'Authorization')
-            SimpleHTTPRequestHandler.end_headers(self)
+            self.send_header('Access-Control-Allow-Headers', 'Content-type, Authorization')
+            BaseHTTPRequestHandler.end_headers(self)
 
         def respond_text(self, http_code:int, msg:str):
             self.send_response(http_code)
@@ -39,7 +41,7 @@ def ControllerFromArgs(chatbot:Chatbot, usecaseByContext:dict):
             self.send_response(http_code)
             self.send_header('Content-type', 'application/json')
             self.end_headers()
-            self.wfile.write(json.dumps(body))
+            self.wfile.write(json.dumps(body).encode('utf-8'))
 
         def respond_error(self, id:str, message:str):
             answer = {
@@ -58,7 +60,8 @@ def ControllerFromArgs(chatbot:Chatbot, usecaseByContext:dict):
 
             def parse_body():
                 length = int(self.headers['Content-Length'])
-                return urllib.parse.parse_qs(self.rfile.read(length).decode('utf-8'))
+                payload = self.rfile.read(length).decode('utf-8')
+                return json.loads(payload)
 
             body = parse_body()
 
@@ -82,12 +85,13 @@ def ControllerFromArgs(chatbot:Chatbot, usecaseByContext:dict):
 
                 del msg
 
-            if sel.path == "/save-subscription":
+            if self.path == "/save-subscription":
                 print('/save-subscription ...')
                 try:
                     self.save_subscription(body)
-                    self.respond_json(200, { data: { success: True }})
-                except:
+                    self.respond_json(200, { 'data': { 'success': True }})
+                except Exception as e:
+                    print(e)
                     self.respond_error('unable-to-save-subscription',
                         'The subscription was received but we were unable to'
                         + 'save it to our database.')

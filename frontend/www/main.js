@@ -28,6 +28,26 @@ function notify(message, body, vibrate) {
     }
 }
 
+/**
+ * urlBase64ToUint8Array
+ *
+ * @param {string} base64String a public vavid key
+ */
+function urlBase64ToUint8Array(base64String) {
+    var padding = '='.repeat((4 - base64String.length % 4) % 4);
+    var base64 = (base64String + padding)
+        .replace(/\-/g, '+')
+        .replace(/_/g, '/');
+
+    var rawData = window.atob(base64);
+    var outputArray = new Uint8Array(rawData.length);
+
+    for (var i = 0; i < rawData.length; ++i) {
+        outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
+}
+
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', function() {
         navigator.serviceWorker.register('/service-worker.js')
@@ -40,7 +60,6 @@ if ('serviceWorker' in navigator) {
                         "BMMA-CffOzTP-pSgzGqrgISf1hKXs9rgELQU1NZmq-_G7aeSiZktA68GdJtlEkKOwMaazkXFolRW8uBRpPKOexA"
                     )
                 }
-
 
                 return registration.pushManager.subscribe(subscribeOptions);
             }, err => {
@@ -71,6 +90,7 @@ function sendSubscriptionToBackEnd(subscription) {
   })
   .then(function(response) {
     if (!response.ok) {
+      console.error(response.json())
       throw new Error('Bad status code from server.');
     }
 
