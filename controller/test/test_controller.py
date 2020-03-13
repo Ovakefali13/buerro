@@ -2,7 +2,6 @@ import requests
 import unittest
 import time
 import json
-
 from http.server import HTTPServer
 from threading import Thread, Event
 
@@ -15,7 +14,10 @@ from usecase import Usecase
 class MockChatbotBehavior(ChatbotBehavior):
 
     def get_intent(self, message:str):
-       return Intent("mock_work", [])
+        return Intent("mock_work", [])
+
+    def clear_context(self):
+        pass
 
     def clear_context(self):
         pass
@@ -104,4 +106,3 @@ class TestController(unittest.TestCase):
         self.shutdown_event.set()
         body ={'message': 'shutdown'}
         requests.post(self.server_url + '/message', json=body)
-        self.server_thread.join(0.1)

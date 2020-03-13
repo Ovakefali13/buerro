@@ -10,6 +10,7 @@ from . import NotificationHandler
 def ControllerFromArgs(chatbot:Chatbot, usecaseByContext:dict):
     class CustomController(BaseHTTPRequestHandler):
         def __init__(self, *args, **kwargs):
+            self.notification_handler = NotificationHandler.instance()
             self.chatbot = chatbot
             self.usecaseByContext = usecaseByContext
             super(CustomController, self).__init__(*args, **kwargs)
@@ -68,7 +69,6 @@ def ControllerFromArgs(chatbot:Chatbot, usecaseByContext:dict):
                     if usecase:
                         usecase = usecase.instance()
                         reply = usecase.advance(intent.entities)
-
                         respond_json(200, reply)
                     else:
                         respond_text(500, 'no usecase detected')

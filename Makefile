@@ -14,7 +14,7 @@ no_mock:
 	DONOTMOCK=1 $(PYTHON) test_loader.py $(ARGS)
 
 .PHONY: vapid_app_key
-vapid_app_key:
+vapid_app_key: sec/vapid_public_key.pem
 	vapid/python/venv/bin/vapid --applicationServerKey
 
 sec/vapid_public_key.pem: vapid/python/venv/bin/vapid sec

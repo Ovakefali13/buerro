@@ -2,6 +2,8 @@ from pywebpush import webpush, WebPushException
 import sqlite3
 import json
 
+from services.singleton import Singleton
+
 
 class Notification(dict):
     def __init__(self, title):
@@ -13,6 +15,7 @@ class Notification(dict):
     def set_body(self, body):
         self['options']['body'] = body
 
+@Singleton
 class NotificationHandler:
 
     def __init__(self):
