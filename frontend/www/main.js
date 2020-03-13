@@ -30,6 +30,13 @@ function urlBase64ToUint8Array(base64String) {
     return outputArray;
 }
 
+navigator.serviceWorker.addEventListener('message', event => {
+    console.log(event.data.title, event.data.options);
+    if(event.data.options.data.message) {
+        putBotMessage(event.data.options.data.message);
+    }
+});
+
 swRegistration = null;
 
 function subscribeUser() {
@@ -127,6 +134,14 @@ $(document).ready(function() {
         $("#prompt_input").val("");
     });
 })
+
+function putUserMessage(message) {
+    $(".chatcontainer").append(generateChatBubble(false, message)); 
+}
+
+function putBotMessage(message) {
+    $(".chatcontainer").append(generateChatBubble(true, message));
+}
 
 
 function processUserPrompt(prompt) {

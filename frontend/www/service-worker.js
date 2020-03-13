@@ -1,17 +1,37 @@
-self.addEventListener('push', function(event) {
+self.addEventListener('push', async function(event) {
     console.log('[Service Worker] Push Received.');
     console.log(`[Service Worker] Push had this data: "${event.data.text()}"`);
 
-    data = event.data.json()
-
-    const options = {
-        ...data.options,
-        icon: 'ico/favicon-32x32.png',
+    var options = {
+        icon: 'ico/android-chrome-192x192.png',
         badge: 'ico/favicon-32x32.png'
     };
 
-    self.registration.showNotification(data.title, options);
+    try {
+        data = event.data.json();
+        console.log(data);
+        title = data.title;
+
+        console.log(options);
+        options = Object.assign({}, data.options, options);
+        console.log(options);
+    } catch(e) {
+        title = event.data.text();
+    }
+
+    self.registration.showNotification(title, options);
+    
+    // find the client(s) you want to send messages to:
+    self.clients.matchAll({includeUncontrolled: true, type: 'window'}).then( (clients) => {
+        if (clients && clients.length) {
+            // you need to decide which clients you want to send the message to..
+            const client = clients[0];
+            client.postMessage({title: title, options: options});
+        }
+    });
 });
+
+buerro_url = 'http://localhost:4000/'
 
 self.addEventListener('notificationclick', function(event) {
   console.log('On notification click: ', event.notification.tag);
@@ -24,8 +44,7 @@ self.addEventListener('notificationclick', function(event) {
   }).then(function(clientList) {
     for (var i = 0; i < clientList.length; i++) {
       var client = clientList[i];
-      console.log(client.url)
-      if (client.url == 'http://localhost:4000/') {
+      if (client.url == buerro_url) {
         return client.focus(); // TODO doesnt seem to work
       }
     }

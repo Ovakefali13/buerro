@@ -12,8 +12,13 @@ class Notification(dict):
         self['options']['vibrate'] = True
         self['options']['silent'] = False
 
-    def set_body(self, body):
+    def set_body(self, body:str):
         self['options']['body'] = body
+
+    def add_message(self, message:str):
+        self['options']['data'] = {
+            'message': message
+        }
 
 @Singleton
 class NotificationHandler:
@@ -78,5 +83,7 @@ class NotificationHandler:
 if __name__ == "__main__":
     notification = Notification('Test Notification')
     notification.set_body('Did you know? buerro is super cool.')
+    notification.add_message('''Hey it's me the PDA for your buerro.
+        Should I order some Kaesspaetzle?''')
     notification_handler = NotificationHandler.instance()
     notification_handler.push(notification)
