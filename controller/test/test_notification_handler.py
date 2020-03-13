@@ -8,7 +8,7 @@ class TestNotificationHandler(unittest.TestCase):
 
     @classmethod
     def setUpClass(self):
-        self.notification_handler = NotificationHandler()
+        self.notification_handler = NotificationHandler.instance()
         self.notification_handler.set_db('controller/test/test.db')
 
     def test_set_and_get_subscription_info(self):

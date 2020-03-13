@@ -5,7 +5,7 @@ import json
 from http.server import HTTPServer
 from threading import Thread, Event
 
-from services.Singleton import Singleton
+from services.singleton import Singleton
 from controller import ControllerFromArgs
 from chatbot import ChatbotBehavior, Chatbot, Intent
 from usecase import Usecase

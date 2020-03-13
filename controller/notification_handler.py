@@ -78,5 +78,5 @@ class NotificationHandler:
 if __name__ == "__main__":
     notification = Notification('Test Notification')
     notification.set_body('Did you know? buerro is super cool.')
-    notification_handler = NotificationHandler()
+    notification_handler = NotificationHandler.instance()
     notification_handler.push(notification)
