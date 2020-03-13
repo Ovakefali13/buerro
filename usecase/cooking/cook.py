@@ -10,7 +10,6 @@ from services.cal.event import Event
 from datetime import datetime, timedelta
 from dateutil import tz
 import pytz
-import os
 
 class Cook:
     ingredient = 'pork'
@@ -80,6 +79,8 @@ class Cook:
         self.cooking_event.set_location('Home')
         self.cooking_event.set_start(self.event_time_start + timedelta(minutes=15))
         self.cooking_event.set_end(self.cooking_event.get_start() + timedelta(minutes=cooking_time))
+        self.cooking_event.set_url(self.spoonacle_service.get_url())
+        self.cooking_event.set_note(self.response_message)
         
         return self.cal_service.add_event(self.cooking_event)
     
