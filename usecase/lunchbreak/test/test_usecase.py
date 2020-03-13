@@ -49,3 +49,9 @@ class TestLunchbreak(unittest.TestCase):
         google_link = self.lb.open_maps_route(self.dhbw, nearby_restaurants[1])
         ret = self.lb.create_cal_event(start,end, nearby_restaurants[1], google_link)
         self.assertIsInstance(ret, Event)
+
+    def test_wait_for_user_input(self):
+        ret = self.lb.wait_for_user_request("Four")
+        self.assertEqual(ret, 4)
+        ret = self.lb.wait_for_user_request("four")
+        self.assertEqual(ret, 4)
