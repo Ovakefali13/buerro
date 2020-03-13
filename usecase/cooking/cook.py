@@ -1,12 +1,16 @@
 from services.preferences.pref_service import PrefService, PrefRemote, PrefJSONRemote
 from services.spoonacular.spoonacular_service import SpoonacularService, SpoonacularJSONRemote, SpoonacularRemote
 from services.todoAPI.todoist_service import TodoistService, TodoistRemote, TodoistJSONRemote
+from services.todoAPI.test.test_service import TodoistMockRemote
 from services.yelp.yelp_service import YelpService, YelpRequest
+from services.yelp.test.test_service import YelpMock
 from services.cal.cal_service import CalService, CaldavRemote, iCloudCaldavRemote
+from services.cal.test.test_service import CaldavMockRemote
 from services.cal.event import Event
 from datetime import datetime, timedelta
 from dateutil import tz
 import pytz
+import os
 
 class Cook:
     ingredient = 'pork'
@@ -23,11 +27,18 @@ class Cook:
     event_time_end = None
     cooking_event = None
 
-    def __init__(self):
-        self.cal_service = CalService(iCloudCaldavRemote())
-        self.pref_service = PrefService(PrefJSONRemote())
-        self.yelp_service = YelpService.instance()
-        self.todoist_service = TodoistService(TodoistJSONRemote())
+    def __init__(self, mock:bool=False):
+        if mock:
+            self.cal_service = CalService(CaldavMockRemote())
+            self.pref_service = PrefService(PrefJSONRemote())
+            self.yelp_service = YelpService.instance()
+            self.yelp_service.set_remote(YelpMock())
+            self.todoist_service = TodoistService(TodoistMockRemote())
+        else:
+            self.cal_service = CalService(iCloudCaldavRemote())
+            self.pref_service = PrefService(PrefJSONRemote())
+            self.yelp_service = YelpService.instance()
+            self.todoist_service = TodoistService(TodoistJSONRemote())
 
     def trigger_use_case(self, ingredient):
         self.ingredient = ingredient

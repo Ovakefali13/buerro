@@ -2,7 +2,10 @@ import unittest
 import datetime
 from usecase.cooking import Cook
 from services.todoAPI.todoist_service import TodoistJSONRemote, TodoistService
+from services.todoAPI.test.test_service import TodoistMockRemote
 from services.cal.cal_service import CalService, CaldavRemote, iCloudCaldavRemote
+from services.cal.test.test_service import CaldavMockRemote
+import os
 
 class TestCooking(unittest.TestCase):
     MOCK_LOCATION = 'Jägerstraße 56, 70174 Stuttgart'
@@ -13,11 +16,18 @@ class TestCooking(unittest.TestCase):
 
     @classmethod
     def setUpClass(self):
-        self.use_case = Cook()
-        self.todoist_service = TodoistService(TodoistJSONRemote())
-        self.calender_remote = iCloudCaldavRemote()
-        self.calender_service = CalService(self.calender_remote)
-
+        if 'DONOTMOCK' in os.environ:
+            self.use_case = Cook(True)
+            self.todoist_service = TodoistService(TodoistMockRemote())
+            self.calender_remote = CaldavMockRemote()
+            self.calender_service = CalService(self.calender_remote)
+        else:
+            print("Mocking remotes...")
+            self.use_case = Cook()
+            self.todoist_service = TodoistService(TodoistJSONRemote())
+            self.calender_remote = iCloudCaldavRemote()
+            self.calender_service = CalService(self.calender_remote)  
+       
     def test_trigger_usecase(self):
         self.use_case.trigger_use_case('pork')
         response_message = self.use_case.get_response()
