@@ -2,7 +2,7 @@ from datetime import datetime as dt
 import pytz
 
 from usecase import Usecase, Reply, StateMachine
-from services.Singleton import Singleton
+from services.singleton import Singleton
 from services.todoAPI import TodoistService
 from services.vvs import VVSService
 from services.cal import CalService
