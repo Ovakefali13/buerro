@@ -21,6 +21,7 @@ class Cook:
     max_cooking_time = None
     event_time_start = None
     event_time_end = None
+    cooking_event = None
 
     def __init__(self):
         self.cal_service = CalService(iCloudCaldavRemote())
@@ -63,13 +64,13 @@ class Cook:
     def set_calender(self):
         cooking_time = self.spoonacle_service.get_cookingTime()
 
-        cooking_event = Event()
-        cooking_event.set_title('Cooking')
-        cooking_event.set_location('Home')
-        cooking_event.set_start(self.event_time_start + timedelta(minutes=15))
-        cooking_event.set_end(cooking_event.get_start() + timedelta(minutes=cooking_time))
+        self.cooking_event = Event()
+        self.cooking_event.set_title('Cooking')
+        self.cooking_event.set_location('Home')
+        self.cooking_event.set_start(self.event_time_start + timedelta(minutes=15))
+        self.cooking_event.set_end(self.cooking_event.get_start() + timedelta(minutes=cooking_time))
         
-        return self.cal_service.add_event(cooking_event)
+        return self.cal_service.add_event(self.cooking_event)
     
     def not_time_to_cook(self):   
         cooking_time = datetime.fromisoformat(str(datetime.utcnow().date()))
@@ -86,5 +87,8 @@ class Cook:
         return self.response_message
 
     def get_ingredient_list(self):
-        return self.get_ingredient_list
+        return self.ingredient_list
+    
+    def get_cooking_event(self):
+        return self.cooking_event
     
