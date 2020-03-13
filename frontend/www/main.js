@@ -10,24 +10,6 @@ notificationOptions = {
     'silent': false
 }
 
-function notify(message, body, vibrate) {
-    if("Notification" in window) {
-        var options = {
-          'body': body,
-          'vibrate': vibrate 
-        }
-        if(Notification.permission === "granted") {
-            var n = new Notification(message,options);
-        } else if(Notification.permission !== "denied") {
-            Notification.requestPermission().then(permission => {
-                if(permission === "granted") {
-                    var notification = new Notification(message, options);
-                }
-            })
-        }
-    }
-}
-
 /**
  * urlBase64ToUint8Array
  *
