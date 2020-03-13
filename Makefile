@@ -14,7 +14,21 @@ mock:
 no_mock: 
 	DONOTMOCK=1 $(PYTHON) test_loader.py $(ARGS)
 
-.PHONY: set_buerro_path
-set_buerro_path:
-	cd $(shell python -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())") && \
-            echo $(ROOT_DIR) > buerro.pth
+vapid_app_key:
+	vapid/python/venv/bin/vapid --applicationServerKey
+
+vapid_keys: vapid/python/venv/bin/vapid
+	$< --gen
+        
+vapid/python/venv/bin/vapid: 
+	cd vapid/python && virtualenv -p 3.7 venv && \
+            venv/bin/pip install -r requirements.txt && \
+            venv/bin/python setup.py install
+
+.PHONY: backend
+backend:
+	$(PYTHON) main.py
+
+.PHONY: frontend
+frontend:
+	cd frontend && npm start
