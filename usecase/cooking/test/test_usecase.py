@@ -17,16 +17,16 @@ class TestCooking(unittest.TestCase):
     @classmethod
     def setUpClass(self):
         if 'DONOTMOCK' in os.environ:
-            self.use_case = Cook(True)
-            self.todoist_service = TodoistService(TodoistMockRemote())
-            self.calender_remote = CaldavMockRemote()
-            self.calender_service = CalService(self.calender_remote)
-        else:
-            print("Mocking remotes...")
             self.use_case = Cook()
             self.todoist_service = TodoistService(TodoistJSONRemote())
             self.calender_remote = iCloudCaldavRemote()
             self.calender_service = CalService(self.calender_remote)  
+        else:
+            print("Mocking remotes...")
+            self.use_case = Cook(True)
+            self.todoist_service = TodoistService(TodoistMockRemote())
+            self.calender_remote = CaldavMockRemote()
+            self.calender_service = CalService(self.calender_remote)
        
     def test_trigger_usecase(self):
         self.use_case.trigger_use_case('pork')
