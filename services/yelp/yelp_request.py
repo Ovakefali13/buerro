@@ -10,6 +10,7 @@ class YelpRequest:
         self.pref = PrefService()
         self.search_params = {
             'term': 'food',
+            'categories' : self.pref.get_specific_pref('diet'),
             'location' : 'Jägerstraße 56, 70174 Stuttgart',
             'price': self.pref.get_specific_pref('price'),
             'radius': 2000,

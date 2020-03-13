@@ -5,6 +5,7 @@ from services.yelp.test.test_service import YelpMock
 from datetime import datetime
 from services.preferences import PrefService
 from services.maps.geocoding_service import GeocodingService
+from services.maps.test.test_service import GeocodingMockRemote
 from services.maps.map_service import MapService
 from services.yelp.yelp_request import YelpRequest
 from services.cal.cal_service import CalService, iCloudCaldavRemote
@@ -18,14 +19,17 @@ class Lunchbreak:
             weather_adapter.set_remote(WeatherMock())
             yelp_service = YelpService.instance()
             yelp_service.set_remote(YelpMock())
-        #self.triggerUseCase(location)
+            geocoding = GeocodingService.instance()
+            geocoding.remote = GeocodingMockRemote.instance()
+        else:
+            print("Not Mocking")
 
     def trigger_use_case(self, location):
         self.current_location_coords = location
         restaurants = self.check_lunch_options(location)
         #TODO send restaurants to controller and get user choice
         choice = self.wait_for_user_request()
-        chioce = 2
+        choice = 0
         self.open_maps_route(choice, location, restaurants)
 
 
@@ -35,14 +39,14 @@ class Lunchbreak:
         start = datetime.now(pytz.utc).replace(hour=10, minute=0, second=0, microsecond=0)
         end = datetime.now(pytz.utc).replace(hour=15, minute=0, second=0, microsecond=0)
         duration, lunch_start, lunch_end =  self.find_longest_timeslot_between_hours(start,end)
-
+        print("Your lunchbreak starts at "  + str(lunch_start) + ". You have " + str(duration) + "minutes until your next event")
         lunch_timestamp = datetime.timestamp(lunch_start)
 
         hours_until_lunch = self.time_diff_in_hours(lunch_start, datetime.now(pytz.utc))
 
         geocoding = GeocodingService.instance()
-        print(location)
-        city = geocoding.get_city_from_coords(location)
+        #city = geocoding.get_city_from_coords(location)
+        city = 'Stuttgart'
         print(city)
         ### Check Weather ###
         weather_adapter = WeatherAdapter.instance()
