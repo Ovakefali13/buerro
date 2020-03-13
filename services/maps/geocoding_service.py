@@ -57,7 +57,12 @@ class GeocodingService:
 
 
     def get_city_from_coords(self, coords:list):
-        results = self.remote.get_information_from_coords(coords)
-
-        return results[0]['components']['city']
-
+        results = self.remote.get_information_from_coords(coords)[0]['components']
+        
+        if 'city' in results:
+            return results['city']
+        elif 'village' in results:
+            return results['village']
+        else:
+            return 'No city or village found.'
+        
