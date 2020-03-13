@@ -8,7 +8,7 @@ from services.maps.geocoding_service import GeocodingService
 from services.maps.test.test_service import GeocodingMockRemote
 from services.maps.map_service import MapService
 from services.yelp.yelp_request import YelpRequest
-from services.cal.cal_service import CalService, iCloudCaldavRemote
+from services.cal.cal_service import CalService, iCloudCaldavRemote, Event
 import pytz
 
 class Lunchbreak:
@@ -22,15 +22,17 @@ class Lunchbreak:
             geocoding = GeocodingService.instance()
             geocoding.remote = GeocodingMockRemote.instance()
         else:
-            print("Not Mocking")
+            #print("Not Mocking")
+            pass
 
     def trigger_use_case(self, location):
         self.current_location_coords = location
-        restaurants = self.check_lunch_options(location)
+        restaurants, start, end = self.check_lunch_options(location)
         #TODO send restaurants to controller and get user choice
         choice = self.wait_for_user_request()
         choice = 0
-        self.open_maps_route(choice, location, restaurants)
+        link = self.open_maps_route(location, restaurants[choice])
+        self.create_cal_event(start, end,restaurants[choice], link)
 
 
     def check_lunch_options(self, location):
@@ -39,7 +41,7 @@ class Lunchbreak:
         start = datetime.now(pytz.utc).replace(hour=10, minute=0, second=0, microsecond=0)
         end = datetime.now(pytz.utc).replace(hour=15, minute=0, second=0, microsecond=0)
         duration, lunch_start, lunch_end =  self.find_longest_timeslot_between_hours(start,end)
-        print("Your lunchbreak starts at "  + str(lunch_start) + ". You have " + str(duration) + "minutes until your next event")
+        #print("Your lunchbreak starts at "  + str(lunch_start) + ". You have " + str(duration) + "minutes until your next event")
         lunch_timestamp = datetime.timestamp(lunch_start)
 
         hours_until_lunch = self.time_diff_in_hours(lunch_start, datetime.now(pytz.utc))
@@ -47,7 +49,7 @@ class Lunchbreak:
         geocoding = GeocodingService.instance()
         #city = geocoding.get_city_from_coords(location)
         city = 'Stuttgart'
-        print(city)
+        #print(city)
         ### Check Weather ###
         weather_adapter = WeatherAdapter.instance()
         weather_adapter.update(city)
@@ -60,16 +62,27 @@ class Lunchbreak:
 
         yelp_service = YelpService.instance()
         restaurants = yelp_service.get_short_information_of_restaurants(search_params)
-        for x in restaurants:
-            print(x['name'])
-        return restaurants
+        #for x in restaurants:
+        #    print(x['name'])
+        return restaurants, lunch_start, lunch_end
 
 
-    def open_maps_route(self, choice, location, restaurants):
-        coords_dest = restaurants[choice]['coordinates']
+    def open_maps_route(self, location, restaurant):
+        coords_dest = restaurant['coordinates']
         map_service = MapService.instance()
         link = map_service.get_route_link(location, coords_dest)
-        print(link)
+        return link
+
+    def create_cal_event(self, start, end, restaurant, link):
+        lunch = Event()
+        lunch.set_title('Lunch at ' + restaurant['name'])
+        lunch.set_location(restaurant['address'])
+        lunch.add('description', "Route information: " + str(link) + "\nWebsite: " + restaurant['url'])
+        lunch.set_start(start)
+        lunch.set_end(end)
+        cal_service = CalService(iCloudCaldavRemote())
+        cal_service.add_event(lunch)
+        return lunch
 
     def wait_for_user_request(self):
         ### Wait for user decision ###
@@ -100,4 +113,3 @@ class Lunchbreak:
             return True
         else:
             return False
-

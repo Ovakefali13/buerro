@@ -2,6 +2,7 @@ import unittest
 from datetime import datetime
 from usecase.lunchbreak import Lunchbreak
 import os
+from services.cal.event import Event
 
 
 class TestLunchbreak(unittest.TestCase):
@@ -16,7 +17,7 @@ class TestLunchbreak(unittest.TestCase):
 
     def test_check_lunch_options(self):
         lb = Lunchbreak(self.MOCK)
-        nearby_restaurants = lb.check_lunch_options(self.dhbw)
+        nearby_restaurants, start, end = lb.check_lunch_options(self.dhbw)
         self.assertIsInstance(nearby_restaurants, list)
 
     def test_time_diff_in_hours(self):
@@ -32,13 +33,19 @@ class TestLunchbreak(unittest.TestCase):
 
     def test_open_maps_route(self):
         lb = Lunchbreak(self.MOCK)
-        nearby_restaurants = lb.check_lunch_options(self.dhbw)
+        nearby_restaurants, start, end = lb.check_lunch_options(self.dhbw)
 
-        google_link = lb.open_maps_route(1,self.dhbw, nearby_restaurants)
+        google_link = lb.open_maps_route(self.dhbw, nearby_restaurants[1])
         self.assertIsInstance(google_link, str)
 
     def test_notify(self):
         lb = Lunchbreak(self.MOCK)
         is_active = lb.notify()
-
         self.assertIsInstance(is_active, bool)
+
+    def test_create_cal_event(self):
+        lb = Lunchbreak(self.MOCK)
+        nearby_restaurants, start, end = lb.check_lunch_options(self.dhbw)
+        google_link = lb.open_maps_route(self.dhbw, nearby_restaurants[1])
+        ret = lb.create_cal_event(start,end, nearby_restaurants[1], google_link)
+        self.assertIsInstance(ret, Event)
