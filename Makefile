@@ -29,7 +29,7 @@ vapid/python/venv/bin/vapid: vapid/python
             venv/bin/python setup.py install
 
 vapid/python:
-	git submodule --init --update
+	git submodule update --init --remote --recursive
 
 .PHONY: backend
 backend:
