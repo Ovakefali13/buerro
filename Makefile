@@ -31,6 +31,13 @@ vapid/python/venv/bin/vapid: vapid/python
 vapid/python:
 	git submodule --init --update
 
+# https://stackoverflow.com/a/43666288
+.PHONY: cert
+cert:
+	@echo "FOR COMMON NAME ENTER: localhost"
+	cd frontend/ssl && bash create_root_cert_and_key.sh
+	cd frontend/ssl && bash create_certificate_for_domain.sh localhost 
+
 .PHONY: backend
 backend:
 	$(PYTHON) main.py
