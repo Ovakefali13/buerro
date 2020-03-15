@@ -11,6 +11,7 @@ from services.yelp.yelp_request import YelpRequest
 from services.cal.cal_service import CalService, iCloudCaldavRemote, Event
 import pytz
 import re
+from controller.notification_handler import Notification, NotificationHandler
 
 class Lunchbreak:
 
@@ -27,7 +28,6 @@ class Lunchbreak:
             geocoding.remote = GeocodingJSONRemote.instance()
 
     def trigger_use_case(self, location:list):
-        self.current_location_coords = location
         restaurants, start, end = self.check_lunch_options(location)
         #TODO send restaurants to controller and get user choice
         choice = self.wait_for_user_request("Four")
@@ -122,6 +122,14 @@ class Lunchbreak:
         else:
             return False
 
+    def create_proactive_notification(self):
+        notification = Notification('Where would you like to have lunch?')
+        notification.add_message('Check out the best restaurant nearby for lunch. Just open the Buerro PDA!')
+        notification.set_body('Check out the best restaurant nearby for lunch. Just open the Buerro PDA!')
+        notification_handler = NotificationHandler.instance()
+        notification_handler.push(notification)
+
     def trigger_proactive_usecase(self, location):
         if(self.notify()):
+            self.create_proactive_notification()
             self.trigger_use_case(location)
