@@ -87,15 +87,16 @@ class Lunchbreak:
 
     def wait_for_user_request(self, data):
         ### Wait for user decision ###
-        seletedRestaurant = 2
+        seletedRestaurant = -1
         options = [{"One": 1}, {"Two": 2}, {"Three": 3}, {"Four": 4}, {"Five" : 5}]
         for opts in options:
             match = re.search(str(list(opts.keys())[0]) , data, re.IGNORECASE)
             if(match):
                 seletedRestaurant = int(list(opts.values())[0])
-
-        #TODO index at one or zero
-        return seletedRestaurant
+        if(seletedRestaurant == -1):
+            print("Retry")
+        else:
+            return (seletedRestaurant-1)
 
     def time_diff_in_hours(self, date1, date2):
         time_until_lunch = date1 - date2
