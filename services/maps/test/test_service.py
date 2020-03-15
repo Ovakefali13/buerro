@@ -1,7 +1,7 @@
 import unittest
 import os
 import json
-from services.Singleton import Singleton
+from services.singleton import Singleton
 from .. import MapService, MapRemote, MapJSONRemote, GeocodingService, GeocodingRemote, GeocodingJSONRemote
 
 @Singleton

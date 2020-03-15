@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from opencage.geocoder import OpenCageGeocode, InvalidInputError, RateLimitExceededError, UnknownError
-from services.Singleton import Singleton
+from services.singleton import Singleton
 from services.preferences import PrefService, PrefJSONRemote
 
 class GeocodingRemote(ABC):

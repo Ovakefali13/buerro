@@ -36,6 +36,10 @@ class Event(iCalEvent):
         alarm.add('action', 'AUDIO')
         #TODO alarm.add('repeat', 2)
         self.add_component(alarm)
+    def set_url(self, url:str):
+        self.add('url', url)
+    def set_description(self, note:str):
+        self.add('description', note)
 
     def get_title(self):
         return self['summary']

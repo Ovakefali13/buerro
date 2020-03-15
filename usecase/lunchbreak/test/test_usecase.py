@@ -1,6 +1,7 @@
 import unittest
 import datetime
 from usecase.lunchbreak import Lunchbreak
+import os
 
 class TestLunchbreak(unittest.TestCase):
     MOCK_LOCATION = 'Jägerstraße 56, 70174 Stuttgart'
