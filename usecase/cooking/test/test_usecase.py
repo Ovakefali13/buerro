@@ -18,13 +18,15 @@ class TestCooking(unittest.TestCase):
     def setUpClass(self):
         if 'DONOTMOCK' in os.environ:
             self.use_case = Cook()
-            self.todoist_service = TodoistService(TodoistJSONRemote())
+            self.todoist_service = TodoistService.instance()
+            self.todoist_service.set_remote(TodoistJSONRemote())
             self.calender_remote = iCloudCaldavRemote()
             self.calender_service = CalService(self.calender_remote)  
         else:
             print("Mocking remotes...")
             self.use_case = Cook(True)
-            self.todoist_service = TodoistService(TodoistMockRemote())
+            self.todoist_service = TodoistService.instance()
+            self.todoist_service.set_remote(TodoistMockRemote())
             self.calender_remote = CaldavMockRemote()
             self.calender_service = CalService(self.calender_remote)
        

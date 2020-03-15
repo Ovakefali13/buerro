@@ -57,7 +57,7 @@ class TodoistService:
     def __init__(self):
         self.remote = TodoistJSONRemote()
     
-    def set_remote(self, remote):
+    def set_remote(self, remote:TodoistJSONRemote):
         self.remote = remote
 
     def get_project_names(self):

@@ -34,8 +34,9 @@ class WorkSession(Usecase):
         self.calService = service
     def set_vvs_service(self, service:VVSService):
         self.vvsService = service
-    def set_todo_service(self, service:TodoistService):
+    def set_todo_service(self, service:TodoistService, remote):
         self.todoService = service
+        self.todoService.set_remote(remote)
 
     def reset(self):
         self.fsm.reset()
