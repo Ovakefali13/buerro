@@ -4,9 +4,9 @@ from services.yelp.yelp_service import YelpService
 from services.yelp.test.test_service import YelpMock
 from datetime import datetime
 from services.preferences import PrefService
-from services.maps.geocoding_service import GeocodingService
+from services.maps.geocoding_service import GeocodingJSONRemote
 from services.maps.test.test_service import GeocodingMockRemote
-from services.maps.map_service import MapService
+from services.maps import MapService, GeocodingService
 from services.yelp.yelp_request import YelpRequest
 from services.cal.cal_service import CalService, iCloudCaldavRemote, Event
 import pytz
@@ -23,20 +23,20 @@ class Lunchbreak:
             geocoding = GeocodingService.instance()
             geocoding.remote = GeocodingMockRemote.instance()
         else:
-            #print("Not Mocking")
-            pass
+            geocoding = GeocodingService.instance()
+            geocoding.remote = GeocodingJSONRemote.instance()
 
-    def trigger_use_case(self, location):
+    def trigger_use_case(self, location:list):
         self.current_location_coords = location
         restaurants, start, end = self.check_lunch_options(location)
         #TODO send restaurants to controller and get user choice
-        choice = self.wait_for_user_request()
+        choice = self.wait_for_user_request("Four")
         choice = 0
         link = self.open_maps_route(location, restaurants[choice])
         self.create_cal_event(start, end,restaurants[choice], link)
 
 
-    def check_lunch_options(self, location):
+    def check_lunch_options(self, location:list):
         ### Search Calender for timeslot sufficent for a lunchbreak ###
         #Search for timeslot between 10 and 15 Oclock
         start = datetime.now(pytz.utc).replace(hour=10, minute=0, second=0, microsecond=0)
@@ -48,9 +48,9 @@ class Lunchbreak:
         hours_until_lunch = self.time_diff_in_hours(lunch_start, datetime.now(pytz.utc))
 
         geocoding = GeocodingService.instance()
-        #city = geocoding.get_city_from_coords(location)
-        city = 'Stuttgart'
-        #print(city)
+        geocoding.remote = GeocodingJSONRemote.instance()
+        city = geocoding.get_city_from_coords(location)
+
         ### Check Weather ###
         weather_adapter = WeatherAdapter.instance()
         weather_adapter.update(city)
@@ -121,3 +121,7 @@ class Lunchbreak:
             return True
         else:
             return False
+
+    def trigger_proactive_usecase(self, location):
+        if(self.notify()):
+            self.trigger_use_case(location)
