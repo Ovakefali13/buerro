@@ -46,32 +46,6 @@ class WorkSession(Usecase):
     def is_finished(self):
         return self.fsm.finished
 
-    def recommend_journey_to_event(self, journeys, event):
-        def _time_from_event(journey, event):
-            event_buffer = timedelta(minutes=self.pref['be_minutes_early'])
-            event_dt = event['dtstart'].dt
-            return (event_dt - event_buffer) - journey.get_arr_time()
-
-        """ three requirements for choosing a tram:
-                1. I am on time
-                2. I am not there too early (just on time)
-                3. It doesn't take too long (advantage over others > 5 minutes)
-            solution:
-                1. filter such that none are too late
-                2. sort in reverse order (latest to earliest)
-                3. only consider ealier ones if they take significantly less time
-        """
-        none_too_late = list(filter(lambda journey:
-            _time_from_event(journey, event) >= timedelta(0), journeys))
-        sorted_by_arrival = sorted(none_too_late, reverse=True,
-                key=lambda journey : journey.get_arr_time())
-
-        recommended_journey = sorted_by_arrival[0]
-        that_much_faster = 5
-        for journey in sorted_by_arrival:
-            if(recommended_journey.get_duration() >= that_much_faster + journey.get_duration()):
-                recommended_journey = journey
-
     def define_state_transitions(self):
         def start_trans(data):
             def _event_too_close(event, journey=None):

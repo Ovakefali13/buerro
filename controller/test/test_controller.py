@@ -1,11 +1,11 @@
 import requests
 import unittest
 import time
-
+import json
 from http.server import HTTPServer
 from threading import Thread, Event
 
-from services.Singleton import Singleton
+from services.singleton import Singleton
 from controller import ControllerFromArgs
 from chatbot import ChatbotBehavior, Chatbot, Intent
 from usecase import Usecase
@@ -14,13 +14,19 @@ from usecase import Usecase
 class MockChatbotBehavior(ChatbotBehavior):
 
     def get_intent(self, message:str):
-       return Intent("mock_work", [])
+        return Intent("mock_work", [])
+
+    def clear_context(self):
+        pass
+
+    def clear_context(self):
+        pass
 
 
 @Singleton
 class MockUsecase(Usecase):
     def __init__(self):
-        self.count == 0
+        self.count = 0
 
     def advance(self, entities):
         self.count += 1
@@ -53,7 +59,7 @@ class TestController(unittest.TestCase):
         self.serverPort = 9149
         self.server_url = "http://" + self.hostName + ":" + str(self.serverPort)
 
-        chatbot = Chatbot(MockChatbot.instance())
+        chatbot = Chatbot(MockChatbotBehavior.instance())
         usecaseByContext = {
             "mock_work": MockUsecase
         }
@@ -78,23 +84,25 @@ class TestController(unittest.TestCase):
             raise Exception("most likely failed to start server")
 
     def test_ping_pong(self):
-        res = requests.post(self.server_url, data={"message": "ping"})
-        self.assertEqual(res.content, b"pong")
+        body = {"message": "ping"}
+        res = requests.post(self.server_url + '/message', json=body)
+        self.assertEqual(res.text, "pong")
 
     def test_can_step_through_usecase(self):
         def _query(message:str):
-            whole_res = requests.post(self.server_url, data={"message":message})
-            return whole_res.get('message')
+            body = {"message": message}
+            whole_res = requests.post(self.server_url + '/message', json=body)
+            return whole_res.json().get('message')
 
         res = _query("Set up my work environment")
-        self.assertIn(b"music?", res)
+        self.assertIn("music?", res)
         res = _query("Yes, I do.")
-        self.assertIn(b"Which project do you want to work on?", res)
+        self.assertIn("Which project do you want to work on?", res)
         res = _query("ASE")
-        self.assertIn(b"Todo", res)
+        self.assertIn("Todo", res)
 
     @classmethod
     def tearDownClass(self):
         self.shutdown_event.set()
-        requests.post(self.server_url, data={'message':'shutdown'})
-        self.server_thread.join(0.1)
+        body ={'message': 'shutdown'}
+        requests.post(self.server_url + '/message', json=body)

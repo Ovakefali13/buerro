@@ -1,0 +1,3 @@
+[submodule "vapid"]
+	path = vapid
+	url = git@github.com:web-push-libs/vapid.git
