@@ -1,5 +1,6 @@
 from services.preferences.pref_service import PrefService, PrefRemote, PrefJSONRemote
 from services.spoonacular.spoonacular_service import SpoonacularService, SpoonacularJSONRemote, SpoonacularRemote
+from services.spoonacular.test.test_service import SpoonacularMOCKRemote
 from services.todoAPI.todoist_service import TodoistService, TodoistRemote, TodoistJSONRemote
 from services.todoAPI.test.test_service import TodoistMockRemote
 from services.yelp.yelp_service import YelpService, YelpRequest
@@ -33,12 +34,15 @@ class Cook:
             self.yelp_service = YelpService.instance()
             self.yelp_service.set_remote(YelpMock())
             self.todoist_service = TodoistService(TodoistMockRemote())
+            self.spoonacle_service = SpoonacularService.instance()
+            self.spoonacle_service.set_remote(SpoonacularMOCKRemote())
         else:
             self.cal_service = CalService(iCloudCaldavRemote())
             self.pref_service = PrefService(PrefJSONRemote())
             self.yelp_service = YelpService.instance()
+            self.spoonacle_service = SpoonacularService.instance()
             self.todoist_service = TodoistService(TodoistJSONRemote())
-
+           
     def trigger_use_case(self, ingredient):
         self.ingredient = ingredient
         self.load_preferences()
@@ -64,7 +68,8 @@ class Cook:
         self.preferences_json = self.pref_service.get_preferences('cooking')
 
     def get_recipe(self):
-        self.spoonacle_service = SpoonacularService(SpoonacularJSONRemote(), self.ingredient)
+        self.spoonacle_service.set_ingredient(self.ingredient)
+        self.spoonacle_service.newRecipe()
         self.response_message = self.spoonacle_service.get_summary()
 
     def set_shopping_list(self):
