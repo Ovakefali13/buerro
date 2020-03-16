@@ -14,6 +14,9 @@ import re
 from controller.notification_handler import Notification, NotificationHandler
 
 class Lunchbreak:
+    restraurants = None
+    start = None
+    end = None
 
     def __init__(self, mock:bool=False):
         if mock:
@@ -27,13 +30,18 @@ class Lunchbreak:
             geocoding = GeocodingService.instance()
             geocoding.remote = GeocodingJSONRemote.instance()
 
-    def trigger_use_case(self, location:list):
-        restaurants, start, end = self.check_lunch_options(location)
-        #TODO send restaurants to controller and get user choice
-        choice = self.wait_for_user_request("Four")
-        choice = 0
-        link = self.open_maps_route(location, restaurants[choice])
-        self.create_cal_event(start, end,restaurants[choice], link)
+    def advance(self, message):
+        if not self.restaurants:
+            restaurants, start, end = self.check_lunch_options(message['location'] )
+            return {'message' : self.restaurants}
+        else:
+            choice = self.wait_for_user_request(message)
+            link = self.open_maps_route(message['location'], self.restaurants[choice])
+            self.create_cal_event(self.start, self.end, self.restaurants[choice], link)
+
+            #Reset if usecases are singletions
+            self.restaurants = self.start = self.end = None
+            return {'message': link}
 
 
     def check_lunch_options(self, location:list):
@@ -41,11 +49,11 @@ class Lunchbreak:
         #Search for timeslot between 10 and 15 Oclock
         start = datetime.now(pytz.utc).replace(hour=10, minute=0, second=0, microsecond=0)
         end = datetime.now(pytz.utc).replace(hour=15, minute=0, second=0, microsecond=0)
-        duration, lunch_start, lunch_end =  self.find_longest_timeslot_between_hours(start,end)
+        duration, self.lunch_start, self.lunch_end =  self.find_longest_timeslot_between_hours(start,end)
         #print("Your lunchbreak starts at "  + str(lunch_start) + ". You have " + str(duration) + "minutes until your next event")
-        lunch_timestamp = datetime.timestamp(lunch_start)
+        lunch_timestamp = datetime.timestamp(self.lunch_start)
 
-        hours_until_lunch = self.time_diff_in_hours(lunch_start, datetime.now(pytz.utc))
+        hours_until_lunch = self.time_diff_in_hours(self.lunch_start, datetime.now(pytz.utc))
 
         geocoding = GeocodingService.instance()
         geocoding.remote = GeocodingJSONRemote.instance()
@@ -62,10 +70,10 @@ class Lunchbreak:
         search_params.set_radius(duration, will_be_bad_weather)
 
         yelp_service = YelpService.instance()
-        restaurants = yelp_service.get_short_information_of_restaurants(search_params)
+        self.restaurants = yelp_service.get_short_information_of_restaurants(search_params)
         #for x in restaurants:
         #    print(x['name'])
-        return restaurants, lunch_start, lunch_end
+        return self.restaurants, self.lunch_start, self.lunch_end
 
 
     def open_maps_route(self, location, restaurant):
@@ -133,4 +141,4 @@ class Lunchbreak:
     def trigger_proactive_usecase(self, location):
         if(self.notify()):
             self.create_proactive_notification()
-            self.trigger_use_case(location)
+            self.advance({'location' :location})
