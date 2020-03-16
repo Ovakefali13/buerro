@@ -48,7 +48,10 @@ class TestSpoonacularService(unittest.TestCase):
     
     test_ingredient = 'pork'
     remote.test_ingredient = test_ingredient
-    spoonacular_service = SpoonacularService(remote,  test_ingredient)
+    spoonacular_service = SpoonacularService.instance()
+    spoonacular_service.set_remote(remote)
+    spoonacular_service.set_ingredient(test_ingredient)
+    spoonacular_service.newRecipe()
     
 
     def test_get_sourceURL(self):
