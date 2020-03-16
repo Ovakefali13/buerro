@@ -58,15 +58,15 @@ class Journey:
         return description
 
     def to_link(self):
-        link = ''.join("""https://ww3.vvs.de/mng/#!/XSLT_TRIP_REQUEST2@details?
-            deepLink={
+        link = ''.join("""https://www3.vvs.de/mng/#!/XSLT_TRIP_REQUEST2@details?
+            deeplink={
                 **dateTime**:{
                     **date**:**DATE**,
                     **dateFormat**:****,
                     **time**:**TIME**,
                     **timeFormat**:****,
                     **useRealTime**:true,
-                    **isDeparture**:true,
+                    **isDeparture**:true
                 },
                 **odvs**:{
                     **orig**:**ORIGIN**,
