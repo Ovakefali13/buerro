@@ -52,6 +52,6 @@ class TestLunchbreak(unittest.TestCase):
 
     def test_wait_for_user_input(self):
         ret = self.lb.wait_for_user_request("Four")
-        self.assertEqual(ret, 4)
+        self.assertEqual(ret, 3)
         ret = self.lb.wait_for_user_request("four")
-        self.assertEqual(ret, 4)
+        self.assertEqual(ret, 3)
