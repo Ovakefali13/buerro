@@ -6,8 +6,8 @@ from datetime import datetime
 class GithubMockRemote(GithubRemote):
     def get_notifications(self):
         return [{'type': "Notification type", 'title': "Notification Title"}]
-
-    def connect(self):
+        
+    def connect(self, key):
         pass
 
 class TestGithubService(unittest.TestCase):
