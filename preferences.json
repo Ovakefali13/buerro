@@ -43,5 +43,10 @@
 		"base_radius": 500,
 		"ten_min_radius": 100,
 		"price": "1, 2"
-	}
+	},
+    "music": {
+        "spotify_client_id": "b6238b4f6e2541f2aec7173faa6be188" ,
+        "spotify_client_secret": "d7477948274a408f98953e56925ff1f9",
+        "spotify_username": "rapresent93" 
+    }
 }
