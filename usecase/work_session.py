@@ -17,7 +17,7 @@ class WorkSession(Usecase):
         super().__init__()
 
         self.calService = None
-        self.vvsService = None
+        self.vvsService = VVSService.instance()
         # TODO self.transportUsecase = None
         self.todoService = None
         # self.musicService = None
@@ -34,9 +34,8 @@ class WorkSession(Usecase):
         self.calService = service
     def set_vvs_service(self, service:VVSService):
         self.vvsService = service
-    def set_todo_service(self, service:TodoistService, remote):
+    def set_todo_service(self, service:TodoistService):
         self.todoService = service
-        self.todoService.set_remote(remote)
 
     def reset(self):
         self.fsm.reset()

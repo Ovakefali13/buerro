@@ -7,8 +7,8 @@ from datetime import datetime as dt, timedelta, timezone
 import pytz
 from abc import ABC, abstractmethod
 
-from .journey import Journey
-from .journey_request import JourneyRequest
+from services.singleton import Singleton
+from . import Journey, JourneyRequest
 
 class VVSRemote(ABC):
     @abstractmethod
@@ -47,16 +47,13 @@ class VVSEfaJSONRemote(VVSRemote):
         return json.loads(urllib.request.urlopen(url).read()).get('journeys')
 
 
-"""
-class VVAEfaXMLRemote(VVSRemote):
-    base_url = "http://efastatic.vvs.de/vvs"
-    outputFormat = "XML"
-"""
-
+@Singleton
 class VVSService:
-    remote = None
 
-    def __init__(self, remote):
+    def __init__(self):
+        self.remote = VVSEfaJSONRemote()
+
+    def set_remote(self, remote:VVSRemote):
         self.remote = remote
 
     def get_location_id(self, location:str):
