@@ -8,7 +8,7 @@ import base64
 from datetime import datetime as dt, timedelta
 from urllib.parse import urlencode
 
-from services.Singleton import Singleton
+from services.singleton import Singleton
 from services.preferences import PrefService
 
 class MusicRemote(ABC):
