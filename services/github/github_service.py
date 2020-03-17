@@ -27,14 +27,16 @@ class GithubRealRemote(GithubRemote):
             notifications.append({'type':n.subject.type, 'title':n.subject.title})
         return notifications
 
-
+@Singleton
 class GithubService:
     remote = None
     pref = None
 
-    def __init__(self, remote):
+    def __init__(self):
         self.pref = PrefService().get_preferences('github')
-        
+        self.remote = GithubRealRemote()
+    
+    def set_remote(self,remote):
         self.remote = remote
 
     def get_notifications(self):
