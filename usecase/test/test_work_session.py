@@ -25,8 +25,15 @@ class TestWorkSession(unittest.TestCase):
 
         usecase.set_pref_service(PrefService())
         usecase.set_cal_service(self.cal_service)
-        usecase.set_vvs_service(VVSService(VVSMockRemote()))
-        usecase.set_todo_service(TodoistService.instance(), TodoistMockRemote())
+
+        vvs_service = VVSService.instance()
+        vvs_service.set_remote(VVSMockRemote())
+        usecase.set_vvs_service(vvs_service)
+
+        todo_service = TodoistService.instance()
+        todo_service.set_remote(TodoistMockRemote())
+        usecase.set_todo_service(todo_service)
+
         #usecase.set_music_service(MusicService(MusicMockRemote()))
         usecase.reset()
         self.usecase = usecase
