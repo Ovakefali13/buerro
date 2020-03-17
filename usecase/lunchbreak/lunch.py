@@ -33,11 +33,15 @@ class Lunchbreak:
             yelp_service.set_remote(YelpMock())
             geocoding = GeocodingService.instance()
             geocoding.remote = GeocodingMockRemote.instance()
-            self.calender_remote = CaldavMockRemote()
+
+            calendar_service = CalService.instance()
+            calendar_service.set_remote(CaldavMockRemote())
         else:
             geocoding = GeocodingService.instance()
             geocoding.remote = GeocodingJSONRemote.instance()
-            self.calender_remote = iCloudCaldavRemote()
+
+            calendar_service = CalService.instance()
+            calendar_service.set_remote(iCloudCaldavRemote())
 
     def set_WeatherApapter(self, weather_adapter:WeatherAdapterRemote):
         weather_adapter = WeatherAdapter.instance()
@@ -47,8 +51,9 @@ class Lunchbreak:
         yelp_service = YelpService.instance()
         yelp_service.set_remote(yelp_adapter)
 
-    def set_calender(self, calender:CaldavRemote):
-        self.calender_remote = calender
+    def set_calender(self, calender_remote:CaldavRemote):
+        self.cal_service = CalService.instance()
+        self.cal_service.set_remote(calendar_remote)
 
     def set_geolocation(self, geolocation_remote:GeocodingRemote):
         geocoding = GeocodingService.instance()
@@ -113,7 +118,7 @@ class Lunchbreak:
         lunch.add('description', "Route information: " + str(link) + "\nWebsite: " + restaurant['url'])
         lunch.set_start(start)
         lunch.set_end(end)
-        cal_service = CalService(self.calender_remote)
+        cal_service = CalService.instance()
         cal_service.add_event(lunch)
         return lunch
 
@@ -138,7 +143,7 @@ class Lunchbreak:
 
 
     def find_longest_timeslot_between_hours(self, search_start, search_end):
-        cal_service = CalService(self.calender_remote)
+        cal_service = CalService.instance()
         time, before, after = cal_service.get_max_available_time_between(search_start, search_end)
         return int((time.total_seconds() / 60)), before, after
 
