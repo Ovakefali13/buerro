@@ -2,6 +2,7 @@ import requests
 import json
 from abc import ABC, abstractmethod
 from ..preferences.pref_service import PrefService, PrefJSONRemote, PrefRemote
+from services.singleton import Singleton
 
 class SpoonacularRemote(ABC):
     @abstractmethod
@@ -50,19 +51,24 @@ class SpoonacularJSONRemote(SpoonacularRemote):
         response_json = response_string.json()
         return response_json
 
+@Singleton
 class SpoonacularService:
     remote = None
     recipe_id = None
     ingredient = ''
     recipe = []
+    
+    def __init__(self):
+        self.remote = SpoonacularJSONRemote()
 
-    def __init__(self, remote, ingredient):
+    def set_remote(self, remote):
         self.remote = remote
-        self.ingredient = ingredient
-        self.newRecipe(self.ingredient)
 
-    def newRecipe(self, ingredient):
-        self.recipe_id = self.remote.search_recipe_by_ingredient(ingredient)
+    def set_ingredient(self, ingredient):
+        self.ingredient = ingredient
+
+    def newRecipe(self):
+        self.recipe_id = self.remote.search_recipe_by_ingredient(self.ingredient)
         self.recipe = self.remote.search_recipe_by_id(self.recipe_id)
 
     def get_ingredients(self):

@@ -1,6 +1,6 @@
 import requests
 from services.ApiError import ApiError
-from services.Singleton import Singleton
+from services.singleton import Singleton
 from services.preferences import PrefService
 from abc import ABC, abstractmethod
 from services.yelp.yelp_request import YelpRequest
@@ -21,7 +21,6 @@ class YelpServiceRemote(YelpServiceModule):
     }
 
     def request_businesses(self, search_param):
-        print(self.headers)
         req = 'https://api.yelp.com/v3/businesses/search'
         response = requests.request('GET', req, headers=self.headers, params=search_param)
         if response.status_code != 200:

@@ -1,1 +1,1 @@
-from usecase.lunchbreak.lunch import Lunchbreak
+from .lunch import Lunchbreak

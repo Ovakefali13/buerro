@@ -21,59 +21,43 @@ class WeatherMock(WeatherAdapterModule):
 
 
 class TestWeatherService(unittest.TestCase):
-    city = 'Stuttgart'
 
-    if 'DONOTMOCK' in os.environ:
-        remote = WeatherAdapterRemote()
-    else:
-        print("Mocking remotes...")
-        remote = WeatherMock()
+    @classmethod
+    def setUpClass(self):
+        self.remote = None
+        if 'DONOTMOCK' in os.environ:
+            self.remote = WeatherAdapterRemote()
+        else:
+            print("Mocking remotes...")
+            self.remote = WeatherMock()
+        self.city = 'Stuttgart'
 
-    weather_adapter = WeatherAdapter.instance()
-    weather_adapter.set_remote(remote)
-
-    def test_get_current_temperature(self):
+    @classmethod
+    def setUp(self):
         self.weather_adapter = WeatherAdapter.instance()
         self.weather_adapter.set_remote(self.remote)
         self.weather_adapter.update(self.city)
+
+    def test_get_current_temperature(self):
         temp = self.weather_adapter.get_current_temperature()
         self.assertGreater(temp, -50)
         self.assertLess(temp, 50)
 
     def test_get_current_weather(self):
-        self.weather_adapter = WeatherAdapter.instance()
-        self.weather_adapter.set_remote(self.remote)
-        self.weather_adapter.update(self.city)
         weather = self.weather_adapter.get_current_weather()
         self.assertIsInstance(weather, str)
 
     def test_get_forecast_weather(self):
-        self.weather_adapter = WeatherAdapter.instance()
-        self.weather_adapter.set_remote(self.remote)
-        self.weather_adapter.update(self.city)
         weather = self.weather_adapter.get_forecast_weather(3)
         self.assertIsInstance(weather, str)
 
     def test_is_bad_weather(self):
-        self.weather_adapter = WeatherAdapter.instance()
-        self.weather_adapter.set_remote(self.remote)
-        self.weather_adapter.update(self.city)
         is_weather_bad = self.weather_adapter.is_bad_weather()
-        self.assertTrue(is_weather_bad)
+        self.assertIsInstance(is_weather_bad, bool)
 
     def test_will_be_bad_weather(self):
-        #TODO How to test
-        self.weather_adapter = WeatherAdapter.instance()
-        self.weather_adapter.set_remote(self.remote)
-        self.weather_adapter.update(self.city)
         will_be_bad_weather = self.weather_adapter.will_be_bad_weather(3)
-        self.assertTrue(will_be_bad_weather)
-
-        will_be_bad_weather = self.weather_adapter.will_be_bad_weather(6)
-        self.assertTrue(will_be_bad_weather)
-
-        will_be_bad_weather = self.weather_adapter.will_be_bad_weather(9)
-        self.assertTrue(will_be_bad_weather)
+        self.assertIsInstance(will_be_bad_weather, bool)
 
 
 

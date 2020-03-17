@@ -2,13 +2,20 @@
 	"general": {
 		"spoonacularAPIKey": "0a3a6b562932438aaab0cb05460096de",
 		"todoistAPIKey": "2140845bf7131e21f43038f0db8e3090d8fd9ffc",
-		"yelpAPIKey": "AA4LFvZbdhM3IgESoZAlBJSpsvKSHzVbYmpdbo7hehlsrBY",
+		"yelpAPIKey": "AA4LFvZbdhM3IgESoZAlBJSpsvKSHzVbYmpdbo7hehlsrBY-ZdzZIo9ZT7-hRSnlD3RLwnFR8sakmKVTb3xLcrYB3FM6j13KoOiEPh28uGESSgIPFbHdffk4UMZcXnYx",
 		"yelpClientKey": "A5Kch4F4A_1vSRVEEkgMnw",
 		"openWeatherMapAPIKey": "716b047d4b59fba6550709d60756b0fd",
 		"demo_location": "Jägerstraße 56, 70174 Stuttgart",
 		"opencagegeocodingAPIKey": "2642206c773e4b06aedabd0a0e876a2f",
-		"openrouteserviceAPIKey": "5b3ce3597851110001cf62488ef50484ef524d228826ecc7b35f5df1"
+		"openrouteserviceAPIKey": "5b3ce3597851110001cf62488ef50484ef524d228826ecc7b35f5df1",
+		"diet": "vegan"
 	},
+        "cal": {
+                "caldav_url": "https://p36-caldav.icloud.com/17167915149/calendars",
+                "calendar": "Work",
+                "username": "buerro@icloud.com",
+                "password": "gxuu-sgbx-jovu-qhao"
+        },
 	"cooking": {
 		"diet": "omnivore",
 		"intolerances": "Shellfish",
@@ -18,9 +25,9 @@
 		"github1": "prefGithub1",
 		"github2": "prefGithub2"
 	},
-	"workday": {
-		"workday1": "prefWorkday1",
-		"workday2": "prefWorkday2"
+	"work_session": {
+		"min_work_period_minutes": 30,
+                "be_minutes_early": 10
 	},
 	"transport": {
 		"minTemp": 10,

@@ -1,6 +1,6 @@
 import requests
 from services.ApiError import ApiError
-from services.Singleton import Singleton
+from services.singleton import Singleton
 from abc import ABC, abstractmethod
 from services.preferences import PrefService
 

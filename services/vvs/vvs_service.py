@@ -1,10 +1,10 @@
-
 import urllib.request
 from urllib.parse import urlencode
 import json
 import sys
 import os
-from datetime import datetime, timedelta, timezone
+from datetime import datetime as dt, timedelta, timezone
+import pytz
 from abc import ABC, abstractmethod
 
 from .journey import Journey
@@ -52,6 +52,7 @@ class VVAEfaXMLRemote(VVSRemote):
     base_url = "http://efastatic.vvs.de/vvs"
     outputFormat = "XML"
 """
+
 class VVSService:
     remote = None
 
@@ -63,7 +64,9 @@ class VVSService:
             self.remote.get_locations(location)))[0]
         return best_match.get('id')
 
-    def get_journeys(self, origin:str, dest:str, arr_dep:str, time:datetime=datetime.now()):
+    def get_journeys(self, origin:str, dest:str,
+        arr_dep:str, time:dt=dt.now(pytz.utc)):
+
         origin_id = self.get_location_id(origin)
         dest_id = self.get_location_id(dest)
         req = JourneyRequest(origin_id, dest_id, arr_dep, time)
@@ -76,3 +79,30 @@ class VVSService:
             journeys.append(journey)
 
         return journeys
+
+    def recommend_journey_to_arrive_by(self, journeys, date:dt):
+        def _time_from_date(journey, date):
+            return date - journey.get_arr_time()
+
+        """ three requirements for choosing a tram:
+                1. I am on time
+                2. I am not there too early (just on time)
+                3. It doesn't take too long (advantage over others > 5 minutes)
+            solution:
+                1. filter such that none are too late
+                2. sort in reverse order (latest to earliest)
+                3. only consider ealier ones if they take significantly less time
+        """
+        none_too_late = list(filter(lambda journey:
+            _time_from_date(journey, date) >= timedelta(0), journeys))
+        sorted_by_arrival = sorted(none_too_late, reverse=True,
+                key=lambda journey : journey.get_arr_time())
+
+        recommended_journey = sorted_by_arrival[0]
+        that_much_faster = 5
+        for journey in sorted_by_arrival:
+            if(recommended_journey.get_duration() >= that_much_faster + journey.get_duration()):
+                recommended_journey = journey
+
+        return recommended_journey
+

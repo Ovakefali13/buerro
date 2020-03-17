@@ -4,12 +4,19 @@ from services.yelp.yelp_service import YelpService
 from services.yelp.test.test_service import YelpMock
 from datetime import datetime
 from services.preferences import PrefService
-#from services.maps.geocoding_service import GeocodingJSONRemote
-#from services.maps.map_service import MapService
+from services.maps.geocoding_service import GeocodingJSONRemote
+from services.maps.test.test_service import GeocodingMockRemote
+from services.maps import MapService, GeocodingService
 from services.yelp.yelp_request import YelpRequest
+from services.cal.cal_service import CalService, iCloudCaldavRemote, Event
+import pytz
+import re
+from controller.notification_handler import Notification, NotificationHandler
 
 class Lunchbreak:
-    current_location_coords = []
+    restraurants = None
+    start = None
+    end = None
 
     def __init__(self, mock:bool=False):
         if mock:
@@ -17,33 +24,40 @@ class Lunchbreak:
             weather_adapter.set_remote(WeatherMock())
             yelp_service = YelpService.instance()
             yelp_service.set_remote(YelpMock())
-        #self.triggerUseCase(location)
+            geocoding = GeocodingService.instance()
+            geocoding.remote = GeocodingMockRemote.instance()
+        else:
+            geocoding = GeocodingService.instance()
+            geocoding.remote = GeocodingJSONRemote.instance()
 
-    def trigger_use_case(self, location):
-        self.current_location_coords =[48.76533759999999, 9.161932799999999]
-        self.check_lunch_options(location)
-        #TODO send restaurants to controller and get user choice
-        choice = self.wait_for_user_request()
-        self.open_maps_route(choice)
+    def advance(self, message):
+        if not self.restaurants:
+            restaurants, start, end = self.check_lunch_options(message['location'] )
+            return {'message' : self.restaurants}
+        else:
+            choice = self.wait_for_user_request(message)
+            link = self.open_maps_route(message['location'], self.restaurants[choice])
+            self.create_cal_event(self.start, self.end, self.restaurants[choice], link)
+
+            #Reset if usecases are singletions
+            self.restaurants = self.start = self.end = None
+            return {'message': link}
 
 
-    def check_lunch_options(self, location):
+    def check_lunch_options(self, location:list):
         ### Search Calender for timeslot sufficent for a lunchbreak ###
-        lunch_start = '2020-03-07T12:00:00'
-        duration = 60
+        #Search for timeslot between 10 and 15 Oclock
+        start = datetime.now(pytz.utc).replace(hour=10, minute=0, second=0, microsecond=0)
+        end = datetime.now(pytz.utc).replace(hour=15, minute=0, second=0, microsecond=0)
+        duration, self.lunch_start, self.lunch_end =  self.find_longest_timeslot_between_hours(start,end)
+        #print("Your lunchbreak starts at "  + str(lunch_start) + ". You have " + str(duration) + "minutes until your next event")
+        lunch_timestamp = datetime.timestamp(self.lunch_start)
 
-        lunch_start_iso = datetime.fromisoformat(lunch_start)
-        lunch_timestamp = datetime.timestamp(lunch_start_iso)
+        hours_until_lunch = self.time_diff_in_hours(self.lunch_start, datetime.now(pytz.utc))
 
-        hours_until_lunch = self.time_diff_in_hours(lunch_start_iso, datetime.now())
-
-
-        #geocoding = GeocodingJSONRemote()
-        #print(geocoding.get_information_from_address('Jägerstraße 56, 70174 Stuttgart'))
-        #location = geocoding.get_information_from_coords(self.current_location_coords)
-        location = 'Jägerstraße 56, 70174 Stuttgart'
-        # Todo extract city
-        city = 'Stuttgart'
+        geocoding = GeocodingService.instance()
+        geocoding.remote = GeocodingJSONRemote.instance()
+        city = geocoding.get_city_from_coords(location)
 
         ### Check Weather ###
         weather_adapter = WeatherAdapter.instance()
@@ -51,27 +65,46 @@ class Lunchbreak:
         will_be_bad_weather = weather_adapter.will_be_bad_weather(hours_until_lunch)
 
         search_params = YelpRequest()
-        search_params.set_location(location)
+        search_params.set_coordinates(location)
         search_params.set_time(lunch_timestamp)
         search_params.set_radius(duration, will_be_bad_weather)
 
         yelp_service = YelpService.instance()
         self.restaurants = yelp_service.get_short_information_of_restaurants(search_params)
-        for x in self.restaurants:
-            print(x['name'])
-        return self.restaurants
+        #for x in restaurants:
+        #    print(x['name'])
+        return self.restaurants, self.lunch_start, self.lunch_end
 
 
-    def open_maps_route(self, choice):
-        coords_dest = self.restaurants[choice]['coordinates']
-        #map_service = MapService()
-        #link = map_service.get_route_link(self.current_location_coords, coords_dest)
-        #print(link)
+    def open_maps_route(self, location, restaurant):
+        coords_dest = restaurant['coordinates']
+        map_service = MapService.instance()
+        link = map_service.get_route_link(location, coords_dest)
+        return link
 
-    def wait_for_user_request(self):
+    def create_cal_event(self, start, end, restaurant, link):
+        lunch = Event()
+        lunch.set_title('Lunch at ' + restaurant['name'])
+        lunch.set_location(restaurant['address'])
+        lunch.add('description', "Route information: " + str(link) + "\nWebsite: " + restaurant['url'])
+        lunch.set_start(start)
+        lunch.set_end(end)
+        cal_service = CalService(iCloudCaldavRemote())
+        cal_service.add_event(lunch)
+        return lunch
+
+    def wait_for_user_request(self, data):
         ### Wait for user decision ###
-        seletedRestaurant = 2
-        return seletedRestaurant
+        seletedRestaurant = -1
+        options = [{"One": 1}, {"Two": 2}, {"Three": 3}, {"Four": 4}, {"Five" : 5}]
+        for opts in options:
+            match = re.search(str(list(opts.keys())[0]) , data, re.IGNORECASE)
+            if(match):
+                seletedRestaurant = int(list(opts.values())[0])
+        if(seletedRestaurant == -1):
+            print("Retry")
+        else:
+            return (seletedRestaurant-1)
 
     def time_diff_in_hours(self, date1, date2):
         time_until_lunch = date1 - date2
@@ -80,22 +113,32 @@ class Lunchbreak:
         return hoursu_until_lunch
 
 
+    def find_longest_timeslot_between_hours(self, search_start, search_end):
+        cal_service = CalService(iCloudCaldavRemote())
+        time, before, after = cal_service.get_max_available_time_between(search_start, search_end)
+        return int((time.total_seconds() / 60)), before, after
+
     def notify(self):
-        lunch_start = '2020-05-05T12:00:00'
-        duration = 60
+        start = datetime.now(pytz.utc).replace(hour=10, minute=0, second=0, microsecond=0)
+        end = datetime.now(pytz.utc).replace(hour=15, minute=0, second=0, microsecond=0)
+        duration, lunch_start, lunch_end = self.find_longest_timeslot_between_hours(start, end)
 
-        lunch_start_iso = datetime.fromisoformat(lunch_start)
-        lunch_timestamp = datetime.timestamp(lunch_start_iso)
+        lunch_timestamp = datetime.timestamp(lunch_start)
 
-        hours_until_lunch = self.time_diff_in_hours(lunch_start_iso, datetime.now())
-
+        hours_until_lunch = self.time_diff_in_hours(lunch_start, datetime.now(pytz.utc))
         if(hours_until_lunch < 3):
-            True
+            return True
         else:
-            False
-        # TODO if lunchbreak is in the next three hours
+            return False
 
+    def create_proactive_notification(self):
+        notification = Notification('Where would you like to have lunch?')
+        notification.add_message('Check out the best restaurant nearby for lunch. Just open the Buerro PDA!')
+        notification.set_body('Check out the best restaurant nearby for lunch. Just open the Buerro PDA!')
+        notification_handler = NotificationHandler.instance()
+        notification_handler.push(notification)
 
-
-if __name__ == '__main__':
-        lb = Lunchbreak('Stuttgart')
+    def trigger_proactive_usecase(self, location):
+        if(self.notify()):
+            self.create_proactive_notification()
+            self.advance({'location' :location})
