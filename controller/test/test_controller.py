@@ -6,18 +6,15 @@ from http.server import HTTPServer
 from threading import Thread, Event
 
 from services.singleton import Singleton
-from controller import ControllerFromArgs
-from chatbot import ChatbotBehavior, Chatbot, Intent
+from controller import ControllerFromArgs, LocationHandler
+from chatbot import ChatbotBehavior, Chatbot
 from usecase import Usecase, Reply
 
 @Singleton
 class MockChatbotBehavior(ChatbotBehavior):
 
     def get_intent(self, message:str):
-        return Intent("mock_work", message)
-
-    def clear_context(self):
-        pass
+        return "mock_work"
 
     def clear_context(self):
         pass
@@ -87,16 +84,13 @@ class TestController(unittest.TestCase):
         if not self.ready_event.is_set():
             raise Exception("most likely failed to start server")
 
-    def test_ping_pong(self):
-        body = {"message": "ping"}
-        res = requests.post(self.server_url + '/message', json=body)
-        self.assertEqual(res.text, "pong")
-
     def test_can_step_through_usecase(self):
         def _query(message:str):
             body = {"message": message}
-            whole_res = requests.post(self.server_url + '/message', json=body)
-            return whole_res.json().get('message')
+            res = requests.post(self.server_url + '/message', json=body)
+            res = res.json()
+            self.assertIsNotNone(res.get('success'))
+            return res.get('message', '')
 
         res = _query("Set up my work environment")
         self.assertIn("music?", res)
@@ -105,8 +99,31 @@ class TestController(unittest.TestCase):
         res = _query("ASE")
         self.assertIn("Todo", res)
 
+    def test_update_location(self):
+        def _query(lat, lon):
+            body = {"location": [lat, lon]}
+            res = requests.post(self.server_url + '/location', json=body)
+            res = res.json()
+            self.assertIsNotNone(res.get('success'))
+            return res
+
+        location_handler = LocationHandler.instance()
+        location_handler.set_db('controller/test/test.db')
+
+        lat, lon = 53.47554, 9.69618
+        _query(lat, lon)
+        g_lat, g_lon = location_handler.get()
+        self.assertEqual(lat, g_lat)
+        self.assertEqual(lon, g_lon)
+
+        lat, lon = 52.3086091, 9.8328946
+        _query(lat, lon)
+        g_lat, g_lon = location_handler.get()
+        self.assertEqual(lat, g_lat)
+        self.assertEqual(lon, g_lon)
+
     @classmethod
     def tearDownClass(self):
         self.shutdown_event.set()
-        body ={'message': 'shutdown'}
+        body = {'message': 'shutdown'}
         requests.post(self.server_url + '/message', json=body)

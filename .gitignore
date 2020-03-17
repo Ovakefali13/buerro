@@ -1,5 +1,5 @@
 # sqlite db
-buerro.db
+*.db
 
 # pem fiels
 *.pem

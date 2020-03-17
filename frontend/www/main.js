@@ -1,14 +1,6 @@
 BACKEND_HOST = "http://localhost:9150"
-notificationOptions = {
-    'lang': 'de',
-    //'body': 
-    //'data':
-    //'icon':
-    //'vibrate':
-    'requireInteraction': false,
-    'renotify': true,
-    'silent': false
-}
+
+swRegistration = null;
 
 /**
  * urlBase64ToUint8Array
@@ -31,13 +23,13 @@ function urlBase64ToUint8Array(base64String) {
 }
 
 navigator.serviceWorker.addEventListener('message', event => {
-    console.log(event.data.title, event.data.options);
-    if(event.data.options.data.message) {
-        putBotMessage(event.data.options.data.message);
+    if(event.data.options.data) {
+        if(event.data.options.data.message) {
+            putBotMessage(event.data.options.data.message);
+        }
     }
 });
 
-swRegistration = null;
 
 function subscribeUser() {
 
@@ -114,16 +106,16 @@ function sendSubscriptionToBackEnd(subscription) {
 
 
 $(document).ready(function() {
-    subscribed = false
+    var minutes = 1
+    setInterval(() => {
+        sendCurrentLocation();
+    }, 1000 * 60 * minutes)  
 
     $(".chatcontainer").append(generateChatBubble(true, "Hello its me the bot"));
     $(".chatcontainer").append(generateChatBubble(false, "Hello its me the user"));
 
     $("#prompt_input").keypress(function(e) {
         if(e.which == 13) {
-            if(!subscribed) {
-                subscribeToPushNotifications();
-            }
             processUserPrompt($("#prompt_input").val());
             $("#prompt_input").val("");
         }
@@ -146,8 +138,34 @@ function putBotMessage(message) {
 
 function processUserPrompt(prompt) {
     //Send to backend with async promise or something
-    $(".chatcontainer").append(generateChatBubble(false, prompt));
-    $(".chatcontainer").append(generateChatBubble(true, "Warning! No backend connected"));
+    putUserMessage(prompt);
+    getCurrentLocation(location => {
+        return fetch(BACKEND_HOST+'/message', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                   message: prompt,
+                   'location': location 
+                })
+            })
+        .then(function(response) {
+            if (!response.ok) {
+              console.error(response.json())
+              throw new Error('Bad status code from server.');
+            }
+
+            return response.json();
+        })
+        .then(function(responseData) {
+            if (!(responseData.data && responseData.data.success)) {
+              throw new Error('Bad response from server.');
+            }
+
+            putBotMessage(responseData.message);
+        });
+    });
 }
 
 
@@ -157,4 +175,46 @@ function generateChatBubble(bot, text) {
     } else {
         return "<div class='card bubble bubble-user'><div class='card-body'>" + text + "</div></div>";
     }
+}
+
+function getCurrentLocation(callback) {
+    //Dummy one, which will result in a working next statement.
+    navigator.geolocation.getCurrentPosition(function () {}, function () {}, {});
+    navigator.geolocation.getCurrentPosition(pos => {
+        const { latitude: lat, longitute: lon } = pos.coords;
+        callback( [ lat, lon ] );
+    }, err => {
+        console.error(err);
+        callback( undefined );
+    }, {timeout: 5000});
+}
+            
+
+function sendCurrentLocation() {
+    console.log('Sending...');
+    getCurrentLocation(location => {
+        return fetch(BACKEND_HOST+'/location', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                    'location': location 
+                })
+            })
+        .then(function(response) {
+            if (!response.ok) {
+              console.error(response.json())
+              throw new Error('Bad status code from server.');
+            }
+
+            return response.json();
+        })
+        .then(function(responseData) {
+            if (!(responseData.data && responseData.data.success)) {
+              throw new Error('Bad response from server.');
+            }
+        });
+
+    });
 }
