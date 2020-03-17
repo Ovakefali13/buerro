@@ -46,7 +46,7 @@ class Cook:
             self.todoist_service.set_remote(TodoistJSONRemote())
             self.spoonacle_service = SpoonacularService.instance()
             self.spoonacle_service.set_remote(SpoonacularJSONRemote())
-
+            
     def trigger_use_case(self, ingredient):
         self.ingredient = ingredient
         self.load_preferences()

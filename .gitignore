@@ -1,3 +1,9 @@
+# sqlite db
+*.db
+
+# pem fiels
+*.pem
+
 # Temporary Vim Files
 .*.swp
 
