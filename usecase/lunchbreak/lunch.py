@@ -1,14 +1,15 @@
 from services.weatherAPI.weather_service import WeatherAdapter
-from services.weatherAPI.test.test_service import WeatherMock
+from services.weatherAPI.test.test_service import WeatherMock,WeatherAdapterRemote
 from services.yelp.yelp_service import YelpService
-from services.yelp.test.test_service import YelpMock
+from services.yelp.test.test_service import YelpMock, YelpServiceRemote
 from datetime import datetime
 from services.preferences import PrefService
 from services.maps.geocoding_service import GeocodingJSONRemote
 from services.maps.test.test_service import GeocodingMockRemote
-from services.maps import MapService, GeocodingService
+from services.maps import MapService, GeocodingService, GeocodingRemote
 from services.yelp.yelp_request import YelpRequest
-from services.cal.cal_service import CalService, iCloudCaldavRemote, Event
+from services.cal.cal_service import CalService, iCloudCaldavRemote, Event,CaldavRemote
+from services.cal.test.test_service import CaldavMockRemote
 import pytz
 import re
 from controller.notification_handler import Notification, NotificationHandler
@@ -18,17 +19,40 @@ class Lunchbreak:
     start = None
     end = None
 
+    calender_remote = None
+
     def __init__(self, mock:bool=False):
         if mock:
+            # self.set_WeatherApapter(WeatherMock())
+            # self.set_calender(CaldavMockRemote())
+            # self.set_geolocation(GeocodingMockRemote.instance())
+            # self.set_YelpAdapter(YelpMock())
             weather_adapter = WeatherAdapter.instance()
             weather_adapter.set_remote(WeatherMock())
             yelp_service = YelpService.instance()
             yelp_service.set_remote(YelpMock())
             geocoding = GeocodingService.instance()
             geocoding.remote = GeocodingMockRemote.instance()
+            self.calender_remote = CaldavMockRemote()
         else:
             geocoding = GeocodingService.instance()
             geocoding.remote = GeocodingJSONRemote.instance()
+            self.calender_remote = iCloudCaldavRemote()
+
+    def set_WeatherApapter(self, weather_adapter:WeatherAdapterRemote):
+        weather_adapter = WeatherAdapter.instance()
+        weather_adapter.set_remote(weather_adapter)
+
+    def set_YelpAdapter(self, yelp_adapter:YelpServiceRemote):
+        yelp_service = YelpService.instance()
+        yelp_service.set_remote(yelp_adapter)
+
+    def set_calender(self, calender:CaldavRemote):
+        self.calender_remote = calender
+
+    def set_geolocation(self, geolocation_remote:GeocodingRemote):
+        geocoding = GeocodingService.instance()
+        geocoding.remote = geolocation_remote
 
     def advance(self, message):
         if not self.restaurants:
@@ -89,7 +113,7 @@ class Lunchbreak:
         lunch.add('description', "Route information: " + str(link) + "\nWebsite: " + restaurant['url'])
         lunch.set_start(start)
         lunch.set_end(end)
-        cal_service = CalService(iCloudCaldavRemote())
+        cal_service = CalService(self.calender_remote)
         cal_service.add_event(lunch)
         return lunch
 
@@ -114,7 +138,7 @@ class Lunchbreak:
 
 
     def find_longest_timeslot_between_hours(self, search_start, search_end):
-        cal_service = CalService(iCloudCaldavRemote())
+        cal_service = CalService(self.calender_remote)
         time, before, after = cal_service.get_max_available_time_between(search_start, search_end)
         return int((time.total_seconds() / 60)), before, after
 
