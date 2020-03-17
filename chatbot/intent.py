@@ -1,4 +1,4 @@
 class Intent:
-    def __init__(self, context:str, entities=[]):
+    def __init__(self, context:str, message:str):
         self.context = context
-        self.entities = entities
+        self.message = message

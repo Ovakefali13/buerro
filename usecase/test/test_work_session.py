@@ -3,7 +3,7 @@ from urllib.parse import urlparse
 from datetime import datetime as dt, timedelta
 import pytz
 
-from .. import WorkSession
+from .. import WorkSession, Usecase, Reply
 from services.todoAPI import TodoistService
 from services.vvs import VVSService
 from services.cal import CalService, Event
@@ -30,6 +30,15 @@ class TestWorkSession(unittest.TestCase):
         #usecase.set_music_service(MusicService(MusicMockRemote()))
         usecase.reset()
         self.usecase = usecase
+
+    def test_usecase_is_usecase(self):
+        self.assertIsInstance(self.usecase, Usecase)
+
+    def test_advance_always_returns_reply(self):
+        while not self.usecase.is_finished():
+            some_msg = "Bla Bla"
+            reply = self.usecase.advance(some_msg)
+            self.assertIsInstance(reply, Reply)
 
     def uri_valid(self, x):
         try:

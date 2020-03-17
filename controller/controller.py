@@ -6,13 +6,31 @@ import json
 
 from chatbot import Chatbot, Intent
 from . import NotificationHandler
+from usecase import Usecase, Reply
+from services.singleton import Singleton
 
-def ControllerFromArgs(chatbot:Chatbot, usecaseByContext:dict):
+@Singleton
+class UsecaseStore:
+    def __init__(self):
+        # TODO Multi-User: by User
+        self.usecase_instances = {}
+
+    def get(self, UsecaseCls):
+        if UsecaseCls not in self.usecase_instances:
+            self.usecase_instances[UsecaseCls] = UsecaseCls()
+        return self.usecase_instances[UsecaseCls]
+
+def ControllerFromArgs(chatbot:Chatbot, usecase_by_context:dict):
     class CustomController(BaseHTTPRequestHandler):
         def __init__(self, *args, **kwargs):
             self.notification_handler = NotificationHandler.instance()
             self.chatbot = chatbot
-            self.usecaseByContext = usecaseByContext
+            self.usecase_by_context = usecase_by_context
+            for usecase in usecase_by_context.values():
+                if not issubclass(usecase, Usecase):
+                    raise Exception(f'Usecase {usecase} is not a sub-class of '
+                        +'Usecase')
+
             super(CustomController, self).__init__(*args, **kwargs)
 
         def end_headers(self):
@@ -65,13 +83,18 @@ def ControllerFromArgs(chatbot:Chatbot, usecaseByContext:dict):
                     respond_text(200, 'shutdown')
                 else:
                     intent = self.chatbot.get_intent(msg)
-                    usecase = self.usecaseByContext.get(intent.context, None)
-                    if usecase:
-                        usecase = usecase.instance()
-                        reply = usecase.advance(intent.entities)
-                        respond_json(200, reply)
+                    UsecaseCls = self.usecase_by_context.get(intent.context, None)
+                    if not UsecaseCls:
+                        respond_text(500, f'no usecase detected for intent {intent}')
                     else:
-                        respond_text(500, 'no usecase detected')
+                        usecase = UsecaseStore.instance().get(UsecaseCls)
+
+                        reply = usecase.advance(intent.message)
+                        if not isinstance(reply, Reply):
+                            respond_text(500, 'usecase advance does not Reply')
+                            raise Exception(f"Usecase {usecase}'s advance does"
+                                            +" not return a Reply object")
+                        respond_json(200, reply)
 
                 del msg
 

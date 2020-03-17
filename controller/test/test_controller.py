@@ -8,13 +8,13 @@ from threading import Thread, Event
 from services.singleton import Singleton
 from controller import ControllerFromArgs
 from chatbot import ChatbotBehavior, Chatbot, Intent
-from usecase import Usecase
+from usecase import Usecase, Reply
 
 @Singleton
 class MockChatbotBehavior(ChatbotBehavior):
 
     def get_intent(self, message:str):
-        return Intent("mock_work", [])
+        return Intent("mock_work", message)
 
     def clear_context(self):
         pass
@@ -22,35 +22,39 @@ class MockChatbotBehavior(ChatbotBehavior):
     def clear_context(self):
         pass
 
-
-@Singleton
 class MockUsecase(Usecase):
     def __init__(self):
         self.count = 0
 
-    def advance(self, entities):
+    def advance(self, message):
         self.count += 1
 
         if self.count == 1:
-            return {
-                'message': "I created reminders for you. Do you want music?"
-            }
+            return Reply("I created reminders for you. Do you want music?")
         if self.count == 2:
-            return {
+            return Reply({
                 'message': 'How about this Spotify playlist?'
                     + '\nWhich project do you want to work on?',
                 'link': 'https://open.spotify.com/playlist/37i9dQZF1DWZeKCadgRdKQ'
-            }
+            })
         if self.count == 3:
             todos = [
                 'Mark 1 to n relationships in architecture',
                 'Implement a prototype for browser notifications'
             ]
-            return {
+            return Reply({
                 'message': "Here are you Todo's: ",
                 'list': todos
-            }
+            })
         raise Exception("advance called too often")
+
+    def reset(self):
+        self.count = 0
+
+    def is_finished(self):
+        if self.count == 3:
+            return True
+        return False
 
 class TestController(unittest.TestCase):
     @classmethod

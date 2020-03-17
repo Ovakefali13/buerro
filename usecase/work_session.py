@@ -91,7 +91,7 @@ class WorkSession(Usecase):
                         return _event_too_close(next_event, journey)
             else:
                 msg = 'You have no upcoming events.'
-                return "next_state", {'message': msg}
+                return "end_state", {'message': msg}
 
             return
 
