@@ -6,14 +6,32 @@ import json
 
 from chatbot import Chatbot
 from . import NotificationHandler, LocationHandler
+from usecase import Usecase, Reply
+from services.singleton import Singleton
 
-def ControllerFromArgs(chatbot:Chatbot, usecaseByContext:dict):
+@Singleton
+class UsecaseStore:
+    def __init__(self):
+        # TODO Multi-User: by User
+        self.usecase_instances = {}
+
+    def get(self, UsecaseCls):
+        if UsecaseCls not in self.usecase_instances:
+            self.usecase_instances[UsecaseCls] = UsecaseCls()
+        return self.usecase_instances[UsecaseCls]
+
+def ControllerFromArgs(chatbot:Chatbot, usecase_by_context:dict):
     class CustomController(BaseHTTPRequestHandler):
         def __init__(self, *args, **kwargs):
             self.notification_handler = NotificationHandler.instance()
             self.location_handler = LocationHandler.instance()
             self.chatbot = chatbot
-            self.usecaseByContext = usecaseByContext
+            self.usecase_by_context = usecase_by_context
+            for usecase in usecase_by_context.values():
+                if not issubclass(usecase, Usecase):
+                    raise Exception(f'Usecase {usecase} is not a sub-class of '
+                        +'Usecase')
+
             super(CustomController, self).__init__(*args, **kwargs)
 
             self.last_location = None
@@ -41,16 +59,22 @@ def ControllerFromArgs(chatbot:Chatbot, usecaseByContext:dict):
                 answer = {
                     'success': True,
                 }
-                if type(message) == str:
+                if isinstance(message, str):
                     answer = {
                         **answer,
                         'message': message
                     }
-                elif type(message) == dict:
+                elif isinstance(message, dict):
                     answer = {
                         **answer,
                         **message
                     }
+                elif message is None:
+                    pass
+                else:
+                    breakpoint()
+                    respond_error(500, 'Unrecognized return type for success')
+                    raise Exception('Unrecognized return type for success')
                 respond_json(200, answer)
 
             def respond_error(http_code, message:str):
@@ -80,13 +104,19 @@ def ControllerFromArgs(chatbot:Chatbot, usecaseByContext:dict):
                     respond_succ('shutdown')
                 else:
                     intent = self.chatbot.get_intent(msg)
-                    usecase = self.usecaseByContext.get(intent, None)
-                    if usecase:
-                        usecase = usecase.instance()
-                        reply = usecase.advance(msg)
-                        respond_succ(reply)
+
+                    UsecaseCls = self.usecase_by_context.get(intent, None)
+                    if not UsecaseCls:
+                        respond_error(500, f'no usecase detected for intent {intent}')
                     else:
-                        respond_text(500, 'no usecase detected')
+                        usecase = UsecaseStore.instance().get(UsecaseCls)
+
+                        reply = usecase.advance(msg)
+                        if not isinstance(reply, Reply):
+                            respond_error(500, 'usecase advance does not Reply')
+                            raise Exception(f"Usecase {usecase}'s advance does"
+                                            +" not return a Reply object")
+                        respond_succ(reply)
 
                 del msg
 
