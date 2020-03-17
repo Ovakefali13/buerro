@@ -22,13 +22,13 @@ class Event(iCalEvent):
             #self.add('uid', '00008')
 
     def set_title(self, title:str):
-        self['summary'] = title
+        self.add('summary', title)
     def set_start(self, start:dt):
-        self['dtstart'] = start
+        self.add('dtstart', start)
     def set_end(self, end:dt):
-        self['dtend'] = end
+        self.add('dtend', end)
     def set_location(self, location:str):
-        self['location'] = location
+        self.add('location', location)
     def set_reminder(self, reminder:timedelta):
         # all types: https://github.com/collective/icalendar/blob/2aa726714ff4a17e47b256da529640b201ebf66b/src/icalendar/prop.py 
         alarm = Alarm()
@@ -36,6 +36,10 @@ class Event(iCalEvent):
         alarm.add('action', 'AUDIO')
         #TODO alarm.add('repeat', 2)
         self.add_component(alarm)
+    def set_url(self, url:str):
+        self.add('url', url)
+    def set_description(self, note:str):
+        self.add('description', note)
 
     def get_title(self):
         return self['summary']
