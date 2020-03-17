@@ -28,10 +28,6 @@
 		"intolerances": "Shellfish",
 		"maxCookingTime": 90
 	},
-	"github": {
-		"github1": "prefGithub1",
-		"github2": "prefGithub2"
-	},
 	"work_session": {
 		"min_work_period_minutes": 30,
                 "be_minutes_early": 10
@@ -50,5 +46,13 @@
 		"base_radius": 500,
 		"ten_min_radius": 100,
 		"price": "1, 2"
+	},
+    "music": {
+        "spotify_client_id": "b6238b4f6e2541f2aec7173faa6be188" ,
+        "spotify_client_secret": "d7477948274a408f98953e56925ff1f9",
+        "spotify_username": "rapresent93" 
+	},
+	"github": {
+		"key": "afbcb0841142ad981fb6aa89c9e5b94c0dfe59dd"
 	}
 }
