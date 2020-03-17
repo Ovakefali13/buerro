@@ -163,6 +163,7 @@ class Lunchbreak:
         notification_handler.push(notification)
 
     def trigger_proactive_usecase(self, location):
+        print("Check Lunchbreak Proactive")
         if(self.notify()):
             self.create_proactive_notification()
             self.advance({'location' :location})
