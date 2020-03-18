@@ -28,7 +28,7 @@ class BuerroBot(ChatbotBehavior):
             return response
         else:
             return "$$undefined_behaviour"
-    
+
     def parse_dic(self, dic, prompt):
         for key in dic.keys():
             if key in prompt:
@@ -36,7 +36,7 @@ class BuerroBot(ChatbotBehavior):
                     return dic[key]
                 else:
                     return self.parse_dic(dic[key], prompt)
-    
+
     def clear_context(self):
         context = None
 

@@ -2,7 +2,7 @@ import unittest
 import os
 from urllib.parse import urlparse
 
-from services.Singleton import Singleton
+from services.singleton import Singleton
 from .. import MusicRemote, SpotifyRemote, MusicService
 
 @Singleton

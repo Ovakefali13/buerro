@@ -2,7 +2,11 @@ from abc import ABC, abstractmethod
 
 class Usecase(ABC):
     @abstractmethod
-    def advance(self):
+    def advance(self, message:str):
+        pass
+
+    @abstractmethod
+    def is_finished(self):
         pass
 
 
@@ -22,13 +26,27 @@ class CaselessDict(dict):
 class Reply(CaselessDict):
     attributes = ('message', 'link', 'list', 'dict')
 
-    def __init__(self, values:dict):
-        if values:
+    def __init__(self, values):
+
+        if isinstance(values, str):
+            self['message'] = values
+
+        elif isinstance(values, dict):
             for key in values:
                 if key not in self.attributes:
                     raise Exception('Provided an undefined reply attribute, '
                         + 'only allowed attributes: ' + self.attributes)
                 self[key] = values[key]
+        elif values is None:
+            pass
+        else:
+            raise Exception("""Provided values of improper type {wrong_type}: either
+                                Reply("I created an event.")
+                                # or
+                                Reply({{
+                                    'message': 'How about this restaurant?',
+                                    'link': restaurant_link
+                                }})""".format(wrong_type=type(values)))
 
     def __setitem__(self, key, value):
         if key not in self.attributes:

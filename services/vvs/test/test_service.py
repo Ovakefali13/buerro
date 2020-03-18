@@ -42,13 +42,17 @@ class VVSMockRemote(VVSRemote):
         return mock_journeys
 
 class TestVVSService(unittest.TestCase):
-    if 'DONOTMOCK' in os.environ:
-        remote = VVSEfaJSONRemote()
-    else:
-        print("Mocking remotes...")
-        remote = VVSMockRemote()
 
-    vvs_service = VVSService(remote)
+    @classmethod
+    def setUpClass(self):
+        if 'DONOTMOCK' in os.environ:
+            self.remote = VVSEfaJSONRemote()
+        else:
+            print("Mocking remotes...")
+            self.remote = VVSMockRemote()
+
+        self.vvs_service = VVSService.instance()
+        self.vvs_service.set_remote(self.remote)
 
     def test_get_location(self):
         location_id = self.vvs_service.get_location_id("Stuttgart Hauptbahnhof")

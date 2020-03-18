@@ -66,6 +66,28 @@ class Journey:
         event.set_end(self.arr_time)
         event.set_description(str(self))
         return event
+        
+    def to_link(self):
+        link = ''.join("""https://www3.vvs.de/mng/#!/XSLT_TRIP_REQUEST2@details?
+            deeplink={
+                **dateTime**:{
+                    **date**:**DATE**,
+                    **dateFormat**:****,
+                    **time**:**TIME**,
+                    **timeFormat**:****,
+                    **useRealTime**:true,
+                    **isDeparture**:true
+                },
+                **odvs**:{
+                    **orig**:**ORIGIN**,
+                    **dest**:**DEST**
+                }
+            }""".split())
+        link = link.replace("DATE", self.dep_time.strftime("%d.%m.%Y"))
+        link = link.replace("TIME", self.dep_time.strftime("%H:%M"))
+        link = link.replace("ORIGIN", self.origin)
+        link = link.replace("DEST", self.dest)
+        return link
 
     def from_vvs(self, vvs_journey:dict):
         def from_utc_to_local(utc_dt):

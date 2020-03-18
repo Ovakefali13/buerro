@@ -31,12 +31,13 @@ class TodoistMockRemote(TodoistRemote):
         pass
 
 class TestTodoistService(unittest.TestCase):
+    todoist_service = TodoistService.instance()
     if 'DONOTMOCK' in os.environ:
-        remote = TodoistJSONRemote()
+        todoist_service.set_remote(TodoistJSONRemote())
     else:
         print("Mocking remotes...")
-        remote = TodoistMockRemote()
-    todoist_service = TodoistService(remote)
+        todoist_service.set_remote(TodoistMockRemote())
+    
 
     def test_get_project_names(self):
         projects = self.todoist_service.get_project_names()

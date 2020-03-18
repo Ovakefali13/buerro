@@ -1,54 +1,57 @@
 import requests
 import unittest
 import time
-from urllib.parse import urljoin
-import concurrent.futures
+import json
 from http.server import HTTPServer
 from threading import Thread, Event
 
-from services.Singleton import Singleton
-from controller import ControllerFromArgs
-from chatbot import ChatbotBehavior, Chatbot, Intent
-from usecase import Usecase
+from services.singleton import Singleton
+from controller import ControllerFromArgs, LocationHandler
+from chatbot import ChatbotBehavior, Chatbot
+from usecase import Usecase, Reply
 
 @Singleton
 class MockChatbotBehavior(ChatbotBehavior):
 
     def get_intent(self, message:str):
-        return Intent("mock_work", [])
+        return "mock_work"
 
     def clear_context(self):
         pass
 
-
-@Singleton
 class MockUsecase(Usecase):
     def __init__(self):
         self.count = 0
 
-    def advance(self, entities):
+    def advance(self, message):
         self.count += 1
 
         if self.count == 1:
-            return {
-                'message': "I created reminders for you. Do you want music?"
-            }
+            return Reply("I created reminders for you. Do you want music?")
         if self.count == 2:
-            return {
+            return Reply({
                 'message': 'How about this Spotify playlist?'
                     + '\nWhich project do you want to work on?',
                 'link': 'https://open.spotify.com/playlist/37i9dQZF1DWZeKCadgRdKQ'
-            }
+            })
         if self.count == 3:
             todos = [
                 'Mark 1 to n relationships in architecture',
                 'Implement a prototype for browser notifications'
             ]
-            return {
+            return Reply({
                 'message': "Here are you Todo's: ",
                 'list': todos
-            }
+            })
         raise Exception("advance called too often")
+
+    def reset(self):
+        self.count = 0
+
+    def is_finished(self):
+        if self.count == 3:
+            return True
+        return False
 
 class TestController(unittest.TestCase):
     @classmethod
@@ -81,44 +84,46 @@ class TestController(unittest.TestCase):
         if not self.ready_event.is_set():
             raise Exception("most likely failed to start server")
 
-    def test_ping_pong(self):
-        res = requests.post(self.server_url, data={"message": "ping"})
-        self.assertEqual(res.content, b"pong")
-
     def test_can_step_through_usecase(self):
         def _query(message:str):
-            whole_res = requests.post(self.server_url, data={"message":message})
-            return whole_res.get('message')
+            body = {"message": message}
+            res = requests.post(self.server_url + '/message', json=body)
+            res = res.json()
+            self.assertIsNotNone(res.get('success'))
+            return res.get('message', '')
 
         res = _query("Set up my work environment")
-        self.assertIn(b"music?", res)
+        self.assertIn("music?", res)
         res = _query("Yes, I do.")
-        self.assertIn(b"Which project do you want to work on?", res)
+        self.assertIn("Which project do you want to work on?", res)
         res = _query("ASE")
-        self.assertIn(b"Todo", res)
+        self.assertIn("Todo", res)
 
-    def test_notification(self):
-        def _wait_for_notification():
-            return requests.get(urljoin(self.server_url, 'notification'))
+    def test_update_location(self):
+        def _query(lat, lon):
+            body = {"location": [lat, lon]}
+            res = requests.post(self.server_url + '/location', json=body)
+            res = res.json()
+            self.assertIsNotNone(res.get('success'))
+            return res
 
-        with concurrent.futures.ThreadPoolExecutor() as executor:
-            notification_future = executor.submit(_wait_for_notification)
+        location_handler = LocationHandler.instance()
+        location_handler.set_db('controller/test/test.db')
 
-            time.sleep(0.0001)
+        lat, lon = 53.47554, 9.69618
+        _query(lat, lon)
+        g_lat, g_lon = location_handler.get()
+        self.assertEqual(lat, g_lat)
+        self.assertEqual(lon, g_lon)
 
-            breakpoint()
-
-            self.assertFalse(notification_future.done())
-
-            notification = 'Test Notification'
-            self.notification_handler.notify(notification)
-
-            self.assertTrue(notification_future.done())
-            self.assertEqual(notification_future.result(), notification)
-
+        lat, lon = 52.3086091, 9.8328946
+        _query(lat, lon)
+        g_lat, g_lon = location_handler.get()
+        self.assertEqual(lat, g_lat)
+        self.assertEqual(lon, g_lon)
 
     @classmethod
     def tearDownClass(self):
         self.shutdown_event.set()
-        requests.post(self.server_url, data={'message':'shutdown'})
-        self.server_thread.join(0.1)
+        body = {'message': 'shutdown'}
+        requests.post(self.server_url + '/message', json=body)

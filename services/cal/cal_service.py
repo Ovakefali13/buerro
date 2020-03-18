@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from abc import ABC, abstractmethod
 
 from services.preferences import PrefService
+from services.singleton import Singleton
 from . import Event
 
 class CaldavRemote(ABC):
@@ -90,9 +91,15 @@ class iCloudCaldavRemote(CaldavRemote):
             if event.vobject_instance: # don't delete the calendar object
                 event.delete()
 
+@Singleton
 class CalService:
 
-    def __init__(self, remote:CaldavRemote=iCloudCaldavRemote()):
+    def __init__(self):
+        self.remote = iCloudCaldavRemote()
+
+    def set_remote(self, remote:CaldavRemote):
+        if not isinstance(remote, CaldavRemote):
+            raise Exception("Remote is not a CaldavRemote")
         self.remote = remote
 
     def get_next_events(self):

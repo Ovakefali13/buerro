@@ -2,7 +2,7 @@ from datetime import datetime as dt, timedelta
 import pytz
 
 from usecase import Usecase, Reply, StateMachine
-from services.Singleton import Singleton
+from services.singleton import Singleton
 from services.todoAPI import TodoistService
 from services.vvs import VVSService
 from services.cal import CalService
@@ -19,12 +19,12 @@ class WorkSession(Usecase):
     def __init__(self):
         super().__init__()
 
-        self.cal_service = CalService()
-        self.vvs_service = VVSService()
-        # TODO self.transport_usecase = None
-        self.todo_service = TodoistService()
+        self.cal_service = CalService.instance()
+        self.vvs_service = VVSService.instance()
+        self.todo_service = TodoistService.instance()
         self.music_service = MusicService.instance()
         self.pref = PrefService()
+        # TODO self.transport_usecase = None
 
         self.fsm = StateMachine()
         self.define_state_transitions()
@@ -45,14 +45,17 @@ class WorkSession(Usecase):
     def reset(self):
         self.fsm.reset()
 
-    def advance(self, data):
-        return Reply(self.fsm.advance(data))
+    def advance(self, message):
+        if not isinstance(message, str) and message is not None:
+            raise Exception("wrong data type for message passed: "
+                    +str(type(message)))
+        return Reply(self.fsm.advance(message))
 
     def is_finished(self):
         return self.fsm.finished
 
     def define_state_transitions(self):
-        def start_trans(data):
+        def start_trans(message):
             def _event_too_close(event, journey=None):
                 msg = "Your next appointment is too close to start working: \n"
                 msg += event.summarize()
@@ -120,10 +123,10 @@ class WorkSession(Usecase):
                 msg += '\nWould you like to listen to music?'
                 return "music", {'message': msg}
 
-        def music_trans(data):
+        def music_trans(message):
             msg =""
             reply = {}
-            if 'yes' in data['message']:
+            if 'yes' in message:
                 link = self.music_service.get_playlist_for_mood('focus')
                 msg += "How about this Spotify playlist?"
                 reply = {**reply, 'link': link}
@@ -134,7 +137,7 @@ class WorkSession(Usecase):
             reply = {**reply, 'message': msg}
             return "todo", reply
 
-        def todo_trans(data):
+        def todo_trans(message):
             return "end_state", None
 
         m = self.fsm

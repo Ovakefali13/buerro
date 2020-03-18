@@ -2,6 +2,7 @@ import json
 from abc import ABC, abstractmethod
 from ..preferences.pref_service import PrefService, PrefJSONRemote, PrefRemote
 import todoist
+from services.singleton import Singleton
 
 class TodoistRemote(ABC):
     @abstractmethod
@@ -49,10 +50,14 @@ class TodoistJSONRemote(TodoistRemote):
                 self.api.items.get_by_id(item['id']).delete() 
         self.api.commit()
 
+@Singleton
 class TodoistService:
     remote = None
 
-    def __init__(self, remote:TodoistRemote=TodoistJSONRemote()):
+    def __init__(self):
+        self.remote = TodoistJSONRemote()
+    
+    def set_remote(self, remote:TodoistJSONRemote):
         self.remote = remote
 
     def get_project_names(self):

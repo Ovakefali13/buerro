@@ -1,73 +1,145 @@
-from chatbot import Chatbot, Intent
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import urllib
+import sqlite3
+import re
 import json
 
-from . import NotificationHandler
+from chatbot import Chatbot
+from . import NotificationHandler, LocationHandler
+from usecase import Usecase, Reply
+from services.singleton import Singleton
 
-#usecaseByContext = { "work": SetupWork , ... }
-#Controller = ControllerFromArgs(WatsonChatbot(), usecaseByContext)
+@Singleton
+class UsecaseStore:
+    def __init__(self):
+        # TODO Multi-User: by User
+        self.usecase_instances = {}
 
-def ControllerFromArgs(chatbot:Chatbot, usecaseByContext:dict):
+    def get(self, UsecaseCls):
+        if UsecaseCls not in self.usecase_instances:
+            self.usecase_instances[UsecaseCls] = UsecaseCls()
+        return self.usecase_instances[UsecaseCls]
+
+def ControllerFromArgs(chatbot:Chatbot, usecase_by_context:dict):
     class CustomController(BaseHTTPRequestHandler):
         def __init__(self, *args, **kwargs):
             self.notification_handler = NotificationHandler.instance()
+            self.location_handler = LocationHandler.instance()
             self.chatbot = chatbot
-            self.usecaseByContext = usecaseByContext
+            self.usecase_by_context = usecase_by_context
+            for usecase in usecase_by_context.values():
+                if not issubclass(usecase, Usecase):
+                    raise Exception(f'Usecase {usecase} is not a sub-class of '
+                        +'Usecase')
+
             super(CustomController, self).__init__(*args, **kwargs)
 
+            self.last_location = None
+
+        def end_headers(self):
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.send_header('Access-Control-Allow-Methods','GET, POST, OPTIONS')
+            self.send_header('Access-Control-Allow-Headers', 'Content-type, Authorization')
+            BaseHTTPRequestHandler.end_headers(self)
+
+        def do_OPTIONS(self):
+            self.send_response(200)
+            self.send_header('Content-type', 'text/html')
+            self.end_headers()
+
         def do_POST(self):
-            def _set_headers(http_code:int):
+
+            def respond_json(http_code:int, body:dict):
                 self.send_response(http_code)
-                self.send_header('Content-type', 'text/html')
+                self.send_header('Content-type', 'application/json')
                 self.end_headers()
+                self.wfile.write(json.dumps(body).encode('utf-8'))
 
-            def _respond(msg:str):
-                self.wfile.write(msg.encode("utf-8"))
-
-            def _shutdown():
-                _set_headers(200)
-                _respond('shutdown')
-
-            length = int(self.headers['Content-Length'])
-            body = urllib.parse.parse_qs(self.rfile.read(length).decode('utf-8'))
-
-            msg = body.get('message', '')[0]
-            if msg == 'ping':
-                _set_headers(200)
-                _respond('pong')
-            elif msg == 'shutdown':
-                _shutdown()
-            else:
-                intent = self.chatbot.get_intent(msg)
-                usecase = self.usecaseByContext.get(intent.context, None)
-                if usecase:
-                    usecase = usecase.instance()
-                    reply = usecase.advance(intent.entities)
-
-                    _set_headers(200)
-                    _respond(json.dumps(reply))
+            def respond_succ(message=None):
+                answer = {
+                    'success': True,
+                }
+                if isinstance(message, str):
+                    answer = {
+                        **answer,
+                        'message': message
+                    }
+                elif isinstance(message, dict):
+                    answer = {
+                        **answer,
+                        **message
+                    }
+                elif message is None:
+                    pass
                 else:
-                    _set_headers(400)
-            del msg
+                    breakpoint()
+                    respond_error(500, 'Unrecognized return type for success')
+                    raise Exception('Unrecognized return type for success')
+                respond_json(200, answer)
 
-        def do_GET(self):
-            def _set_headers(http_code:int):
-                self.send_response(http_code)
-                self.send_header('Content-type', 'text/html')
-                self.end_headers()
+            def respond_error(http_code, message:str):
+                answer = {
+                    'error': {
+                        'message': message
+                    }
+                }
+                respond_json(http_code, answer)
 
-            def _respond(msg:str):
-                self.wfile.write(msg.encode("utf-8"))
+            def parse_body():
+                length = int(self.headers['Content-Length'])
+                payload = self.rfile.read(length).decode('utf-8')
+                return json.loads(payload)
 
-            if self.path == '/notification':
-                # block until event: threading.Lock, threading.Event
-                notification = self.notification_handler.wait()
+            body = parse_body()
 
-                _set_headers(200)
-                _respond(notification)
+            if self.path == "/message":
+
+                if 'location' in body and len(body['location']) == 2:
+                    lat, lon = tuple(body['location'])
+                    self.location_handler.set(lat, lon)
+
+                msg = body.get('message', '')
+
+                if msg == 'shutdown':
+                    respond_succ('shutdown')
+                else:
+                    intent = self.chatbot.get_intent(msg)
+
+                    UsecaseCls = self.usecase_by_context.get(intent, None)
+                    if not UsecaseCls:
+                        respond_error(500, f'no usecase detected for intent {intent}')
+                    else:
+                        usecase = UsecaseStore.instance().get(UsecaseCls)
+
+                        reply = usecase.advance(msg)
+                        if not isinstance(reply, Reply):
+                            respond_error(500, 'usecase advance does not Reply')
+                            raise Exception(f"Usecase {usecase}'s advance does"
+                                            +" not return a Reply object")
+                        respond_succ(reply)
+
+                del msg
+
+            elif self.path == "/save-subscription":
+                print('/save-subscription ...')
+                try:
+                    self.notification_handler.save_subscription(body)
+                    respond_succ()
+                except Exception as e:
+                    print(e)
+                    respond_error(500,
+                        'The subscription was received but we were unable to'
+                        + 'save it to our database.')
+
+            elif self.path == "/location":
+                if 'location' in body and len(body['location']) == 2:
+                    lat, lon = tuple(body['location'])
+                    self.location_handler.set(lat, lon)
+                    respond_succ()
+                else:
+                    respond_error(400, 'bad location request')
+            else:
+                respond_error(404, 'Not Found')
 
     return CustomController
-
-
 
