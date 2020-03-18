@@ -25,7 +25,7 @@ def get_last_location():
 def schedule_usecases(scheduler):
     scheduler.add_job(func=tick, trigger='interval', seconds=3)
     scheduler.add_job(func=Lunchbreak().trigger_proactive_usecase,
-                      args=(get_last_location(),),
+                      args=(),
                       trigger='interval',
                       hours=1)
 

@@ -13,6 +13,7 @@ from services.cal.test.test_service import CaldavMockRemote
 import pytz
 import re
 from controller.notification_handler import Notification, NotificationHandler
+from controller.location_handler import LocationHandler
 
 class Lunchbreak:
     restraurants = None
@@ -38,12 +39,13 @@ class Lunchbreak:
 
 
     def advance(self, message):
+        location = self.get_location()
         if not self.restaurants:
-            restaurants, start, end = self.check_lunch_options(message['location'] )
+            restaurants, start, end = self.check_lunch_options(location)
             return {'message' : self.restaurants}
         else:
             choice = self.wait_for_user_request(message)
-            link = self.open_maps_route(message['location'], self.restaurants[choice])
+            link = self.open_maps_route(location, self.restaurants[choice])
             self.create_cal_event(self.start, self.end, self.restaurants[choice], link)
 
             #Reset if usecases are singletions
@@ -145,8 +147,13 @@ class Lunchbreak:
         notification_handler = NotificationHandler.instance()
         notification_handler.push(notification)
 
-    def trigger_proactive_usecase(self, location):
+    def trigger_proactive_usecase(self):
         print("Check Lunchbreak Proactive")
         if(self.notify()):
             self.create_proactive_notification()
-            self.advance({'location' :location})
+            self.advance({'message': 'proactive'})
+
+
+    def get_location(self):
+        lh = LocationHandler.instance()
+        return lh.get()
