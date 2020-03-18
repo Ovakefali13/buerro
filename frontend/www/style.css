@@ -1,22 +1,30 @@
 .bubble {
     margin:15px;
     width:80%;
+    border: solid transparent;
+    border-bottom-color: rgb(0, 0, 0, 0.1);
+    border-width: 10px;
+    margin-left: 10px;
+    border-radius: 20px;
+    color:white;
+    box-shadow: 5px 5px 5px rgb(0,0,0,0.1);
+    font-size:22px;
 }
 
 .bubble-bot {
-    background-color:#CCF;
+    background-color:#2A2833;
     float:left;
 }
 
 .bubble-user {
-    background-color:#CFC;
+    background-color:#718FAD;
     float:right;
 }
 
 .chatcontainer {
     position:relative;
     width: 100%;
-    max-width:500px;
+    max-width:800px;
     height:100%;
     background-color:#EEE;
 }
@@ -39,4 +47,22 @@ body {
 .bubblecontainer {
     height:90%;
     overflow: scroll;
+}
+
+.chat-input {
+    height:8%;
+    font-size:18px;
+}
+
+.chat-input-field {
+    height:100%;
+    font-size:18px;
+}
+
+.chat-send-button {
+    height:100%;
+    border: solid transparent;
+    border-bottom-color: rgb(0, 0, 0, 0.1);
+    color:white;font-size:18px;
+    background-color:#718FAD;
 }
