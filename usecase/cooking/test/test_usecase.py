@@ -11,8 +11,8 @@ class TestCooking(unittest.TestCase):
     MOCK_LOCATION = 'Jägerstraße 56, 70174 Stuttgart'
     use_case = None
     todoist_service = None
-    calender_remote = None
-    calender_service = None
+    calendar_remote = None
+    calendar_service = None
 
     @classmethod
     def setUpClass(self):
@@ -20,16 +20,18 @@ class TestCooking(unittest.TestCase):
             self.use_case = Cook()
             self.todoist_service = TodoistService.instance()
             self.todoist_service.set_remote(TodoistJSONRemote())
-            self.calender_remote = iCloudCaldavRemote()
-            self.calender_service = CalService(self.calender_remote)  
+            self.calendar_remote = iCloudCaldavRemote()
+            self.calendar_service = CalService.instance()
+            self.calendar_service.set_remote(self.calendar_remote)
         else:
             print("Mocking remotes...")
             self.use_case = Cook(True)
             self.todoist_service = TodoistService.instance()
             self.todoist_service.set_remote(TodoistMockRemote())
-            self.calender_remote = CaldavMockRemote()
-            self.calender_service = CalService(self.calender_remote)
-       
+            self.calendar_remote = CaldavMockRemote()
+            self.calendar_service = CalService.instance()
+            self.calendar_service.set_remote(self.calendar_remote)
+
     def test_trigger_usecase(self):
         self.use_case.trigger_use_case('pork')
         response_message = self.use_case.get_response()
@@ -51,4 +53,4 @@ class TestCooking(unittest.TestCase):
         self.assertEquals(response_message[0] + response_message[1] + response_message[2], "A r")
 
     def tearDown(self):
-        self.calender_remote.purge()
+        self.calendar_remote.purge()
