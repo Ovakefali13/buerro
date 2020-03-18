@@ -19,45 +19,23 @@ class Lunchbreak:
     start = None
     end = None
 
-    calender_remote = None
 
-    def __init__(self, mock:bool=False):
-        if mock:
-            # self.set_WeatherApapter(WeatherMock())
-            # self.set_calender(CaldavMockRemote())
-            # self.set_geolocation(GeocodingMockRemote.instance())
-            # self.set_YelpAdapter(YelpMock())
-            weather_adapter = WeatherAdapter.instance()
-            weather_adapter.set_remote(WeatherMock())
-            yelp_service = YelpService.instance()
-            yelp_service.set_remote(YelpMock())
-            geocoding = GeocodingService.instance()
-            geocoding.remote = GeocodingMockRemote.instance()
-
-            calendar_service = CalService.instance()
-            calendar_service.set_remote(CaldavMockRemote())
-        else:
-            geocoding = GeocodingService.instance()
-            geocoding.remote = GeocodingJSONRemote.instance()
-
-            calendar_service = CalService.instance()
-            calendar_service.set_remote(iCloudCaldavRemote())
-
-    def set_WeatherApapter(self, weather_adapter:WeatherAdapterRemote):
-        weather_adapter = WeatherAdapter.instance()
-        weather_adapter.set_remote(weather_adapter)
-
-    def set_YelpAdapter(self, yelp_adapter:YelpServiceRemote):
-        yelp_service = YelpService.instance()
-        yelp_service.set_remote(yelp_adapter)
-
-    def set_calender(self, calender_remote:CaldavRemote):
-        self.cal_service = CalService.instance()
-        self.cal_service.set_remote(calendar_remote)
-
-    def set_geolocation(self, geolocation_remote:GeocodingRemote):
+    def __init__(self):
         geocoding = GeocodingService.instance()
-        geocoding.remote = geolocation_remote
+        geocoding.remote = GeocodingJSONRemote.instance()
+        calendar_service = CalService.instance()
+        calendar_service.set_remote(iCloudCaldavRemote())
+
+    def set_mock_remotes(self):
+        weather_adapter = WeatherAdapter.instance()
+        weather_adapter.set_remote(WeatherMock())
+        yelp_service = YelpService.instance()
+        yelp_service.set_remote(YelpMock())
+        geocoding = GeocodingService.instance()
+        geocoding.remote = GeocodingMockRemote.instance()
+        calendar_service = CalService.instance()
+        calendar_service.set_remote(CaldavMockRemote())
+
 
     def advance(self, message):
         if not self.restaurants:

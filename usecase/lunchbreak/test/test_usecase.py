@@ -19,7 +19,9 @@ class TestLunchbreak(unittest.TestCase):
 
     @classmethod
     def setUp(self):
-        self.lb = Lunchbreak(self.MOCK)
+        self.lb = Lunchbreak()
+        if(self.MOCK):
+            self.lb.set_mock_remotes()
 
     def test_check_lunch_options(self):
         nearby_restaurants, start, end = self.lb.check_lunch_options(self.dhbw)
