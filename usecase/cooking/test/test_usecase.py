@@ -47,7 +47,6 @@ class TestCooking(unittest.TestCase):
             self.spoonacle_service.set_remote(SpoonacularMOCKRemote())
             self.use_case.spoonacle_service = self.spoonacle_service
             
-       
     def test_usecase(self):
         self.use_case.advance({'ingredient': 'pork'})
         response_message = self.use_case.get_response()
