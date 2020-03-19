@@ -5,6 +5,7 @@ from datetime import datetime
 import time
 import os
 from apscheduler.schedulers.background import BackgroundScheduler
+from pytz import utc
 
 from usecase import Lunchbreak, WorkSession
 
@@ -23,8 +24,8 @@ def get_last_location():
 
 def schedule_usecases(scheduler):
     scheduler.add_job(func=tick, trigger='interval', seconds=3)
-    scheduler.add_job(func=Lunchbreak().trigger_use_case,
-                      args=(get_last_location(),),
+    scheduler.add_job(func=Lunchbreak().trigger_proactive_usecase,
+                      args=(),
                       trigger='interval',
                       hours=1)
 
@@ -32,7 +33,7 @@ def tick():
     print('Tick! The time is: %s' % datetime.now())
 
 if __name__ == '__main__':
-    scheduler = BackgroundScheduler()
+    scheduler = BackgroundScheduler(timezone=utc)
     schedule_usecases(scheduler)
     scheduler.start()
 

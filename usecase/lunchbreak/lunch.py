@@ -12,60 +12,40 @@ from services.cal.cal_service import CalService, iCloudCaldavRemote, Event,Calda
 from services.cal.test.test_service import CaldavMockRemote
 import pytz
 import re
-from handler import Notification, NotificationHandler
+
+from handler import Notification, NotificationHandler, LocationHandler
 
 class Lunchbreak:
     restraurants = None
     start = None
     end = None
 
-    calender_remote = None
 
-    def __init__(self, mock:bool=False):
-        if mock:
-            # self.set_WeatherApapter(WeatherMock())
-            # self.set_calender(CaldavMockRemote())
-            # self.set_geolocation(GeocodingMockRemote.instance())
-            # self.set_YelpAdapter(YelpMock())
-            weather_adapter = WeatherAdapter.instance()
-            weather_adapter.set_remote(WeatherMock())
-            yelp_service = YelpService.instance()
-            yelp_service.set_remote(YelpMock())
-            geocoding = GeocodingService.instance()
-            geocoding.remote = GeocodingMockRemote.instance()
-
-            calendar_service = CalService.instance()
-            calendar_service.set_remote(CaldavMockRemote())
-        else:
-            geocoding = GeocodingService.instance()
-            geocoding.remote = GeocodingJSONRemote.instance()
-
-            calendar_service = CalService.instance()
-            calendar_service.set_remote(iCloudCaldavRemote())
-
-    def set_WeatherApapter(self, weather_adapter:WeatherAdapterRemote):
-        weather_adapter = WeatherAdapter.instance()
-        weather_adapter.set_remote(weather_adapter)
-
-    def set_YelpAdapter(self, yelp_adapter:YelpServiceRemote):
-        yelp_service = YelpService.instance()
-        yelp_service.set_remote(yelp_adapter)
-
-    def set_calender(self, calender_remote:CaldavRemote):
-        self.cal_service = CalService.instance()
-        self.cal_service.set_remote(calendar_remote)
-
-    def set_geolocation(self, geolocation_remote:GeocodingRemote):
+    def __init__(self):
         geocoding = GeocodingService.instance()
-        geocoding.remote = geolocation_remote
+        geocoding.remote = GeocodingJSONRemote.instance()
+        calendar_service = CalService.instance()
+        calendar_service.set_remote(iCloudCaldavRemote())
+
+    def set_mock_remotes(self):
+        weather_adapter = WeatherAdapter.instance()
+        weather_adapter.set_remote(WeatherMock())
+        yelp_service = YelpService.instance()
+        yelp_service.set_remote(YelpMock())
+        geocoding = GeocodingService.instance()
+        geocoding.remote = GeocodingMockRemote.instance()
+        calendar_service = CalService.instance()
+        calendar_service.set_remote(CaldavMockRemote())
+
 
     def advance(self, message):
+        location = self.get_location()
         if not self.restaurants:
-            restaurants, start, end = self.check_lunch_options(message['location'] )
+            restaurants, start, end = self.check_lunch_options(location)
             return {'message' : self.restaurants}
         else:
             choice = self.wait_for_user_request(message)
-            link = self.open_maps_route(message['location'], self.restaurants[choice])
+            link = self.open_maps_route(location, self.restaurants[choice])
             self.create_cal_event(self.start, self.end, self.restaurants[choice], link)
 
             #Reset if usecases are singletions
@@ -167,7 +147,13 @@ class Lunchbreak:
         notification_handler = NotificationHandler.instance()
         notification_handler.push(notification)
 
-    def trigger_proactive_usecase(self, location):
+    def trigger_proactive_usecase(self):
+        print("Check Lunchbreak Proactive")
         if(self.notify()):
             self.create_proactive_notification()
-            self.advance({'location' :location})
+            self.advance({'message': 'proactive'})
+
+
+    def get_location(self):
+        lh = LocationHandler.instance()
+        return lh.get()
