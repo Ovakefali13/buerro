@@ -24,7 +24,7 @@ class TestLunchbreak(unittest.TestCase):
             self.lb.set_mock_remotes()
 
     def test_check_lunch_options(self):
-        nearby_restaurants, start, end = self.lb.check_lunch_options(self.dhbw)
+        nearby_restaurants, start, end, duration = self.lb.check_lunch_options(self.dhbw)
         self.assertIsInstance(nearby_restaurants, list)
 
     def test_time_diff_in_hours(self):
@@ -53,7 +53,7 @@ class TestLunchbreak(unittest.TestCase):
         self.assertIsInstance(ret, Event)
 
     def test_wait_for_user_input(self):
-        ret = self.lb.wait_for_user_request("Four")
+        ret = self.lb.evaluate_user_request("Four")
         self.assertEqual(ret, 3)
-        ret = self.lb.wait_for_user_request("four")
+        ret = self.lb.evaluate_user_request("four")
         self.assertEqual(ret, 3)

@@ -15,7 +15,7 @@ class YelpRequest:
             'price': self.pref.get_specific_pref('price'),
             'radius': 2000,
             'open_at': datetime.timestamp(datetime.now().replace(hour=12, minute=0, second=0, microsecond=0)),
-            'limit' : 10,
+            'limit' : 5,
             'sort_by' : 'distance'
         }
 
