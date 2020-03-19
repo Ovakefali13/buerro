@@ -1,10 +1,15 @@
 import unittest
 import datetime
 from usecase.cooking import Cook
+from usecase.usecase import Reply
 from services.todoAPI.todoist_service import TodoistJSONRemote, TodoistService
 from services.todoAPI.test.test_service import TodoistMockRemote
 from services.cal.cal_service import CalService, CaldavRemote, iCloudCaldavRemote
 from services.cal.test.test_service import CaldavMockRemote
+from services.yelp.yelp_service import YelpService
+from services.yelp.test.test_service import YelpMock
+from services.spoonacular.spoonacular_service import SpoonacularService
+from services.spoonacular.test.test_service import SpoonacularMOCKRemote
 import os
 
 class TestCooking(unittest.TestCase):
@@ -13,6 +18,7 @@ class TestCooking(unittest.TestCase):
     todoist_service = None
     calendar_remote = None
     calendar_service = None
+    yelp_service = None
 
     @classmethod
     def setUpClass(self):
@@ -25,16 +31,29 @@ class TestCooking(unittest.TestCase):
             self.calendar_service.set_remote(self.calendar_remote)
         else:
             print("Mocking remotes...")
-            self.use_case = Cook(True)
-            self.todoist_service = TodoistService.instance()
-            self.todoist_service.set_remote(TodoistMockRemote())
+            self.use_case = Cook()
+            
             self.calendar_remote = CaldavMockRemote()
             self.calendar_service = CalService.instance()
             self.calendar_service.set_remote(self.calendar_remote)
+            self.use_case.cal_service = self.calendar_service
 
-    def test_trigger_usecase(self):
-        self.use_case.trigger_use_case('pork')
+            self.yelp_service = YelpService.instance()
+            self.yelp_service.set_remote(YelpMock())
+            self.use_case.yelp_service = self.yelp_service
+
+            self.todoist_service = TodoistService.instance()
+            self.todoist_service.set_remote(TodoistMockRemote())
+            self.use_case.todoist_service = self.todoist_service
+
+            self.spoonacle_service = SpoonacularService.instance()
+            self.spoonacle_service.set_remote(SpoonacularMOCKRemote())
+            self.use_case.spoonacle_service = self.spoonacle_service
+            
+    def test_usecase(self):
+        reply = self.use_case.advance({'ingredient': 'pork'})
         response_message = self.use_case.get_response()
+        self.assertIsInstance(reply, Reply)
         self.assertIs(type(response_message), str)
 
         project_name = "Shopping List"
