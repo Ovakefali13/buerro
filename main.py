@@ -40,7 +40,7 @@ if __name__ == '__main__':
 
         chatbot = Chatbot(BuerroBot())
 
-        Controller = ControllerFromArgs(chatbot, usecaseByContext)
+        Controller = ControllerFromArgs(scheduler, chatbot, usecaseByContext)
         httpd = HTTPServer((hostName, serverPort),
             Controller)
         print("serving at port", serverPort)
