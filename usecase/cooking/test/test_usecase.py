@@ -51,9 +51,10 @@ class TestCooking(unittest.TestCase):
             self.use_case.spoonacle_service = self.spoonacle_service
             
     def test_usecase(self):
-        reply = self.use_case.advance({'ingredient': 'pork'})
+        reply = self.use_case.advance('I like to cook with PORK')
         response_message = self.use_case.get_response()
         self.assertIsInstance(reply, Reply)
+        self.assertEquals('pork', self.use_case.ingredient)
         self.assertIs(type(response_message), str)
 
         project_name = "Shopping List"
