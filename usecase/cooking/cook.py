@@ -10,9 +10,10 @@ from services.cal.test.test_service import CaldavMockRemote
 from services.cal.event import Event
 from datetime import datetime, timedelta
 from dateutil import tz
+from usecase.usecase import Reply, Usecase
 import pytz
 
-class Cook:
+class Cook(Usecase):
     ingredient = 'pork'
     ingredient_list = []
     preferences_json = ''
@@ -22,10 +23,14 @@ class Cook:
     yelp_service = None
     cal_service = None
     response_message = ''
+    response_url = ''
+    response_ingedients = None
     max_cooking_time = None
     event_time_start = None
     event_time_end = None
     cooking_event = None
+    no_time = False
+
 
     def __init__(self, mock:bool=False):
         if mock:
@@ -46,18 +51,29 @@ class Cook:
             self.todoist_service.set_remote(TodoistJSONRemote())
             self.spoonacle_service = SpoonacularService.instance()
             self.spoonacle_service.set_remote(SpoonacularJSONRemote())
+    
+    def advance(self, message):
+        if self.no_time:
+            self.not_time_to_cook()
+            self.not_time = False
+            return Reply({'message': self.response_message})
+        else:
+            self.ingredient = message['ingredient']
+            self.not_time = self.trigger_use_case()
+            if self.not_time: 
+                return Reply({'message': 'No time to cook. Would you like to get a restaurant in your area? (Yes/No)'})
+            else:
+                return Reply({'message': self.response_message, 'url': self.response_url, 'list': self.response_ingedients})
             
-    def trigger_use_case(self, ingredient):
-        self.ingredient = ingredient
+    def trigger_use_case(self):
         self.load_preferences()
-        #if self.check_for_time():
-        if True:
-            self.check_for_time()
+        if self.check_for_time():
             self.get_recipe()
             self.set_shopping_list()
             self.set_calender()
+            return False
         else:
-            self.not_time_to_cook()
+            return True
         
     def check_for_time(self):
         now = datetime.now(pytz.utc)
@@ -75,6 +91,8 @@ class Cook:
         self.spoonacle_service.set_ingredient(self.ingredient)
         self.spoonacle_service.newRecipe()
         self.response_message = self.spoonacle_service.get_summary()
+        self.response_url = self.spoonacle_service.get_sourceURL()
+        self.response_ingedients = self.spoonacle_service.get_ingredients()
 
     def set_shopping_list(self):
         self.ingredient_list = self.spoonacle_service.get_ingredients()
