@@ -1,42 +1,51 @@
 from services.weatherAPI.weather_service import WeatherAdapter
-from services.weatherAPI.test.test_service import WeatherMock
+from services.weatherAPI.test.test_service import WeatherMock,WeatherAdapterRemote
 from services.yelp.yelp_service import YelpService
-from services.yelp.test.test_service import YelpMock
+from services.yelp.test.test_service import YelpMock, YelpServiceRemote
 from datetime import datetime
 from services.preferences import PrefService
 from services.maps.geocoding_service import GeocodingJSONRemote
 from services.maps.test.test_service import GeocodingMockRemote
-from services.maps import MapService, GeocodingService
+from services.maps import MapService, GeocodingService, GeocodingRemote
 from services.yelp.yelp_request import YelpRequest
-from services.cal.cal_service import CalService, iCloudCaldavRemote, Event
+from services.cal.cal_service import CalService, iCloudCaldavRemote, Event,CaldavRemote
+from services.cal.test.test_service import CaldavMockRemote
 import pytz
 import re
 from controller.notification_handler import Notification, NotificationHandler
+from controller.location_handler import LocationHandler
 
 class Lunchbreak:
     restraurants = None
     start = None
     end = None
 
-    def __init__(self, mock:bool=False):
-        if mock:
-            weather_adapter = WeatherAdapter.instance()
-            weather_adapter.set_remote(WeatherMock())
-            yelp_service = YelpService.instance()
-            yelp_service.set_remote(YelpMock())
-            geocoding = GeocodingService.instance()
-            geocoding.remote = GeocodingMockRemote.instance()
-        else:
-            geocoding = GeocodingService.instance()
-            geocoding.remote = GeocodingJSONRemote.instance()
+
+    def __init__(self):
+        geocoding = GeocodingService.instance()
+        geocoding.remote = GeocodingJSONRemote.instance()
+        calendar_service = CalService.instance()
+        calendar_service.set_remote(iCloudCaldavRemote())
+
+    def set_mock_remotes(self):
+        weather_adapter = WeatherAdapter.instance()
+        weather_adapter.set_remote(WeatherMock())
+        yelp_service = YelpService.instance()
+        yelp_service.set_remote(YelpMock())
+        geocoding = GeocodingService.instance()
+        geocoding.remote = GeocodingMockRemote.instance()
+        calendar_service = CalService.instance()
+        calendar_service.set_remote(CaldavMockRemote())
+
 
     def advance(self, message):
+        location = self.get_location()
         if not self.restaurants:
-            restaurants, start, end = self.check_lunch_options(message['location'] )
+            restaurants, start, end = self.check_lunch_options(location)
             return {'message' : self.restaurants}
         else:
             choice = self.wait_for_user_request(message)
-            link = self.open_maps_route(message['location'], self.restaurants[choice])
+            link = self.open_maps_route(location, self.restaurants[choice])
             self.create_cal_event(self.start, self.end, self.restaurants[choice], link)
 
             #Reset if usecases are singletions
@@ -89,7 +98,7 @@ class Lunchbreak:
         lunch.add('description', "Route information: " + str(link) + "\nWebsite: " + restaurant['url'])
         lunch.set_start(start)
         lunch.set_end(end)
-        cal_service = CalService(iCloudCaldavRemote())
+        cal_service = CalService.instance()
         cal_service.add_event(lunch)
         return lunch
 
@@ -114,7 +123,7 @@ class Lunchbreak:
 
 
     def find_longest_timeslot_between_hours(self, search_start, search_end):
-        cal_service = CalService(iCloudCaldavRemote())
+        cal_service = CalService.instance()
         time, before, after = cal_service.get_max_available_time_between(search_start, search_end)
         return int((time.total_seconds() / 60)), before, after
 
@@ -138,7 +147,13 @@ class Lunchbreak:
         notification_handler = NotificationHandler.instance()
         notification_handler.push(notification)
 
-    def trigger_proactive_usecase(self, location):
+    def trigger_proactive_usecase(self):
+        print("Check Lunchbreak Proactive")
         if(self.notify()):
             self.create_proactive_notification()
-            self.advance({'location' :location})
+            self.advance({'message': 'proactive'})
+
+
+    def get_location(self):
+        lh = LocationHandler.instance()
+        return lh.get()

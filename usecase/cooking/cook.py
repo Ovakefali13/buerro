@@ -67,7 +67,6 @@ class Cook(Usecase):
             return False
         else:
             return True
-        
     def check_for_time(self):
         now = datetime.now(pytz.utc)
         end_of_day = datetime.now(pytz.utc).replace(hour=23, minute=59, second=59)

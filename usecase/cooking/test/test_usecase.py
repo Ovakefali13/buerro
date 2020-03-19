@@ -25,8 +25,9 @@ class TestCooking(unittest.TestCase):
             self.use_case = Cook()
             self.todoist_service = TodoistService.instance()
             self.todoist_service.set_remote(TodoistJSONRemote())
-            self.calender_remote = iCloudCaldavRemote()
-            self.calender_service = CalService(self.calender_remote)  
+            self.calendar_remote = iCloudCaldavRemote()
+            self.calendar_service = CalService.instance()
+            self.calendar_service.set_remote(self.calendar_remote)
         else:
             print("Mocking remotes...")
             self.use_case = Cook()
@@ -68,4 +69,4 @@ class TestCooking(unittest.TestCase):
         self.assertEquals(response_message[0] + response_message[1] + response_message[2], "A r")
 
     def tearDown(self):
-        self.calender_remote.purge()
+        self.calendar_remote.purge()
