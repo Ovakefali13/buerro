@@ -1,6 +1,12 @@
 from abc import ABC, abstractmethod
 
+from handler import Notification
+
+class FinishedException(Exception):
+    pass
+
 class Usecase(ABC):
+
     @abstractmethod
     def advance(self, message:str):
         pass
@@ -54,3 +60,11 @@ class Reply(CaselessDict):
                 + 'only allowed attributes: ' + self.attributes)
         setattr(self, key, value)
         super().__setitem__(key, value)
+
+    def to_notification(self):
+        if not self.message:
+            raise Exception("At least set a message.")
+
+        notification = Notification(self.message)
+        notification.add_message(self.message)
+        return notification

@@ -1,5 +1,6 @@
 from datetime import datetime as dt, timedelta
 import pytz
+import re
 
 from usecase import Usecase, Reply, StateMachine
 from services.singleton import Singleton
@@ -9,16 +10,14 @@ from services.cal import CalService
 from services.preferences import PrefService
 from services.music import MusicService
 #from usecase import TransportUsecase
+from handler import NotificationHandler
 
-@Singleton
 class WorkSession(Usecase):
     """This use case should best be understood with a flow chart:
     https://preview.tinyurl.com/uvsyfyk
     """
 
     def __init__(self):
-        super().__init__()
-
         self.cal_service = CalService.instance()
         self.vvs_service = VVSService.instance()
         self.todo_service = TodoistService.instance()
@@ -28,6 +27,9 @@ class WorkSession(Usecase):
 
         self.fsm = StateMachine()
         self.define_state_transitions()
+
+        self.scheduler = None
+        self.notification_handler = NotificationHandler.instance()
 
     def set_pref_service(self, service:PrefService):
         self.prefService = service
@@ -41,6 +43,10 @@ class WorkSession(Usecase):
         self.todo_service = service
     def set_music_service(self, service:MusicService):
         self.music_service = service
+    def set_scheduler(self, scheduler):
+        self.scheduler = scheduler
+    def set_notification_handler(self, handler):
+        self.notification_handler = handler
 
     def reset(self):
         self.fsm.reset()
@@ -52,9 +58,31 @@ class WorkSession(Usecase):
         return Reply(self.fsm.advance(message))
 
     def is_finished(self):
-        return self.fsm.finished
+        return self.fsm.is_finished()
+
+    def _set_state(self, state:str):
+        self.fsm._set_state(state)
+    def get_state(self):
+        return self.fsm.currentState
+
+    def wake_up(self, reply, next_state):
+        self.expireBy = None
+        self._set_state(next_state)
+        self.notification_handler.push(reply.to_notification())
+
+    def wait_until(self, when:dt, reply, next_state):
+        if not self.scheduler:
+            raise Exception("Scheduler not set in use case")
+
+        self.expire_by = when
+        self.scheduler.add_job(func=self.wake_up,
+                                trigger='date', run_date=when,
+                                args=(reply, next_state))
 
     def define_state_transitions(self):
+        def find_whole_word(w):
+            return re.compile(r'\b({0})\b'.format(w), flags=re.IGNORECASE).search
+
         def start_trans(message):
             def _event_too_close(event, journey=None):
                 msg = "Your next appointment is too close to start working: \n"
@@ -63,13 +91,13 @@ class WorkSession(Usecase):
                     msg += "\nThe recommended journey: \n"
                     msg += str(journey)
                 next_state = "end_state"
-                return next_state, {'message': msg}
+                return next_state, msg
 
             def _event_possibly_too_close(event):
                 msg = "Your next appointment might be too close to start working:\n"
                 msg += event.summarize()
                 msg += "\nDo you still want to start working?"
-                return "end_state", {'message': msg}
+                return "end_state", msg
 
             next_events = self.cal_service.get_next_events()
             if next_events:
@@ -117,16 +145,16 @@ class WorkSession(Usecase):
                     msg += str(journey)
                     msg += '\nWould you like to listen to music?'
 
-                    return "music", {'message': msg}
+                    return "music", msg
             else:
                 msg = 'You have no upcoming events.'
                 msg += '\nWould you like to listen to music?'
-                return "music", {'message': msg}
+                return "music", msg
 
         def music_trans(message):
             msg =""
             reply = {}
-            if 'yes' in message:
+            if find_whole_word('yes')(message):
                 link = self.music_service.get_playlist_for_mood('focus')
                 msg += "How about this Spotify playlist?"
                 reply = {**reply, 'link': link}
@@ -138,12 +166,83 @@ class WorkSession(Usecase):
             return "todo", reply
 
         def todo_trans(message):
-            return "end_state", None
+            for project in self.projects:
+                if project.lower() in message.lower():
+                    self.chosen_project = project
+                    break
+            else:
+                msg = ( "I could not match your answer to any of your projects. "
+                        "Would you repeat that, please?")
+                return "todo", msg
+
+            todos = self.todo_service.get_project_items(self.chosen_project)
+            reply = {'list': todos}
+            msg = f"Here are your Todo's for {self.chosen_project}."
+            msg += "\nDo you want to start a pomodoro session?"
+            return "pomodoro", {**reply, 'message': msg}
+
+        def pomodoro_trans(message):
+            if message is None: message = ""
+            if find_whole_word('no')(message):
+                return "end_state", "I hope you'll have a productive session!"
+            elif find_whole_word('yes')(message):
+                minutes = self.pref['pomodoro_minutes']
+                self.wait_until(when=dt.now() + timedelta(minutes=minutes),
+                    next_state="break",
+                    reply=Reply(("Good Work! You finished your session."
+                            "\nDo you want to take a break, skip it or finish?"))
+                )
+                return "wait_state", f"I will notify you in {minutes} minutes."
+            else:
+                msg = ( "I did not get that. "
+                        "Please answer with yes or no.")
+                return "pomodoro", msg
+
+        def break_trans(message):
+            if message is None: message = ""
+            if find_whole_word('skip')(message):
+                """
+                minutes = self.pref['pomodoro_minutes']
+                self.wait_until(when=dt.now() + timedelta(minutes=minutes),
+                    next_state="break",
+                    reply=Reply(("Good Work! You finished your session."
+                            "\nDo you want to take a break, skip it or finish?"))
+                )
+                return "wait_state", f"I will notify you in {minutes} minutes."
+                """
+                return "pomodoro", f"Do you want to start another pomodoro?"
+            elif find_whole_word('finish')(message):
+                return "end_state", "Okay let's finish up. See you."
+            elif find_whole_word('break')(message):
+                minutes = self.pref['break_minutes']
+                self.wait_until(when=dt.now() + timedelta(minutes=minutes),
+                    next_state="pomodoro",
+                    reply=Reply(("Your break is over."
+                                " Do you want to get back to work?"))
+                )
+                return "wait_state", f"I will notify you in {minutes} minutes."
+            else:
+                msg = ("I did not get that. "
+                        "Please answer with (break, skip or finish).")
+                return "pomodoro", msg
+
+        def wait_trans(message):
+            if self.expire_by:
+                period = self.expire_by - dt.now()
+                minutes, seconds = divmod(period.seconds, 60)
+                msg = (  "Timer running."
+                        f"I will notify you in {minutes}:{seconds}." )
+                return "wait_state", msg
+            else:
+                raise Exception("in wait_state even though timer expired")
 
         m = self.fsm
         m.add_state("start", start_trans)
         m.set_start("start")
         m.add_state("music", music_trans)
         m.add_state("todo", todo_trans)
+        m.add_state("pomodoro", pomodoro_trans)
+        m.add_state("break", break_trans)
+        m.add_state("wait_state", wait_trans)
         m.add_state("error_state", None, end_state=True)
         m.add_state("end_state", None, end_state=True)
