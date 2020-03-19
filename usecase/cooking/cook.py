@@ -32,38 +32,31 @@ class Cook(Usecase):
     no_time = False
 
 
-    def __init__(self, mock:bool=False):
-        if mock:
-            self.cal_service = CalService(CaldavMockRemote())
-            self.pref_service = PrefService(PrefJSONRemote())
-            self.yelp_service = YelpService.instance()
-            self.yelp_service.set_remote(YelpMock())
-            self.todoist_service = TodoistService.instance()
-            self.todoist_service.set_remote(TodoistMockRemote())
-            self.spoonacle_service = SpoonacularService.instance()
-            self.spoonacle_service.set_remote(SpoonacularMOCKRemote())
-        else:
-            self.cal_service = CalService(iCloudCaldavRemote())
-            self.pref_service = PrefService(PrefJSONRemote())
-            self.yelp_service = YelpService.instance()
-            self.yelp_service.set_remote(YelpServiceRemote())
-            self.todoist_service = TodoistService.instance()
-            self.todoist_service.set_remote(TodoistJSONRemote())
-            self.spoonacle_service = SpoonacularService.instance()
-            self.spoonacle_service.set_remote(SpoonacularJSONRemote())
+    def __init__(self):
+        self.cal_service = CalService(iCloudCaldavRemote())
+        self.pref_service = PrefService(PrefJSONRemote())
+        self.yelp_service = YelpService.instance()
+        self.yelp_service.set_remote(YelpServiceRemote())
+        self.todoist_service = TodoistService.instance()
+        self.todoist_service.set_remote(TodoistJSONRemote())
+        self.spoonacle_service = SpoonacularService.instance()
+        self.spoonacle_service.set_remote(SpoonacularJSONRemote())
     
     def advance(self, message):
         if self.no_time:
-            self.not_time_to_cook()
-            self.not_time = False
-            return Reply({'message': self.response_message})
+            if message['answer'] == 'yes':
+                self.not_time_to_cook()
+                self.not_time = False
+                return Reply({'message': self.response_message})
+            else:
+                return Reply({'message': 'Ok'})
         else:
             self.ingredient = message['ingredient']
             self.not_time = self.trigger_use_case()
             if self.not_time: 
                 return Reply({'message': 'No time to cook. Would you like to get a restaurant in your area? (Yes/No)'})
             else:
-                return Reply({'message': self.response_message, 'url': self.response_url, 'list': self.response_ingedients})
+                return Reply({'message': self.response_message})
             
     def trigger_use_case(self):
         self.load_preferences()

@@ -5,6 +5,10 @@ from services.todoAPI.todoist_service import TodoistJSONRemote, TodoistService
 from services.todoAPI.test.test_service import TodoistMockRemote
 from services.cal.cal_service import CalService, CaldavRemote, iCloudCaldavRemote
 from services.cal.test.test_service import CaldavMockRemote
+from services.yelp.yelp_service import YelpService
+from services.yelp.test.test_service import YelpMock
+from services.spoonacular.spoonacular_service import SpoonacularService
+from services.spoonacular.test.test_service import SpoonacularMOCKRemote
 import os
 
 class TestCooking(unittest.TestCase):
@@ -13,6 +17,7 @@ class TestCooking(unittest.TestCase):
     todoist_service = None
     calender_remote = None
     calender_service = None
+    yelp_service = None
 
     @classmethod
     def setUpClass(self):
@@ -24,14 +29,27 @@ class TestCooking(unittest.TestCase):
             self.calender_service = CalService(self.calender_remote)  
         else:
             print("Mocking remotes...")
-            self.use_case = Cook(True)
-            self.todoist_service = TodoistService.instance()
-            self.todoist_service.set_remote(TodoistMockRemote())
+            self.use_case = Cook()
+            
             self.calender_remote = CaldavMockRemote()
             self.calender_service = CalService(self.calender_remote)
+            self.use_case.cal_service = self.calender_service
+
+            self.yelp_service = YelpService.instance()
+            self.yelp_service.set_remote(YelpMock())
+            self.use_case.yelp_service = self.yelp_service
+
+            self.todoist_service = TodoistService.instance()
+            self.todoist_service.set_remote(TodoistMockRemote())
+            self.use_case.todoist_service = self.todoist_service
+
+            self.spoonacle_service = SpoonacularService.instance()
+            self.spoonacle_service.set_remote(SpoonacularMOCKRemote())
+            self.use_case.spoonacle_service = self.spoonacle_service
+            
        
-    def test_trigger_usecase(self):
-        self.use_case.trigger_use_case('pork')
+    def test_usecase(self):
+        self.use_case.advance({'ingredient': 'pork'})
         response_message = self.use_case.get_response()
         self.assertIs(type(response_message), str)
 
