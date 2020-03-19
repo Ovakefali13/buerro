@@ -5,25 +5,28 @@
 		"yelpAPIKey": "AA4LFvZbdhM3IgESoZAlBJSpsvKSHzVbYmpdbo7hehlsrBY-ZdzZIo9ZT7-hRSnlD3RLwnFR8sakmKVTb3xLcrYB3FM6j13KoOiEPh28uGESSgIPFbHdffk4UMZcXnYx",
 		"yelpClientKey": "A5Kch4F4A_1vSRVEEkgMnw",
 		"openWeatherMapAPIKey": "716b047d4b59fba6550709d60756b0fd",
-		"demo_location": "Jägerstraße 56, 70174 Stuttgart",
 		"opencagegeocodingAPIKey": "2642206c773e4b06aedabd0a0e876a2f",
 		"openrouteserviceAPIKey": "5b3ce3597851110001cf62488ef50484ef524d228826ecc7b35f5df1",
-		"diet": "vegan"
+		"diet": "vegan",
+		"work_address": "Herrenberger Straße 140, 71034 Böblingen",
+		"university_address": "Rotebühlplatz 41, 70178 Stuttgart",
+		"mainstation_address": "Arnulf-Klett-Platz 2, 70173 Stuttgart",
+		"home_address": "Schloßplatz 4, 70173 Stuttgart",
+		"work_coords": [48.676260, 8.980900],
+		"university_coords": [48.773630, 9.170960],
+		"mainstation_coords": [48.782761, 9.182630],
+		"home_coords": [48.777980, 9.181840]
 	},
-        "cal": {
+    "cal": {
                 "caldav_url": "https://p36-caldav.icloud.com/17167915149/calendars",
                 "calendar": "Work",
                 "username": "buerro@icloud.com",
                 "password": "gxuu-sgbx-jovu-qhao"
-        },
+    },
 	"cooking": {
 		"diet": "omnivore",
 		"intolerances": "Shellfish",
 		"maxCookingTime": 90
-	},
-	"github": {
-		"github1": "prefGithub1",
-		"github2": "prefGithub2"
 	},
 	"work_session": {
 		"min_work_period_minutes": 30,
@@ -43,5 +46,13 @@
 		"base_radius": 500,
 		"ten_min_radius": 100,
 		"price": "1, 2"
+	},
+    "music": {
+        "spotify_client_id": "b6238b4f6e2541f2aec7173faa6be188" ,
+        "spotify_client_secret": "d7477948274a408f98953e56925ff1f9",
+        "spotify_username": "rapresent93" 
+	},
+	"github": {
+		"key": "afbcb0841142ad981fb6aa89c9e5b94c0dfe59dd"
 	}
 }

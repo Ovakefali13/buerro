@@ -34,7 +34,8 @@ class Cook(Usecase):
 
     def __init__(self, mock:bool=False):
         if mock:
-            self.cal_service = CalService(CaldavMockRemote())
+            self.cal_service = CalService.instance()
+            self.cal_service.set_remote(CaldavMockRemote())
             self.pref_service = PrefService(PrefJSONRemote())
             self.yelp_service = YelpService.instance()
             self.yelp_service.set_remote(YelpMock())
@@ -43,15 +44,15 @@ class Cook(Usecase):
             self.spoonacle_service = SpoonacularService.instance()
             self.spoonacle_service.set_remote(SpoonacularMOCKRemote())
         else:
-            self.cal_service = CalService(iCloudCaldavRemote())
+            self.cal_service = CalService.instance()
+            self.cal_service.set_remote(iCloudCaldavRemote())
             self.pref_service = PrefService(PrefJSONRemote())
             self.yelp_service = YelpService.instance()
             self.yelp_service.set_remote(YelpServiceRemote())
             self.todoist_service = TodoistService.instance()
             self.todoist_service.set_remote(TodoistJSONRemote())
             self.spoonacle_service = SpoonacularService.instance()
-            self.spoonacle_service.set_remote(SpoonacularJSONRemote())
-    
+            self.spoonacle_service.set_remote(SpoonacularJSONRemote())   
     def advance(self, message):
         if self.no_time:
             self.not_time_to_cook()
@@ -74,7 +75,6 @@ class Cook(Usecase):
             return False
         else:
             return True
-        
     def check_for_time(self):
         now = datetime.now(pytz.utc)
         end_of_day = datetime.now(pytz.utc).replace(hour=23, minute=59, second=59)

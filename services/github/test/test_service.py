@@ -7,17 +7,18 @@ class GithubMockRemote(GithubRemote):
     def get_notifications(self):
         return [{'type': "Notification type", 'title': "Notification Title"}]
 
-    def connect(self):
+    def connect(self, key):
         pass
 
 class TestGithubService(unittest.TestCase):
+
+    github_service = GithubService.instance()
+
     if 'DONOTMOCK' in os.environ:
-        remote = GithubRealRemote()
+        pass
     else:
         print("Mocking remotes...")
-        remote = GithubMockRemote()
-
-    github_service = GithubService(remote)
+        github_service.set_remote(GithubMockRemote())
 
     def test_get_notifications_returns_valid_notification(self):
         self.github_service.connect()

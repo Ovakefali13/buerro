@@ -1,5 +1,6 @@
 ROOT_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 PYTHON ?= $(ROOT_DIR)/venv/bin/python3.7
+#MODULE=controller
 
 ifdef MODULE
     ARGS := --module $(MODULE)

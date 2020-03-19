@@ -13,15 +13,20 @@ class CaldavMockRemote(CaldavRemote):
         self.calendar = Calendar()
         self.calendar.add('prodid', '-//My calendar product//mxm.dk//')
         self.calendar.add('version', '2.0')
+
     def __init__(self):
         self.create_calendar()
+
     def add_event(self, event:Event):
         self.calendar.add_component(event)
+
     def events(self):
         events = self.calendar.subcomponents
         return list(map(lambda e: Event(e), events))
+
     def purge(self):
         self.create_calendar()
+
     def date_search(self, start, end=None):
         events = self.events()
         if end is None:
@@ -43,7 +48,8 @@ class TestCalService(unittest.TestCase):
             print('Mocking Remote...')
             self.remote = CaldavMockRemote()
 
-        self.cal_service = CalService(self.remote)
+        self.cal_service = CalService.instance()
+        self.cal_service.set_remote(self.remote)
 
     @classmethod
     def setUp(self):
