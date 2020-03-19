@@ -15,8 +15,8 @@ class TestCooking(unittest.TestCase):
     MOCK_LOCATION = 'Jägerstraße 56, 70174 Stuttgart'
     use_case = None
     todoist_service = None
-    calender_remote = None
-    calender_service = None
+    calendar_remote = None
+    calendar_service = None
     yelp_service = None
 
     @classmethod
@@ -32,9 +32,10 @@ class TestCooking(unittest.TestCase):
             print("Mocking remotes...")
             self.use_case = Cook()
             
-            self.calender_remote = CaldavMockRemote()
-            self.calender_service = CalService(self.calender_remote)
-            self.use_case.cal_service = self.calender_service
+            self.calendar_remote = CaldavMockRemote()
+            self.calendar_service = CalService.instance()
+            self.calendar_service.set_remote(self.calendar_remote)
+            self.use_case.cal_service = self.calendar_service
 
             self.yelp_service = YelpService.instance()
             self.yelp_service.set_remote(YelpMock())

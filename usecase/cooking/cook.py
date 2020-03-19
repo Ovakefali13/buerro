@@ -34,7 +34,8 @@ class Cook(Usecase):
 
 
     def __init__(self):
-        self.cal_service = CalService(iCloudCaldavRemote())
+        self.cal_service = CalService.instance()
+        self.cal_service.set_remote(iCloudCaldavRemote())
         self.pref_service = PrefService(PrefJSONRemote())
         self.yelp_service = YelpService.instance()
         self.yelp_service.set_remote(YelpServiceRemote())
@@ -64,7 +65,7 @@ class Cook(Usecase):
                 return Reply({'message': self.response_message})
     
     def is_finished(self):
-        retrun self.finished
+        return self.finished
 
     def trigger_use_case(self):
         self.load_preferences()
