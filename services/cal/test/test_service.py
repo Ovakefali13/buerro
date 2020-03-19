@@ -41,19 +41,17 @@ class TestCalService(unittest.TestCase):
 
     @classmethod
     def setUpClass(self):
-        self.remote = None
+        self.cal_service = CalService.instance()
         if 'DONOTMOCK' in os.environ:
-            self.remote = iCloudCaldavRemote()
+            pass
         else:
             print('Mocking Remote...')
-            self.remote = CaldavMockRemote()
-
-        self.cal_service = CalService.instance()
-        self.cal_service.set_remote(self.remote)
+            remote = CaldavMockRemote()
+            self.cal_service.set_remote(remote)
 
     @classmethod
     def setUp(self):
-        self.remote.purge()
+        self.cal_service.purge()
 
     def now(self):
         return pytz.utc.localize(dt.now())

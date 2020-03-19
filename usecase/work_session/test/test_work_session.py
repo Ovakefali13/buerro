@@ -38,8 +38,8 @@ class MockPrefRemote(PrefRemote):
                 "min_work_period_minutes": 30,
                 "be_minutes_early": 15,
                 "remind_min_before_leaving": 15,
-                "pomodoro_minutes": 2 / 60,
-                "break_minutes": 2 / 60
+                "pomodoro_minutes": 0.1 / 60,
+                "break_minutes": 0.1 / 60
             }
         }
     def merge_json_files(self, dict1, dict2):
@@ -96,81 +96,35 @@ class TestWorkSession(unittest.TestCase):
 
             notification_handler = MockNotificationHandler.instance()
             notification_handler.set_queue(self.notification_queue)
-            """
-            notification_handler.set_db('usecase/work_session/test/test.db')
-            CustomMockNotificationEndpoint = MockNotificationEndpointFromArgs(
-                self.notify_event, notification_queue)
-
-            self.httpd = HTTPServer((notification_host, notification_port),
-                CustomMockNotificationEndpoint)
-
-            self.ready_event = threading.Event()
-            self.shutdown_event = threading.Event()
-            def in_thread():
-                self.ready_event.set()
-                while not self.shutdown_event.is_set():
-                    self.httpd.handle_request()
-
-            self.server_thread = Thread(target=in_thread)
-            self.server_thread.start()
-
-            time.sleep(0.0001)
-            self.ready_event.wait(3)
-            if not self.ready_event.is_set():
-                raise Exception("most likely failed to start server")
-
-
-            def _get_random_p256dh():
-                recv_key = ec.generate_private_key(ec.SECP256R1, default_backend())
-                return base64.urlsafe_b64encode(recv_key.public_key().public_bytes(
-                            encoding=serialization.Encoding.X962,
-                            format=serialization.PublicFormat.UncompressedPoint
-                        )).strip(b'=')
-
-            self.mock_subscription = {
-                'endpoint': self.server_url,
-                'keys': {
-                    'p256dh': _get_random_p256dh(),
-                    'auth': base64.urlsafe_b64encode(os.urandom(16)).strip(b'='),
-                    }
-                }
-            notification_handler.save_subscription(self.mock_subscription)
-            """
             return notification_handler
 
         self.notification_handler = setup_notification_handler()
         self.scheduler = setup_scheduler()
 
-    """
-    @classmethod
-    def tearDownClass(self):
-        self.shutdown_event.set()
-        requests.post(self.server_url, json={})
-    """
-
     @classmethod
     def setUp(self):
         usecase = WorkSession()
 
-        cal_remote = CaldavMockRemote()
-        cal_remote.purge()
         self.cal_service = CalService.instance()
-        self.cal_service.set_remote(cal_remote)
-
-        usecase.set_pref_service(PrefService(MockPrefRemote()))
-        usecase.set_cal_service(self.cal_service)
-
         vvs_service = VVSService.instance()
-        vvs_service.set_remote(VVSMockRemote())
-        usecase.set_vvs_service(vvs_service)
-
         todo_service = TodoistService.instance()
-        todo_service.set_remote(TodoistMockRemote())
-        usecase.set_todo_service(todo_service)
-
         music_service = MusicService.instance()
-        music_service.set_remote(MusicMockRemote.instance())
+
+        pref_service = PrefService(MockPrefRemote())
+
+        if 'DONOTMOCK' in os.environ:
+            self.cal_service.set_remote(CaldavMockRemote())
+            vvs_service.set_remote(VVSMockRemote())
+            todo_service.set_remote(TodoistMockRemote())
+            music_service.set_remote(MusicMockRemote.instance())
+
+
+        self.cal_service.purge()
+        usecase.set_cal_service(self.cal_service)
+        usecase.set_vvs_service(vvs_service)
+        usecase.set_todo_service(todo_service)
         usecase.set_music_service(music_service)
+        usecase.set_pref_service(pref_service)
 
         usecase.set_scheduler(self.scheduler)
         usecase.set_notification_handler(self.notification_handler)
@@ -302,7 +256,7 @@ class TestWorkSession(unittest.TestCase):
 
                         # assert notification reached Notification Handler
                         notification = self.notification_queue.get(
-                                            block=True, timeout=3)
+                                            block=True, timeout=0.2)
                         self.assertTrue(self.notification_queue.empty())
                         self.assertIn(states['pom_fin'], notification['title'])
                         self.assertIn(states['pom_fin'],
@@ -325,7 +279,7 @@ class TestWorkSession(unittest.TestCase):
 
                                     # assert notification reached Notification Handler
                                     notification = self.notification_queue.get(
-                                                        block=True, timeout=3)
+                                                        block=True, timeout=0.2)
                                     self.assertTrue(self.notification_queue.empty())
                                     self.assertIn(states['break_fin'], notification['title'])
                                     self.assertIn(states['break_fin'],

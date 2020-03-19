@@ -53,4 +53,4 @@ class TestCooking(unittest.TestCase):
         self.assertEquals(response_message[0] + response_message[1] + response_message[2], "A r")
 
     def tearDown(self):
-        self.calendar_remote.purge()
+        self.calendar_service.purge()

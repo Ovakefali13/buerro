@@ -23,6 +23,10 @@ class CaldavRemote(ABC):
     def date_search(self, start:dt, end:dt=None):
         pass
 
+    @abstractmethod
+    def purge(self):
+        pass
+
 class iCloudCaldavRemote(CaldavRemote):
     def __init__(self):
 
@@ -101,6 +105,9 @@ class CalService:
         if not isinstance(remote, CaldavRemote):
             raise Exception("Remote is not a CaldavRemote")
         self.remote = remote
+
+    def purge(self):
+        self.remote.purge()
 
     def get_next_events(self):
         return self.get_events_between(dt.now(pytz.utc))
