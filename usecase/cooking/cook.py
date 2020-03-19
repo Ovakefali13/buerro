@@ -30,6 +30,7 @@ class Cook(Usecase):
     event_time_end = None
     cooking_event = None
     no_time = False
+    finished = False
 
 
     def __init__(self):
@@ -47,17 +48,24 @@ class Cook(Usecase):
             if message['answer'] == 'yes':
                 self.not_time_to_cook()
                 self.not_time = False
+                self.finished = True
                 return Reply({'message': self.response_message})
             else:
+                self.finished = True
                 return Reply({'message': 'Ok'})
         else:
             self.ingredient = message['ingredient']
             self.not_time = self.trigger_use_case()
             if self.not_time: 
+                self.finished = False
                 return Reply({'message': 'No time to cook. Would you like to get a restaurant in your area? (Yes/No)'})
             else:
+                self.finished = True
                 return Reply({'message': self.response_message})
-            
+    
+    def is_finished(self):
+        retrun self.finished
+
     def trigger_use_case(self):
         self.load_preferences()
         if self.check_for_time():
