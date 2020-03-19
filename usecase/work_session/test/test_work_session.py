@@ -287,11 +287,6 @@ class TestWorkSession(unittest.TestCase):
                     self.assertIn(states['fin_no_pom'], reply.message)
                     self.assertTrue(uc.is_finished())
 
-                    # starts over...
-                    self.assertRaises(FinishedException, uc.advance, None)
-                    uc.reset()
-                    reply = uc.advance(None)
-                    self.assertIn(states['music'], reply.message)
                 else:
                     uc._set_state('pomodoro')
                     for pomodoro_i in range(5):
@@ -340,7 +335,6 @@ class TestWorkSession(unittest.TestCase):
                                     reply = uc.advance('skip')
 
                         self.assertEqual(uc.get_state().lower(), "pomodoro")
-                        return
 
                         """
                         #TODO should also ask for which project to work on
@@ -358,6 +352,9 @@ class TestWorkSession(unittest.TestCase):
                     self.assertIn(states['fin_no_pom'], reply.message)
                     self.assertTrue(uc.is_finished())
 
-                    # starts over...
-                    reply = uc.advance(None)
+                # starts over...
+                self.assertRaises(FinishedException, uc.advance, None)
+                uc.reset()
+                reply = uc.advance(None)
+                self.assertIn(states['music'], reply.message)
 

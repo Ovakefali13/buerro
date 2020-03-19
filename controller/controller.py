@@ -123,7 +123,14 @@ def ControllerFromArgs(scheduler:BaseScheduler, chatbot:Chatbot, usecase_by_cont
                     else:
                         usecase = UsecaseStore.instance().get(UsecaseCls)
 
-                        reply = usecase.advance(msg)
+                        reply = None
+                        try:
+                            reply = usecase.advance(msg)
+                        except FinishedException:
+                            # TODO store that info
+                            usecase.reset()
+                            reply = usecase.advance(msg)
+
                         if not isinstance(reply, Reply):
                             respond_error(500, 'usecase advance does not Reply')
                             raise Exception(f"Usecase {usecase}'s advance does"
