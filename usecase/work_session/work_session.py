@@ -129,13 +129,7 @@ class WorkSession(Usecase):
                     if minutes_until < min_work_period:
                         return _event_too_close(next_event, journey)
 
-                    # journey_event = journey.to_event() is it this?
-                    journey_event = Event()
-                    journey_event.set_start(dt.now())
-                    journey_event.set_end(dt.now() + timedelta(minutes=15))
-                    journey_event.set_title('Travis debug')
-                    reminder = self.pref['remind_min_before_leaving']
-                    journey_event.set_reminder(timedelta(minutes=reminder))
+                    journey_event = journey.to_event()
                     self.cal_service.add_event(journey_event)
 
                     # TODO create notification

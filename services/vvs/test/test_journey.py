@@ -58,7 +58,7 @@ class TestJourney(unittest.TestCase):
         with self.subTest("can transform into cal event"):
             exp_ev = Event()
             exp_ev.set_title('VVS: A - B')
-            exp_ev.set_description(expected)
+            #exp_ev.set_description(expected)
             exp_ev.set_start(start)
             exp_ev.set_end(start + timedelta(minutes=15))
 
