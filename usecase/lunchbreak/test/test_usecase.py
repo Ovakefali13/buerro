@@ -29,19 +29,19 @@ class TestLunchbreak(unittest.TestCase):
             self.map_service = MapService.instance(
                 MapJSONRemote.instance())
             self.calendar_service = CalService.instance(
-                CalMockRemote.instance())
+                iCloudCaldavRemote.instance())
         else:
             print("Mocking remotes...")
             self.weather_adapter = WeatherAdapter.instance(
                 WeatherMock.instance())
             self.calendar_service = CalService.instance(
-                iCloudCaldavRemote.instance())
+                CalMockRemote.instance())
             self.geocoding_service = GeocodingService.instance(
                 GeocodingMockRemote.instance())
             self.map_service = MapService.instance(
                 MapMockRemote.instance())
             self.yelp_service = YelpService.instance(
-                YelpServiceRemote.instance())
+                YelpMock.instance())
 
         self.dhbw = (48.7735115, 9.1710448)
 

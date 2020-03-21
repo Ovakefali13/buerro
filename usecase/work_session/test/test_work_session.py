@@ -77,15 +77,6 @@ class TestWorkSession(unittest.TestCase):
 
         if 'DONOTMOCK' in os.environ:
             self.cal_service = CalService.instance(
-                CalMockRemote.instance())
-            vvs_service = VVSService.instance(
-                VVSMockRemote.instance())
-            todo_service = TodoistService.instance(
-                TodoistMockRemote.instance())
-            music_service = MusicService.instance(
-                MusicMockRemote.instance())
-        else:
-            self.cal_service = CalService.instance(
                 iCloudCaldavRemote.instance())
             vvs_service = VVSService.instance(
                 VVSEfaJSONRemote.instance())
@@ -93,6 +84,15 @@ class TestWorkSession(unittest.TestCase):
                 TodoistJSONRemote.instance())
             music_service = MusicService.instance(
                 SpotifyRemote.instance())
+        else:
+            self.cal_service = CalService.instance(
+                CalMockRemote.instance())
+            vvs_service = VVSService.instance(
+                VVSMockRemote.instance())
+            todo_service = TodoistService.instance(
+                TodoistMockRemote.instance())
+            music_service = MusicService.instance(
+                MusicMockRemote.instance())
 
         pref_service = PrefService(MockPrefRemote())
 
