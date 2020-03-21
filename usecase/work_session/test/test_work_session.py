@@ -2,18 +2,8 @@ import unittest
 from urllib.parse import urlparse
 from datetime import datetime as dt, timedelta
 import pytz
-from http.server import BaseHTTPRequestHandler, HTTPServer
 from apscheduler.schedulers.background import BackgroundScheduler
-import threading
-from threading import Thread
-import time
-import requests
-from copy import copy
 import os
-import base64
-from cryptography.hazmat.primitives.asymmetric import ec
-from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import serialization
 import queue
 
 from .. import WorkSession
@@ -55,25 +45,6 @@ class MockNotificationHandler(BaseNotificationHandler):
         self.notification_queue.put(notification)
 
 
-def MockNotificationEndpointFromArgs(notify_event:threading.Event,
-                                    notification:queue.Queue):
-    class MockNotificationEndpoint(BaseHTTPRequestHandler):
-        def __init__(self, *args, **kwargs):
-            self.notify_event = notify_evente
-            self.notification_queue = notification_queue
-            super(MockNotificationEndpoint, self).__init__(*args, **kwargs)
-        def do_POST(self):
-            def parse_body():
-                length = int(self.headers['Content-Length'])
-                payload = self.rfile.read(length).decode('utf-8')
-                return json.loads(payload)
-
-            self.notify_event.set()
-            self.notification_queue.put(parse_body())
-            self.send_response(200)
-            self.end_headers()
-    return MockNotificationEndpoint
-
 class TestWorkSession(unittest.TestCase):
     """This use case should best be understood with a flow chart:
     https://preview.tinyurl.com/uvsyfyk
@@ -91,7 +62,6 @@ class TestWorkSession(unittest.TestCase):
             notification_port = 8745
             self.server_url = "http://" + notification_host + ":" + str(notification_port)
 
-            # self.notify_event = threading.Event()
             self.notification_queue = queue.Queue()
 
             notification_handler = MockNotificationHandler.instance()
