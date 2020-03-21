@@ -15,7 +15,8 @@ class GithubMockRemote(GithubRemote):
 
 class TestGithubService(unittest.TestCase):
 
-    if 'DONOTMOCK' in os.environ:
+    # Don't want to exceed the limit... mock on DONOTMOCK
+    if 'DONOTMOCK_GITHUB' in os.environ:
         github_service = GithubService.instance(GithubRealRemote.instance())
     else:
         print("Mocking remotes...")
