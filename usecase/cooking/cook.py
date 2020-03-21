@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 from dateutil import tz
 from usecase.usecase import Reply, Usecase
 import pytz
+import re
 
 from services.preferences.pref_service import PrefService, PrefRemote, PrefJSONRemote
 from services import SpoonacularService, TodoistService, YelpService, CalService
@@ -38,8 +39,11 @@ class Cook(Usecase):
     def advance(self, message):
         if not self.todoist_service:
             raise Exception("Set services!")
+        message = message.lower()
         if self.no_time:
-            if message['answer'] == 'yes':
+            p = re.compile('^([\w\-]..)')
+            item = p.match(message)
+            if item[0] == 'yes':
                 self.not_time_to_cook()
                 self.not_time = False
                 self.finished = True
@@ -48,7 +52,20 @@ class Cook(Usecase):
                 self.finished = True
                 return Reply({'message': 'Ok'})
         else:
-            self.ingredient = message['ingredient']
+            '''
+            Tested with
+            - I like to cook with pork
+            - I have pork and would like to cook
+            - I would like to cook and have pork
+            - I have some pork and want to cook
+            - Do I have time for cooking with pork ?
+            - I like to cook with chicken
+            - I like to cook with pork and some false information
+            - I have chicken and want to cook
+            '''
+            p = re.compile('([\n\r]*with\s*([^\s\r]*)|[\n\r]*have\s(?!time|some)\s*([^\s\r]*))')
+            list = p.findall(message)
+            self.ingredient = list[0][1]
             self.not_time = self.trigger_use_case()
             if self.not_time: 
                 self.finished = False
