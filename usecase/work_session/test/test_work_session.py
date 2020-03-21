@@ -221,8 +221,6 @@ class TestWorkSession(unittest.TestCase):
                 if not pomodoro:
                     reply = uc.advance('no')
                     self.assertIn(states['fin_no_pom'], reply.message)
-                    self.assertTrue(uc.is_finished())
-
                 else:
                     uc._set_state('pomodoro')
                     for pomodoro_i in range(5):
@@ -286,11 +284,10 @@ class TestWorkSession(unittest.TestCase):
                     # finally no more pomodoros...
                     reply = uc.advance('no')
                     self.assertIn(states['fin_no_pom'], reply.message)
-                    self.assertTrue(uc.is_finished())
 
                 # starts over...
-                self.assertRaises(FinishedException, uc.advance, None)
-                uc.reset()
+                self.assertTrue(uc.is_finished())
+                # does not need to be reset 
                 reply = uc.advance(None)
                 self.assertIn(states['music'], reply.message)
 

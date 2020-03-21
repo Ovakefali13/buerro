@@ -15,6 +15,7 @@ class UsecaseStore:
     def __init__(self):
         # TODO Multi-User: by User
         self.usecase_instances = {}
+        self.running = None
 
     def get(self, UsecaseCls):
         if UsecaseCls not in self.usecase_instances:
@@ -25,6 +26,17 @@ class UsecaseStore:
                 usecase.set_scheduler(self.scheduler)
             self.usecase_instances[UsecaseCls] = usecase
         return self.usecase_instances[UsecaseCls]
+
+    def set_running(self, usecase:Usecase):
+        self.running = usecase
+
+    def get_running(self):
+        if self.running:
+            return self.running
+        return None
+
+    def finished(self):
+        self.running = None
 
     def set_scheduler(self, scheduler):
         self.scheduler = scheduler
@@ -115,28 +127,29 @@ def ControllerFromArgs(scheduler:BaseScheduler, chatbot:Chatbot, usecase_by_cont
                 if msg == 'shutdown':
                     respond_succ('shutdown')
                 else:
-                    context = self.chatbot.get_context(msg)
+                    store = UsecaseStore.instance()
+                    usecase = store.get_running()
+                    if not usecase:
+                        context = self.chatbot.get_context(msg)
 
-                    UsecaseCls = self.usecase_by_context.get(context, None)
-                    if not UsecaseCls:
-                        respond_error(500, f'no usecase detected for intent {intent}')
+                        UsecaseCls = self.usecase_by_context.get(context, None)
+                        if not UsecaseCls:
+                            respond_error(500, f'no usecase detected for intent {intent}')
+                            raise Exception(f'no usecase detected for intent {intent}')
+
+                        usecase = store.get(UsecaseCls)
+
+                    reply = usecase.advance(msg)
+                    if usecase.is_finished():
+                        store.finished()
                     else:
-                        usecase = UsecaseStore.instance().get(UsecaseCls)
+                        store.set_running(usecase)
 
-                        reply = None
-                        try:
-                            reply = usecase.advance(msg)
-                        except FinishedException:
-                            # TODO store that info
-                            usecase.reset()
-                            reply = usecase.advance(msg)
-
-                        if not isinstance(reply, Reply):
-                            respond_error(500, 'usecase advance does not Reply')
-                            raise Exception(f"Usecase {usecase}'s advance does"
-                                            +" not return a Reply object")
-                        respond_succ(reply)
-
+                    if not isinstance(reply, Reply):
+                        respond_error(500, 'usecase advance does not Reply')
+                        raise Exception(f"Usecase {usecase}'s advance does"
+                                        +" not return a Reply object")
+                    respond_succ(reply)
                 del msg
 
             elif self.path == "/save-subscription":
@@ -157,8 +170,11 @@ def ControllerFromArgs(scheduler:BaseScheduler, chatbot:Chatbot, usecase_by_cont
                     respond_succ()
                 else:
                     respond_error(400, 'bad location request')
+                del lat, lon
             else:
                 respond_error(404, 'Not Found')
+
+            del body
 
     return CustomController
 
