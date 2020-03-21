@@ -115,9 +115,9 @@ def ControllerFromArgs(scheduler:BaseScheduler, chatbot:Chatbot, usecase_by_cont
                 if msg == 'shutdown':
                     respond_succ('shutdown')
                 else:
-                    intent = self.chatbot.get_intent(msg)
+                    context = self.chatbot.get_context(msg)
 
-                    UsecaseCls = self.usecase_by_context.get(intent, None)
+                    UsecaseCls = self.usecase_by_context.get(context, None)
                     if not UsecaseCls:
                         respond_error(500, f'no usecase detected for intent {intent}')
                     else:

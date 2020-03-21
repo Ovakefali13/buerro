@@ -14,7 +14,7 @@ from handler import LocationHandler
 @Singleton
 class MockChatbotBehavior(ChatbotBehavior):
 
-    def get_intent(self, message:str):
+    def get_context(self, message:str):
         return "mock_work"
 
     def clear_context(self):
