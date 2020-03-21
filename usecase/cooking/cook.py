@@ -1,22 +1,26 @@
 from datetime import datetime, timedelta
 from dateutil import tz
+from usecase.usecase import Reply, Usecase
 import pytz
 
 from services.preferences.pref_service import PrefService, PrefRemote, PrefJSONRemote
-
 from services import SpoonacularService, TodoistService, YelpService, CalService
 from services.cal import Event
 from services.yelp import YelpRequest
 
-class Cook:
+class Cook(Usecase):
     ingredient = 'pork'
     ingredient_list = []
     preferences_json = ''
     response_message = ''
+    response_url = ''
+    response_ingedients = None
     max_cooking_time = None
     event_time_start = None
     event_time_end = None
     cooking_event = None
+    no_time = False
+    finished = False
 
     def __init__(self):
         self.pref_service = PrefService(PrefJSONRemote())
@@ -30,21 +34,41 @@ class Cook:
         self.calendar_service = calendar_service
         self.yelp_service = yelp_service
         self.spoonacle_service = spoonacle_service
-
-    def trigger_use_case(self, ingredient):
+    
+    def advance(self, message):
         if not self.todoist_service:
             raise Exception("Set services!")
-        self.ingredient = ingredient
+        if self.no_time:
+            if message['answer'] == 'yes':
+                self.not_time_to_cook()
+                self.not_time = False
+                self.finished = True
+                return Reply({'message': self.response_message})
+            else:
+                self.finished = True
+                return Reply({'message': 'Ok'})
+        else:
+            self.ingredient = message['ingredient']
+            self.not_time = self.trigger_use_case()
+            if self.not_time: 
+                self.finished = False
+                return Reply({'message': 'No time to cook. Would you like to get a restaurant in your area? (Yes/No)'})
+            else:
+                self.finished = True
+                return Reply({'message': self.response_message})
+    
+    def is_finished(self):
+        return self.finished
+
+    def trigger_use_case(self):
         self.load_preferences()
-        #if self.check_for_time():
-        if True:
-            self.check_for_time()
+        if self.check_for_time():
             self.get_recipe()
             self.set_shopping_list()
             self.set_calender()
+            return False
         else:
-            self.not_time_to_cook()
-
+            return True
     def check_for_time(self):
         now = datetime.now(pytz.utc)
         end_of_day = datetime.now(pytz.utc).replace(hour=23, minute=59, second=59)
@@ -63,6 +87,8 @@ class Cook:
         self.spoonacle_service.set_ingredient(self.ingredient)
         self.spoonacle_service.newRecipe()
         self.response_message = self.spoonacle_service.get_summary()
+        self.response_url = self.spoonacle_service.get_sourceURL()
+        self.response_ingedients = self.spoonacle_service.get_ingredients()
 
     def set_shopping_list(self):
         self.ingredient_list = self.spoonacle_service.get_ingredients()

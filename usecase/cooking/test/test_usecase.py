@@ -3,6 +3,7 @@ import datetime
 import os
 
 from usecase.cooking import Cook
+from usecase.usecase import Reply
 from services.todoAPI.todoist_service import TodoistJSONRemote, TodoistService
 from services.todoAPI.test.test_service import TodoistMockRemote
 from services.cal.cal_service import CalService, iCloudCaldavRemote
@@ -46,9 +47,10 @@ class TestCooking(unittest.TestCase):
             spoonacle_service=self.spoonacle_service
         )
 
-    def test_trigger_usecase(self):
-        self.use_case.trigger_use_case('pork')
+    def test_usecase(self):
+        reply = self.use_case.advance({'ingredient': 'pork'})
         response_message = self.use_case.get_response()
+        self.assertIsInstance(reply, Reply)
         self.assertIs(type(response_message), str)
 
         project_name = "Shopping List"
