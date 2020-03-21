@@ -5,7 +5,7 @@ import json
 from http.server import HTTPServer
 from threading import Thread, Event
 
-from services.singleton import Singleton
+from util import Singleton
 from controller import ControllerFromArgs
 from chatbot import ChatbotBehavior, Chatbot
 from usecase import Usecase, Reply
@@ -110,7 +110,6 @@ class TestController(unittest.TestCase):
             return res
 
         location_handler = LocationHandler.instance()
-        location_handler.set_db('controller/test/test.db')
 
         lat, lon = 53.47554, 9.69618
         _query(lat, lon)

@@ -8,7 +8,7 @@ from apscheduler.schedulers.base import BaseScheduler
 from chatbot import Chatbot
 from handler import NotificationHandler, LocationHandler
 from usecase import Usecase, Reply
-from services.singleton import Singleton
+from util import Singleton
 
 @Singleton
 class UsecaseStore:

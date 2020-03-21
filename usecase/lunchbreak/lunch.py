@@ -1,17 +1,11 @@
-from services.weatherAPI.weather_service import WeatherAdapter
-from services.weatherAPI.test.test_service import WeatherMock,WeatherAdapterRemote
-from services.yelp.yelp_service import YelpService
-from services.yelp.test.test_service import YelpMock, YelpServiceRemote
 from datetime import datetime
-from services.preferences import PrefService
-from services.maps.geocoding_service import GeocodingJSONRemote
-from services.maps.test.test_service import GeocodingMockRemote
-from services.maps import MapService, GeocodingService, GeocodingRemote
-from services.yelp.yelp_request import YelpRequest
-from services.cal.cal_service import CalService, iCloudCaldavRemote, Event,CaldavRemote
-from services.cal.test.test_service import CaldavMockRemote
 import pytz
 import re
+
+from services import WeatherAdapter, YelpService, GeocodingService, \
+    MapService, CalService
+from services.cal import Event
+from services.yelp.yelp_request import YelpRequest
 
 from handler import Notification, NotificationHandler, LocationHandler
 
@@ -20,28 +14,25 @@ class Lunchbreak:
     start = None
     end = None
 
-
-    def __init__(self):
-        geocoding = GeocodingService.instance()
-        geocoding.remote = GeocodingJSONRemote.instance()
-        calendar_service = CalService.instance()
-        calendar_service.set_remote(iCloudCaldavRemote())
-
-    def set_mock_remotes(self):
-        weather_adapter = WeatherAdapter.instance()
-        weather_adapter.set_remote(WeatherMock())
-        yelp_service = YelpService.instance()
-        yelp_service.set_remote(YelpMock())
-        geocoding = GeocodingService.instance()
-        geocoding.remote = GeocodingMockRemote.instance()
-        calendar_service = CalService.instance()
-        calendar_service.set_remote(CaldavMockRemote())
-
+    def set_services(self,
+                    weather_adapter:WeatherAdapter,
+                    yelp_service:YelpService,
+                    geocoding_service:GeocodingService,
+                    map_service:MapService,
+                    calendar_service:CalService):
+        self.weather_adapter = weather_adapter
+        self.yelp_service = yelp_service
+        self.geocoding_service = geocoding_service
+        self.map_service = map_service
+        self.calendar_service = calendar_service
 
     def advance(self, message):
-        location = self.get_location()
+        if not self.weather_adapter:
+            raise Exception("Set Services!")
+
+        lat, lon = self.get_location()
         if not self.restaurants:
-            restaurants, start, end = self.check_lunch_options(location)
+            restaurants, start, end = self.check_lunch_options((lat, lon))
             return {'message' : self.restaurants}
         else:
             choice = self.wait_for_user_request(message)
@@ -53,7 +44,7 @@ class Lunchbreak:
             return {'message': link}
 
 
-    def check_lunch_options(self, location:list):
+    def check_lunch_options(self, location:tuple):
         ### Search Calender for timeslot sufficent for a lunchbreak ###
         #Search for timeslot between 10 and 15 Oclock
         start = datetime.now(pytz.utc).replace(hour=10, minute=0, second=0, microsecond=0)
@@ -64,22 +55,19 @@ class Lunchbreak:
 
         hours_until_lunch = self.time_diff_in_hours(self.lunch_start, datetime.now(pytz.utc))
 
-        geocoding = GeocodingService.instance()
-        geocoding.remote = GeocodingJSONRemote.instance()
-        city = geocoding.get_city_from_coords(location)
+        (lat, lon) = location
+        city = self.geocoding_service.get_city_from_coords([lat, lon])
 
         ### Check Weather ###
-        weather_adapter = WeatherAdapter.instance()
-        weather_adapter.update(city)
-        will_be_bad_weather = weather_adapter.will_be_bad_weather(hours_until_lunch)
+        self.weather_adapter.update(city)
+        will_be_bad_weather = self.weather_adapter.will_be_bad_weather(hours_until_lunch)
 
         search_params = YelpRequest()
         search_params.set_coordinates(location)
         search_params.set_time(lunch_timestamp)
         search_params.set_radius(duration, will_be_bad_weather)
 
-        yelp_service = YelpService.instance()
-        self.restaurants = yelp_service.get_short_information_of_restaurants(search_params)
+        self.restaurants = self.yelp_service.get_short_information_of_restaurants(search_params)
         #for x in restaurants:
         #    print(x['name'])
         return self.restaurants, self.lunch_start, self.lunch_end
@@ -87,8 +75,7 @@ class Lunchbreak:
 
     def open_maps_route(self, location, restaurant):
         coords_dest = restaurant['coordinates']
-        map_service = MapService.instance()
-        link = map_service.get_route_link(location, coords_dest)
+        link = self.map_service.get_route_link(location, coords_dest)
         return link
 
     def create_cal_event(self, start, end, restaurant, link):
@@ -98,8 +85,7 @@ class Lunchbreak:
         lunch.add('description', "Route information: " + str(link) + "\nWebsite: " + restaurant['url'])
         lunch.set_start(start)
         lunch.set_end(end)
-        cal_service = CalService.instance()
-        cal_service.add_event(lunch)
+        self.calendar_service.add_event(lunch)
         return lunch
 
     def wait_for_user_request(self, data):
@@ -123,8 +109,8 @@ class Lunchbreak:
 
 
     def find_longest_timeslot_between_hours(self, search_start, search_end):
-        cal_service = CalService.instance()
-        time, before, after = cal_service.get_max_available_time_between(search_start, search_end)
+        time, before, after = self.calendar_service.get_max_available_time_between(
+            search_start, search_end)
         return int((time.total_seconds() / 60)), before, after
 
     def notify(self):
@@ -144,8 +130,7 @@ class Lunchbreak:
         notification = Notification('Where would you like to have lunch?')
         notification.add_message('Check out the best restaurant nearby for lunch. Just open the Buerro PDA!')
         notification.set_body('Check out the best restaurant nearby for lunch. Just open the Buerro PDA!')
-        notification_handler = NotificationHandler.instance()
-        notification_handler.push(notification)
+        notification_handler = NotificationHandler.instance().push(notification)
 
     def trigger_proactive_usecase(self):
         print("Check Lunchbreak Proactive")

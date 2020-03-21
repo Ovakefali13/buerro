@@ -5,8 +5,7 @@ class TestLocationHandler(unittest.TestCase):
 
     @classmethod
     def setUpClass(self):
-        self.location_handler = LocationHandler.instance()
-        self.location_handler.set_db('handler/test/test.db')
+        self.location_handler = LocationHandler.instance('handler/test/test.db')
 
     def test_set_and_get(self):
         lat, lon = 10.1920, 42.0815

@@ -2,7 +2,7 @@ import json
 from abc import ABC, abstractmethod
 from ..preferences.pref_service import PrefService, PrefJSONRemote, PrefRemote
 import todoist
-from services.singleton import Singleton
+from util import Singleton
 
 class TodoistRemote(ABC):
     @abstractmethod
@@ -21,6 +21,7 @@ class TodoistRemote(ABC):
     def delete_todo(self, delete_item:str, p_id:int):
         pass
 
+@Singleton
 class TodoistJSONRemote(TodoistRemote):
     api_token = ''
     pref_service = PrefService(PrefJSONRemote())
@@ -47,16 +48,16 @@ class TodoistJSONRemote(TodoistRemote):
         items_list = self.get_todos(p_id)
         for item in items_list['items']:
             if item['content'] == delete_item:
-                self.api.items.get_by_id(item['id']).delete() 
+                self.api.items.get_by_id(item['id']).delete()
         self.api.commit()
 
 @Singleton
 class TodoistService:
     remote = None
 
-    def __init__(self):
-        self.remote = TodoistJSONRemote()
-    
+    def __init__(self, remote:TodoistRemote = TodoistJSONRemote.instance()):
+        self.remote = remote
+
     def set_remote(self, remote:TodoistJSONRemote):
         self.remote = remote
 

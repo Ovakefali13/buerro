@@ -1,6 +1,6 @@
 from openrouteservice import client
 from abc import ABC, abstractmethod
-from services.singleton import Singleton
+from util import Singleton
 from services.preferences import PrefService, PrefJSONRemote
 
 
@@ -10,7 +10,7 @@ class MapRemote(ABC):
         pass
 
 @Singleton
-class MapJSONRemote(MapRemote):    
+class MapJSONRemote(MapRemote):
 
     def __init__(self):
 
@@ -39,12 +39,11 @@ class MapJSONRemote(MapRemote):
     def get_route_information(self, start:list, dest:list, travel_mode:str=None):
         self.__set_route__(start, dest)
         if travel_mode:
-            self.__set_travel_mode__(travel_mode)        
+            self.__set_travel_mode__(travel_mode)
         return self.clnt.directions(**self.request_params)
 
 @Singleton
 class MapService:
-    
 
     def __init__(self, remote:MapRemote=MapJSONRemote.instance()):
         self.remote = remote

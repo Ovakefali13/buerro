@@ -6,9 +6,11 @@ import string
 from datetime import timedelta, datetime as dt
 import pytz
 
-from .. import CalService, CaldavRemote, iCloudCaldavRemote, Event
+from util import Singleton
+from .. import CalService, CalRemote, iCloudCaldavRemote, Event
 
-class CaldavMockRemote(CaldavRemote):
+@Singleton
+class CalMockRemote(CalRemote):
     def create_calendar(self):
         self.calendar = Calendar()
         self.calendar.add('prodid', '-//My calendar product//mxm.dk//')
@@ -41,13 +43,11 @@ class TestCalService(unittest.TestCase):
 
     @classmethod
     def setUpClass(self):
-        self.cal_service = CalService.instance()
         if 'DONOTMOCK' in os.environ:
-            pass
+            self.cal_service = CalService.instance(iCloudCaldavRemote.instance())
         else:
+            self.cal_service = CalService.instance(CalMockRemote.instance())
             print('Mocking Remote...')
-            remote = CaldavMockRemote()
-            self.cal_service.set_remote(remote)
 
     @classmethod
     def setUp(self):

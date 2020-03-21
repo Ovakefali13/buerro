@@ -19,15 +19,15 @@ import queue
 from .. import WorkSession
 from usecase import Usecase, Reply, FinishedException
 from handler import BaseNotificationHandler, Notification
-from services.singleton import Singleton
-from services.todoAPI import TodoistService
-from services.vvs import VVSService
-from services.cal import CalService, Event
-from services.music import MusicService
-from services.music.test import MusicMockRemote
-from services.cal.test import CaldavMockRemote
-from services.vvs.test import VVSMockRemote
+from util import Singleton
+from services.todoAPI import TodoistService, TodoistJSONRemote
 from services.todoAPI.test import TodoistMockRemote
+from services.music import MusicService, SpotifyRemote
+from services.music.test import MusicMockRemote
+from services.cal import CalService, Event, iCloudCaldavRemote
+from services.cal.test import CalMockRemote
+from services.vvs import VVSService, VVSEfaJSONRemote
+from services.vvs.test import VVSMockRemote
 from services.preferences import PrefService, PrefRemote
 
 class MockPrefRemote(PrefRemote):
@@ -105,26 +105,36 @@ class TestWorkSession(unittest.TestCase):
     def setUp(self):
         usecase = WorkSession()
 
-        self.cal_service = CalService.instance()
-        vvs_service = VVSService.instance()
-        todo_service = TodoistService.instance()
-        music_service = MusicService.instance()
+        if 'DONOTMOCK' in os.environ:
+            self.cal_service = CalService.instance(
+                CalMockRemote.instance())
+            vvs_service = VVSService.instance(
+                VVSMockRemote.instance())
+            todo_service = TodoistService.instance(
+                TodoistMockRemote.instance())
+            music_service = MusicService.instance(
+                MusicMockRemote.instance())
+        else:
+            self.cal_service = CalService.instance(
+                iCloudCaldavRemote.instance())
+            vvs_service = VVSService.instance(
+                VVSEfaJSONRemote.instance())
+            todo_service = TodoistService.instance(
+                TodoistJSONRemote.instance())
+            music_service = MusicService.instance(
+                SpotifyRemote.instance())
 
         pref_service = PrefService(MockPrefRemote())
 
-        if 'DONOTMOCK' in os.environ:
-            self.cal_service.set_remote(CaldavMockRemote())
-            vvs_service.set_remote(VVSMockRemote())
-            todo_service.set_remote(TodoistMockRemote())
-            music_service.set_remote(MusicMockRemote.instance())
-
-
         self.cal_service.purge()
-        usecase.set_cal_service(self.cal_service)
-        usecase.set_vvs_service(vvs_service)
-        usecase.set_todo_service(todo_service)
-        usecase.set_music_service(music_service)
-        usecase.set_pref_service(pref_service)
+
+        usecase.set_services(
+            pref_service=pref_service,
+            cal_service=self.cal_service,
+            vvs_service=vvs_service,
+            todo_service=todo_service,
+            music_service=music_service
+        )
 
         usecase.set_scheduler(self.scheduler)
         usecase.set_notification_handler(self.notification_handler)
@@ -144,9 +154,10 @@ class TestWorkSession(unittest.TestCase):
         self.usecase.pref['min_work_period_minutes'] = event_in_mins
 
         event = Event()
-        event['dtstart'] = pytz.utc.localize(dt.now()) + timedelta(minutes=event_in_mins-1)
-        event['dtend'] = event['dtstart'] + timedelta(minutes=30)
-        event['summary'] = 'too soon event'
+        event.set_start(pytz.utc.localize(dt.now()) +
+            timedelta(minutes=event_in_mins-1))
+        event.set_end(event.get_start() + timedelta(minutes=30))
+        event.set_title('too soon event')
         self.cal_service.add_event(event)
 
         reply = self.usecase.advance(None)
@@ -160,9 +171,10 @@ class TestWorkSession(unittest.TestCase):
         self.usecase.pref['min_work_period_minutes'] = event_in_mins
 
         event = Event()
-        event['dtstart'] = pytz.utc.localize(dt.now()) + timedelta(minutes=event_in_mins+30)
-        event['dtend'] = event['dtstart'] + timedelta(minutes=30)
-        event['summary'] = 'possibly too soon event'
+        event.set_start(pytz.utc.localize(dt.now()) +
+            timedelta(minutes=event_in_mins+30))
+        event.set_end(event.get_start() + timedelta(minutes=30))
+        event.set_title('possibly too soon event')
         self.cal_service.add_event(event)
 
         reply = self.usecase.advance(None)

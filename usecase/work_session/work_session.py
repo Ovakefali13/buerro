@@ -2,13 +2,9 @@ from datetime import datetime as dt, timedelta
 import pytz
 import re
 
+
+from services import TodoistService, VVSService, CalService, PrefService, MusicService
 from usecase import Usecase, Reply, StateMachine
-from services.singleton import Singleton
-from services.todoAPI import TodoistService
-from services.vvs import VVSService
-from services.cal import CalService
-from services.preferences import PrefService
-from services.music import MusicService
 #from usecase import TransportUsecase
 from handler import NotificationHandler
 
@@ -18,12 +14,6 @@ class WorkSession(Usecase):
     """
 
     def __init__(self):
-        self.cal_service = CalService.instance()
-        self.vvs_service = VVSService.instance()
-        self.todo_service = TodoistService.instance()
-        self.music_service = MusicService.instance()
-        self.pref = PrefService()
-        # TODO self.transport_usecase = None
 
         self.fsm = StateMachine()
         self.define_state_transitions()
@@ -31,18 +21,21 @@ class WorkSession(Usecase):
         self.scheduler = None
         self.notification_handler = NotificationHandler.instance()
 
-    def set_pref_service(self, service:PrefService):
-        self.prefService = service
-        self.pref = service.get_preferences('work_session')
+    def set_services(self,
+                    pref_service:PrefService,
+                    cal_service:CalService,
+                    vvs_service:VVSService,
+                    todo_service:TodoistService,
+                    music_service:MusicService):
+        # TODO self.transport_usecase = None
 
-    def set_cal_service(self, service:CalService):
-        self.cal_service = service
-    def set_vvs_service(self, service:VVSService):
-        self.vvs_service = service
-    def set_todo_service(self, service:TodoistService):
-        self.todo_service = service
-    def set_music_service(self, service:MusicService):
-        self.music_service = service
+        self.pref_service = pref_service
+        self.pref = pref_service.get_preferences('work_session')
+        self.cal_service = cal_service
+        self.vvs_service = vvs_service
+        self.todo_service = todo_service
+        self.music_service = music_service
+
     def set_scheduler(self, scheduler):
         self.scheduler = scheduler
     def set_notification_handler(self, handler):
@@ -52,6 +45,8 @@ class WorkSession(Usecase):
         self.fsm.reset()
 
     def advance(self, message):
+        if not self.cal_service:
+            raise Exception("Set Services!")
         if not isinstance(message, str) and message is not None:
             raise Exception("wrong data type for message passed: "
                     +str(type(message)))

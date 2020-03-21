@@ -17,11 +17,6 @@ usecaseByContext = {
 hostName = "localhost"
 serverPort = 9150
 
-def get_last_location():
-    # TODO controller -> (persist) last location -> get here
-    # location = Controller.instance().get_last_location() 
-    return (48.76533759999999, 9.161932799999999)
-
 def schedule_usecases(scheduler):
     scheduler.add_job(func=tick, trigger='interval', seconds=3)
     scheduler.add_job(func=Lunchbreak().trigger_proactive_usecase,

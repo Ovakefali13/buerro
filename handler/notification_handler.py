@@ -2,8 +2,9 @@ from pywebpush import webpush, WebPushException
 import sqlite3
 import json
 from abc import ABC, abstractmethod
+import os
 
-from services.singleton import Singleton
+from util import Singleton
 
 
 class Notification(dict):
@@ -31,11 +32,12 @@ class BaseNotificationHandler(ABC):
 class NotificationHandler(BaseNotificationHandler):
 
     def __init__(self):
-        self.db = 'buerro.db'
-        self.schema = ('endpoint', 'p256dh', 'auth')
+        if 'DONOTMOCK' in os.environ:
+            self.db = 'handler/buerro.db'
+        else:
+            self.db = 'handler/test.db'
 
-    def set_db(self, db:str):
-        self.db = db
+        self.schema = ('endpoint', 'p256dh', 'auth')
 
     def save_subscription(self, subscription:dict):
         conn = sqlite3.connect(self.db)
@@ -92,5 +94,5 @@ if __name__ == "__main__":
     notification.set_body('Did you know? buerro is super cool.')
     notification.add_message('''Hey it's me the PDA for your buerro.
         Should I order some Kaesspaetzle?''')
-    notification_handler = NotificationHandler.instance()
+    notification_handler = NotificationHandler.instance('handler/test.db')
     notification_handler.push(notification)
