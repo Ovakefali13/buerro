@@ -27,7 +27,6 @@ class TestCooking(unittest.TestCase):
                 YelpServiceRemote.instance())
             self.spoonacle_service = SpoonacularService.instance(
                 SpoonacularJSONRemote.instance())
-
         else:
             print("Mocking remotes...")
             self.todoist_service = TodoistService.instance(
