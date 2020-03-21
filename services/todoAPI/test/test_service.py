@@ -1,9 +1,12 @@
 import unittest
-from .. import TodoistService, TodoistRemote, TodoistJSONRemote
-from services.preferences import PrefService, PrefJSONRemote
 import os
 import json
 
+from .. import TodoistService, TodoistRemote, TodoistJSONRemote
+from services.preferences import PrefService, PrefJSONRemote
+from util import Singleton
+
+@Singleton
 class TodoistMockRemote(TodoistRemote):
     api_token = ''
     pref_service = PrefService(PrefJSONRemote())
@@ -31,22 +34,20 @@ class TodoistMockRemote(TodoistRemote):
         pass
 
 class TestTodoistService(unittest.TestCase):
-    todoist_service = TodoistService.instance()
     if 'DONOTMOCK' in os.environ:
-        todoist_service.set_remote(TodoistJSONRemote())
+        todoist_service = TodoistService.instance(TodoistJSONRemote.instance())
     else:
         print("Mocking remotes...")
-        todoist_service.set_remote(TodoistMockRemote())
-    
+        todoist_service = TodoistService.instance(TodoistMockRemote.instance())
 
     def test_get_project_names(self):
         projects = self.todoist_service.get_project_names()
         self.assertEqual(projects, ['Inbox', 'Shopping List', 'Data Science', 'Software Engineering'])
-    
+
     def test_get_project_id(self):
         id = self.todoist_service.get_project_id("Shopping List")
         self.assertEqual(id, 2230670456)
-    
+
     def test_get_project_items(self):
         test_string = 'nutella'
         project_name = "Shopping List"

@@ -6,10 +6,10 @@ from dotenv import load_dotenv
 from abc import ABC, abstractmethod
 
 from services.preferences import PrefService
-from services.singleton import Singleton
+from util import Singleton
 from . import Event
 
-class CaldavRemote(ABC):
+class CalRemote(ABC):
 
     @abstractmethod
     def add_event(self, event:Event):
@@ -17,13 +17,18 @@ class CaldavRemote(ABC):
 
     @abstractmethod
     def events(self):
-        pass
+        issubclass
 
     @abstractmethod
     def date_search(self, start:dt, end:dt=None):
         pass
 
-class iCloudCaldavRemote(CaldavRemote):
+    @abstractmethod
+    def purge(self):
+        pass
+
+@Singleton
+class iCloudCaldavRemote(CalRemote):
     def __init__(self):
 
         self.pref = PrefService().get_preferences('cal')
@@ -94,13 +99,16 @@ class iCloudCaldavRemote(CaldavRemote):
 @Singleton
 class CalService:
 
-    def __init__(self):
-        self.remote = iCloudCaldavRemote()
-
-    def set_remote(self, remote:CaldavRemote):
-        if not isinstance(remote, CaldavRemote):
-            raise Exception("Remote is not a CaldavRemote")
+    def __init__(self, remote:CalRemote = iCloudCaldavRemote.instance()):
         self.remote = remote
+
+    def set_remote(self, remote:CalRemote):
+        if not issubclass(remote, CalRemote):
+            raise Exception("Remote is not a CalRemote")
+        self.remote = remote
+
+    def purge(self):
+        self.remote.purge()
 
     def get_next_events(self):
         return self.get_events_between(dt.now(pytz.utc))

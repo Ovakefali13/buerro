@@ -1,1 +1,1 @@
-from .test_service import CaldavMockRemote
+from .test_service import CalMockRemote
