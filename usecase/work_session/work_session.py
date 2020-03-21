@@ -4,6 +4,7 @@ import re
 
 
 from services import TodoistService, VVSService, CalService, PrefService, MusicService
+from services.cal import Event
 from usecase import Usecase, Reply, StateMachine
 #from usecase import TransportUsecase
 from handler import NotificationHandler
