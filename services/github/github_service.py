@@ -1,4 +1,3 @@
-
 import json
 import sys
 import os
@@ -7,7 +6,7 @@ from datetime import datetime, timedelta, timezone
 from abc import ABC, abstractmethod
 
 from services.preferences import PrefService
-from services.singleton import Singleton
+from util import Singleton
 
 class GithubRemote(ABC):
     @abstractmethod
@@ -17,6 +16,7 @@ class GithubRemote(ABC):
     def connect(self):
         pass
 
+@Singleton
 class GithubRealRemote(GithubRemote):
     g = None
     def connect(self,key):
@@ -32,10 +32,10 @@ class GithubService:
     remote = None
     pref = None
 
-    def __init__(self):
+    def __init__(self, remote:GithubRemote = GithubRealRemote.instance()):
         self.pref = PrefService().get_preferences('github')
-        self.remote = GithubRealRemote()
-    
+        self.remote = remote
+
     def set_remote(self,remote):
         self.remote = remote
 

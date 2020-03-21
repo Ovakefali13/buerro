@@ -1,6 +1,6 @@
 import requests
 from services.ApiError import ApiError
-from services.singleton import Singleton
+from util import Singleton
 from abc import ABC, abstractmethod
 from services.preferences import PrefService
 
@@ -14,7 +14,7 @@ class WeatherAdapterModule(ABC):
     def update_weather_forecast_by_city(self, city:str):
         pass
 
-
+@Singleton
 class WeatherAdapterRemote(WeatherAdapterModule):
     API_TOKEN = PrefService().get_specific_pref('openWeatherMapAPIKey')
 
@@ -46,8 +46,8 @@ class WeatherAdapter:
     MIN_TEMP = 10.0 #°C
     MAX_WIND = 20.0 #km/h
 
-    def __init__(self):
-        self.remote = WeatherAdapterRemote()
+    def __init__(self, remote:WeatherAdapterModule = WeatherAdapterRemote.instance()):
+        self.remote = remote
         self.pref = PrefService()
         #get_preferences('weather')
         self.MIN_TEMP = self.pref.get_specific_pref('min_temp')

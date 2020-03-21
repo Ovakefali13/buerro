@@ -1,27 +1,18 @@
-from services.preferences.pref_service import PrefService, PrefRemote, PrefJSONRemote
-from services.spoonacular.spoonacular_service import SpoonacularService, SpoonacularJSONRemote, SpoonacularRemote
-from services.spoonacular.test.test_service import SpoonacularMOCKRemote
-from services.todoAPI.todoist_service import TodoistService, TodoistRemote, TodoistJSONRemote
-from services.todoAPI.test.test_service import TodoistMockRemote
-from services.yelp.yelp_service import YelpService, YelpRequest, YelpServiceRemote
-from services.yelp.test.test_service import YelpMock
-from services.cal.cal_service import CalService, CaldavRemote, iCloudCaldavRemote
-from services.cal.test.test_service import CaldavMockRemote
-from services.cal.event import Event
 from datetime import datetime, timedelta
 from dateutil import tz
 from usecase.usecase import Reply, Usecase
 import pytz
+import re
+
+from services.preferences.pref_service import PrefService, PrefRemote, PrefJSONRemote
+from services import SpoonacularService, TodoistService, YelpService, CalService
+from services.cal import Event
+from services.yelp import YelpRequest
 
 class Cook(Usecase):
     ingredient = 'pork'
     ingredient_list = []
     preferences_json = ''
-    pref_service = None
-    spoonacle_service = None
-    todoist_service = None
-    yelp_service = None
-    cal_service = None
     response_message = ''
     response_url = ''
     response_ingedients = None
@@ -32,21 +23,27 @@ class Cook(Usecase):
     no_time = False
     finished = False
 
-
     def __init__(self):
-        self.cal_service = CalService.instance()
-        self.cal_service.set_remote(iCloudCaldavRemote())
         self.pref_service = PrefService(PrefJSONRemote())
-        self.yelp_service = YelpService.instance()
-        self.yelp_service.set_remote(YelpServiceRemote())
-        self.todoist_service = TodoistService.instance()
-        self.todoist_service.set_remote(TodoistJSONRemote())
-        self.spoonacle_service = SpoonacularService.instance()
-        self.spoonacle_service.set_remote(SpoonacularJSONRemote())
+
+    def set_services(self,
+                    todoist_service:TodoistService,
+                    calendar_service:CalService,
+                    yelp_service:YelpService,
+                    spoonacle_service:SpoonacularService):
+        self.todoist_service = todoist_service
+        self.calendar_service = calendar_service
+        self.yelp_service = yelp_service
+        self.spoonacle_service = spoonacle_service
     
     def advance(self, message):
+        if not self.todoist_service:
+            raise Exception("Set services!")
+        message = message.lower()
         if self.no_time:
-            if message['answer'] == 'yes':
+            p = re.compile('^([\w\-]..)')
+            item = p.match(message)
+            if item[0] == 'yes':
                 self.not_time_to_cook()
                 self.not_time = False
                 self.finished = True
@@ -55,7 +52,20 @@ class Cook(Usecase):
                 self.finished = True
                 return Reply({'message': 'Ok'})
         else:
-            self.ingredient = message['ingredient']
+            '''
+            Tested with
+            - I like to cook with pork
+            - I have pork and would like to cook
+            - I would like to cook and have pork
+            - I have some pork and want to cook
+            - Do I have time for cooking with pork ?
+            - I like to cook with chicken
+            - I like to cook with pork and some false information
+            - I have chicken and want to cook
+            '''
+            p = re.compile('([\n\r]*with\s*([^\s\r]*)|[\n\r]*have\s(?!time|some)\s*([^\s\r]*))')
+            list = p.findall(message)
+            self.ingredient = list[0][1]
             self.not_time = self.trigger_use_case()
             if self.not_time: 
                 self.finished = False
@@ -79,7 +89,9 @@ class Cook(Usecase):
     def check_for_time(self):
         now = datetime.now(pytz.utc)
         end_of_day = datetime.now(pytz.utc).replace(hour=23, minute=59, second=59)
-        max_time, self.event_time_start, self.event_time_end = self.cal_service.get_max_available_time_between(now, end_of_day)
+        max_time, start, end = self.calendar_service.get_max_available_time_between(
+            now, end_of_day)
+        self.event_time_start, self.event_time_end = start, end
         self.max_cooking_time = self.preferences_json['maxCookingTime']
         if timedelta(minutes=self.max_cooking_time) > max_time:
             return False
@@ -109,10 +121,10 @@ class Cook(Usecase):
         self.cooking_event.set_end(self.cooking_event.get_start() + timedelta(minutes=cooking_time))
         self.cooking_event.set_url(self.spoonacle_service.get_sourceURL())
         self.cooking_event.set_description(self.response_message)
-        
-        return self.cal_service.add_event(self.cooking_event)
-    
-    def not_time_to_cook(self):   
+
+        return self.calendar_service.add_event(self.cooking_event)
+
+    def not_time_to_cook(self):
         cooking_time = datetime.fromisoformat(str(datetime.utcnow().date()))
         cooking_timestamp = datetime.timestamp(cooking_time)
 
@@ -122,13 +134,13 @@ class Cook(Usecase):
         search_params.search_params['radius'] = 1000
         return_json = self.yelp_service.get_next_business(search_params)
         self.response_message = "A restaurant nearby is " + return_json['name'] + "and you can reach them at " + return_json['address'] + "(" + return_json['phone'] + ")"
-    
+
     def get_response(self):
         return self.response_message
 
     def get_ingredient_list(self):
         return self.ingredient_list
-    
+
     def get_cooking_event(self):
         return self.cooking_event
-    
+

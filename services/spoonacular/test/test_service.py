@@ -1,10 +1,13 @@
 import unittest
-from .. import SpoonacularService, SpoonacularRemote, SpoonacularJSONRemote
-from ...preferences.pref_service import PrefService, PrefJSONRemote
 import os
 import json
 import re
 
+from util import Singleton
+from .. import SpoonacularService, SpoonacularRemote, SpoonacularJSONRemote
+from ...preferences.pref_service import PrefService, PrefJSONRemote
+
+@Singleton
 class SpoonacularMOCKRemote(SpoonacularRemote):
     api_token = ''
     pref_service = PrefService(PrefJSONRemote())
@@ -30,7 +33,7 @@ class SpoonacularMOCKRemote(SpoonacularRemote):
         search_options += '&maxReadyTime=' + str(self.maxCookingTime)
         search_options += '&apiKey=' + self.api_token
         return search_options
-    
+
     def search_recipe_by_id(self, id):
         dirname = os.path.dirname(__file__)
         if id == 111364:
@@ -41,18 +44,17 @@ class SpoonacularMOCKRemote(SpoonacularRemote):
 
 class TestSpoonacularService(unittest.TestCase):
     if 'DONOTMOCK' in os.environ:
-        remote = SpoonacularJSONRemote()
+        spoonacular_service = SpoonacularService.instance(
+            SpoonacularJSONRemote.instance())
     else:
         print("Mocking remotes...")
-        remote = SpoonacularMOCKRemote()
-    
+        spoonacular_service = SpoonacularService.instance(
+            SpoonacularMOCKRemote.instance())
+
     test_ingredient = 'pork'
-    remote.test_ingredient = test_ingredient
-    spoonacular_service = SpoonacularService.instance()
-    spoonacular_service.set_remote(remote)
+    # remote.test_ingredient = test_ingredient
     spoonacular_service.set_ingredient(test_ingredient)
     spoonacular_service.newRecipe()
-    
 
     def test_get_sourceURL(self):
         import re

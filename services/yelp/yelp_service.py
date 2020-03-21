@@ -1,6 +1,6 @@
 import requests
 from services.ApiError import ApiError
-from services.singleton import Singleton
+from util import Singleton
 from services.preferences import PrefService
 from abc import ABC, abstractmethod
 from services.yelp.yelp_request import YelpRequest
@@ -14,6 +14,7 @@ class YelpServiceModule(ABC):
     def request_business(self, id:int):
         pass
 
+@Singleton
 class YelpServiceRemote(YelpServiceModule):
     API_TOKEN = PrefService().get_specific_pref('yelpAPIKey')
     headers = {
@@ -42,8 +43,8 @@ class YelpService:
     remote = None
     pref = None
 
-    def __init__(self):
-        self.remote = YelpServiceRemote()
+    def __init__(self, remote:YelpServiceModule = YelpServiceRemote.instance()):
+        self.remote = remote
         self.pref = PrefService()
 
     def set_remote(self, remote):
