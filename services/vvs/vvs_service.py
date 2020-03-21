@@ -66,6 +66,12 @@ class VVSService:
 
         origin_id = self.get_location_id(origin)
         dest_id = self.get_location_id(dest)
+
+        return self.get_journeys_for_id(origin_id, dest_id, arr_dep, time)
+
+    def get_journeys_for_id(self, origin_id:str, dest_id:str,
+        arr_dep:str, time:dt=dt.now(pytz.utc)):
+
         req = JourneyRequest(origin_id, dest_id, arr_dep, time)
         remote_journeys = self.remote.get_journeys(req)
 

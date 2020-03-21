@@ -3,9 +3,10 @@ import urllib
 import sqlite3
 import re
 import json
+from apscheduler.schedulers.base import BaseScheduler
 
 from chatbot import Chatbot
-from . import NotificationHandler, LocationHandler
+from handler import NotificationHandler, LocationHandler
 from usecase import Usecase, Reply
 from services.singleton import Singleton
 
@@ -17,16 +18,27 @@ class UsecaseStore:
 
     def get(self, UsecaseCls):
         if UsecaseCls not in self.usecase_instances:
-            self.usecase_instances[UsecaseCls] = UsecaseCls()
+            usecase = UsecaseCls()
+            if hasattr(usecase, 'set_scheduler'):
+                if not self.scheduler:
+                    raise Exception("scheduler must be set")
+                usecase.set_scheduler(self.scheduler)
+            self.usecase_instances[UsecaseCls] = usecase
         return self.usecase_instances[UsecaseCls]
 
-def ControllerFromArgs(chatbot:Chatbot, usecase_by_context:dict):
+    def set_scheduler(self, scheduler):
+        self.scheduler = scheduler
+
+def ControllerFromArgs(scheduler:BaseScheduler, chatbot:Chatbot, usecase_by_context:dict):
     class CustomController(BaseHTTPRequestHandler):
         def __init__(self, *args, **kwargs):
-            self.notification_handler = NotificationHandler.instance()
-            self.location_handler = LocationHandler.instance()
+            self.scheduler = scheduler
+            UsecaseStore.instance().set_scheduler(scheduler)
             self.chatbot = chatbot
             self.usecase_by_context = usecase_by_context
+
+            self.notification_handler = NotificationHandler.instance()
+            self.location_handler = LocationHandler.instance()
             for usecase in usecase_by_context.values():
                 if not issubclass(usecase, Usecase):
                     raise Exception(f'Usecase {usecase} is not a sub-class of '
@@ -111,7 +123,14 @@ def ControllerFromArgs(chatbot:Chatbot, usecase_by_context:dict):
                     else:
                         usecase = UsecaseStore.instance().get(UsecaseCls)
 
-                        reply = usecase.advance(msg)
+                        reply = None
+                        try:
+                            reply = usecase.advance(msg)
+                        except FinishedException:
+                            # TODO store that info
+                            usecase.reset()
+                            reply = usecase.advance(msg)
+
                         if not isinstance(reply, Reply):
                             respond_error(500, 'usecase advance does not Reply')
                             raise Exception(f"Usecase {usecase}'s advance does"

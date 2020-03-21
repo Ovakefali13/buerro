@@ -42,11 +42,11 @@ class TestTodoistService(unittest.TestCase):
     def test_get_project_names(self):
         projects = self.todoist_service.get_project_names()
         self.assertEqual(projects, ['Inbox', 'Shopping List', 'Data Science', 'Software Engineering'])
-    
+
     def test_get_project_id(self):
         id = self.todoist_service.get_project_id("Shopping List")
         self.assertEqual(id, 2230670456)
-    
+
     def test_get_project_items(self):
         test_string = 'nutella'
         project_name = "Shopping List"

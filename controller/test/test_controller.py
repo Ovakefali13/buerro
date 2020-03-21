@@ -6,9 +6,10 @@ from http.server import HTTPServer
 from threading import Thread, Event
 
 from services.singleton import Singleton
-from controller import ControllerFromArgs, LocationHandler
+from controller import ControllerFromArgs
 from chatbot import ChatbotBehavior, Chatbot
 from usecase import Usecase, Reply
+from handler import LocationHandler
 
 @Singleton
 class MockChatbotBehavior(ChatbotBehavior):
@@ -60,12 +61,13 @@ class TestController(unittest.TestCase):
         self.serverPort = 9149
         self.server_url = "http://" + self.hostName + ":" + str(self.serverPort)
 
-        chatbot = Chatbot(MockChatbotBehavior.instance())
-        usecaseByContext = {
-            "mock_work": MockUsecase
-        }
+        MockController = ControllerFromArgs(scheduler=None,
+                chatbot=Chatbot(MockChatbotBehavior.instance()),
+                usecase_by_context={
+                    "mock_work": MockUsecase
+                }
+        )
 
-        MockController = ControllerFromArgs(chatbot, usecaseByContext)
         self.httpd = HTTPServer((self.hostName, self.serverPort),
             MockController)
 

@@ -1,6 +1,7 @@
 from pywebpush import webpush, WebPushException
 import sqlite3
 import json
+from abc import ABC, abstractmethod
 
 from services.singleton import Singleton
 
@@ -20,8 +21,14 @@ class Notification(dict):
             'message': message
         }
 
+
+class BaseNotificationHandler(ABC):
+    @abstractmethod
+    def push(self, notification:Notification):
+        pass
+
 @Singleton
-class NotificationHandler:
+class NotificationHandler(BaseNotificationHandler):
 
     def __init__(self):
         self.db = 'buerro.db'
@@ -78,7 +85,7 @@ class NotificationHandler:
                       extra.code,
                       extra.errno,
                       extra.message
-                      )
+                )
 
 if __name__ == "__main__":
     notification = Notification('Test Notification')

@@ -12,8 +12,8 @@ from services.cal.cal_service import CalService, iCloudCaldavRemote, Event,Calda
 from services.cal.test.test_service import CaldavMockRemote
 import pytz
 import re
-from controller.notification_handler import Notification, NotificationHandler
-from controller.location_handler import LocationHandler
+
+from handler import Notification, NotificationHandler, LocationHandler
 
 class Lunchbreak:
     restraurants = None
