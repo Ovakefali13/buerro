@@ -17,12 +17,12 @@
 		"mainstation_coords": [48.782761, 9.182630],
 		"home_coords": [48.777980, 9.181840]
 	},
-    "cal": {
+        "cal": {
                 "caldav_url": "https://p36-caldav.icloud.com/17167915149/calendars",
                 "calendar": "Work",
                 "username": "buerro@icloud.com",
                 "password": "gxuu-sgbx-jovu-qhao"
-    },
+        },
 	"cooking": {
 		"diet": "omnivore",
 		"intolerances": "Shellfish",
@@ -30,7 +30,9 @@
 	},
 	"work_session": {
 		"min_work_period_minutes": 30,
-                "be_minutes_early": 10
+        "be_minutes_early": 10,
+        "remind_min_before_leaving": 15,
+        "pomodoro_minutes": 25
 	},
 	"transport": {
 		"minTemp": 10,
@@ -47,11 +49,11 @@
 		"ten_min_radius": 100,
 		"price": "1, 2"
 	},
-    "music": {
-        "spotify_client_id": "b6238b4f6e2541f2aec7173faa6be188" ,
-        "spotify_client_secret": "d7477948274a408f98953e56925ff1f9",
-        "spotify_username": "rapresent93" 
-	},
+        "music": {
+            "spotify_client_id": "b6238b4f6e2541f2aec7173faa6be188" ,
+            "spotify_client_secret": "d7477948274a408f98953e56925ff1f9",
+            "spotify_username": "rapresent93" 
+        },
 	"github": {
 		"key": "afbcb0841142ad981fb6aa89c9e5b94c0dfe59dd"
 	}

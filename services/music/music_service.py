@@ -8,7 +8,7 @@ import base64
 from datetime import datetime as dt, timedelta
 from urllib.parse import urlencode
 
-from services.singleton import Singleton
+from util import Singleton
 from services.preferences import PrefService
 
 class MusicRemote(ABC):
@@ -167,7 +167,7 @@ class SpotifyRemote(MusicRemote):
 
 @Singleton
 class MusicService:
-    def __init__(self, remote=SpotifyRemote):
+    def __init__(self, remote=SpotifyRemote.instance()):
         self.remote = remote
 
     def set_remote(self, remote:MusicRemote):

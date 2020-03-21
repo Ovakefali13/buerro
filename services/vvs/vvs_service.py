@@ -7,7 +7,7 @@ from datetime import datetime as dt, timedelta, timezone
 import pytz
 from abc import ABC, abstractmethod
 
-from services.singleton import Singleton
+from util import Singleton
 from . import Journey, JourneyRequest
 
 class VVSRemote(ABC):
@@ -19,7 +19,7 @@ class VVSRemote(ABC):
     def get_journeys(self, req:JourneyRequest):
         pass
 
-
+@Singleton
 class VVSEfaJSONRemote(VVSRemote):
     base_url = "http://efastatic.vvs.de/vvs"
     base_params = {
@@ -50,8 +50,8 @@ class VVSEfaJSONRemote(VVSRemote):
 @Singleton
 class VVSService:
 
-    def __init__(self):
-        self.remote = VVSEfaJSONRemote()
+    def __init__(self, remote:VVSRemote = VVSEfaJSONRemote.instance()):
+        self.remote = remote
 
     def set_remote(self, remote:VVSRemote):
         self.remote = remote
@@ -66,6 +66,12 @@ class VVSService:
 
         origin_id = self.get_location_id(origin)
         dest_id = self.get_location_id(dest)
+
+        return self.get_journeys_for_id(origin_id, dest_id, arr_dep, time)
+
+    def get_journeys_for_id(self, origin_id:str, dest_id:str,
+        arr_dep:str, time:dt=dt.now(pytz.utc)):
+
         req = JourneyRequest(origin_id, dest_id, arr_dep, time)
         remote_journeys = self.remote.get_journeys(req)
 
