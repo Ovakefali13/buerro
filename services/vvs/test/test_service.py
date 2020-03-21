@@ -4,8 +4,10 @@ import json
 from datetime import datetime as dt, timedelta
 import pytz
 
+from util import Singleton
 from .. import VVSService, VVSRemote, VVSEfaJSONRemote, Journey, JourneyRequest
 
+@Singleton
 class VVSMockRemote(VVSRemote):
 
     def get_locations(self, location:str):
@@ -42,13 +44,14 @@ class VVSMockRemote(VVSRemote):
         return mock_journeys
 
 class TestVVSService(unittest.TestCase):
-    if 'DONOTMOCK' in os.environ:
-        remote = VVSEfaJSONRemote()
-    else:
-        print("Mocking remotes...")
-        remote = VVSMockRemote()
 
-    vvs_service = VVSService(remote)
+    @classmethod
+    def setUpClass(self):
+        if 'DONOTMOCK' in os.environ:
+            self.vvs_service = VVSService.instance(VVSEfaJSONRemote.instance())
+        else:
+            print("Mocking remotes...")
+            self.vvs_service = VVSService.instance(VVSMockRemote.instance())
 
     def test_get_location(self):
         location_id = self.vvs_service.get_location_id("Stuttgart Hauptbahnhof")

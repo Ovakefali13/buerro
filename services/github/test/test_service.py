@@ -1,26 +1,27 @@
 import unittest
-from .. import GithubService, GithubRemote, GithubRealRemote
 import os
 from datetime import datetime
 
+from util import Singleton
+from .. import GithubService, GithubRemote, GithubRealRemote
+
+@Singleton
 class GithubMockRemote(GithubRemote):
     def get_notifications(self):
         return [{'type': "Notification type", 'title': "Notification Title"}]
 
-    def connect(self):
+    def connect(self, key):
         pass
 
 class TestGithubService(unittest.TestCase):
+
     if 'DONOTMOCK' in os.environ:
-        remote = GithubRealRemote()
+        github_service = GithubService.instance(GithubRealRemote.instance())
     else:
         print("Mocking remotes...")
-        remote = GithubMockRemote()
-
-    github_service = GithubService(remote)
+        github_service = GithubService.instance(GithubMockRemote.instance())
 
     def test_get_notifications_returns_valid_notification(self):
         self.github_service.connect()
-        print("Notifications:")
         self.assertTrue(type(self.github_service.get_notifications()[0]['title']) is str)
         self.assertTrue(type(self.github_service.get_notifications()[0]['type']) is str)

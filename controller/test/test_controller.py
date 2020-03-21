@@ -5,52 +5,54 @@ import json
 from http.server import HTTPServer
 from threading import Thread, Event
 
-from services.singleton import Singleton
+from util import Singleton
 from controller import ControllerFromArgs
-from chatbot import ChatbotBehavior, Chatbot, Intent
-from usecase import Usecase
+from chatbot import ChatbotBehavior, Chatbot
+from usecase import Usecase, Reply
+from handler import LocationHandler
 
 @Singleton
 class MockChatbotBehavior(ChatbotBehavior):
 
     def get_intent(self, message:str):
-        return Intent("mock_work", [])
+        return "mock_work"
 
     def clear_context(self):
         pass
 
-    def clear_context(self):
-        pass
-
-
-@Singleton
 class MockUsecase(Usecase):
     def __init__(self):
         self.count = 0
 
-    def advance(self, entities):
+    def advance(self, message):
         self.count += 1
 
         if self.count == 1:
-            return {
-                'message': "I created reminders for you. Do you want music?"
-            }
+            return Reply("I created reminders for you. Do you want music?")
         if self.count == 2:
-            return {
+            return Reply({
                 'message': 'How about this Spotify playlist?'
                     + '\nWhich project do you want to work on?',
                 'link': 'https://open.spotify.com/playlist/37i9dQZF1DWZeKCadgRdKQ'
-            }
+            })
         if self.count == 3:
             todos = [
                 'Mark 1 to n relationships in architecture',
                 'Implement a prototype for browser notifications'
             ]
-            return {
+            return Reply({
                 'message': "Here are you Todo's: ",
                 'list': todos
-            }
+            })
         raise Exception("advance called too often")
+
+    def reset(self):
+        self.count = 0
+
+    def is_finished(self):
+        if self.count == 3:
+            return True
+        return False
 
 class TestController(unittest.TestCase):
     @classmethod
@@ -59,12 +61,13 @@ class TestController(unittest.TestCase):
         self.serverPort = 9149
         self.server_url = "http://" + self.hostName + ":" + str(self.serverPort)
 
-        chatbot = Chatbot(MockChatbotBehavior.instance())
-        usecaseByContext = {
-            "mock_work": MockUsecase
-        }
+        MockController = ControllerFromArgs(scheduler=None,
+                chatbot=Chatbot(MockChatbotBehavior.instance()),
+                usecase_by_context={
+                    "mock_work": MockUsecase
+                }
+        )
 
-        MockController = ControllerFromArgs(chatbot, usecaseByContext)
         self.httpd = HTTPServer((self.hostName, self.serverPort),
             MockController)
 
@@ -83,16 +86,13 @@ class TestController(unittest.TestCase):
         if not self.ready_event.is_set():
             raise Exception("most likely failed to start server")
 
-    def test_ping_pong(self):
-        body = {"message": "ping"}
-        res = requests.post(self.server_url + '/message', json=body)
-        self.assertEqual(res.text, "pong")
-
     def test_can_step_through_usecase(self):
         def _query(message:str):
             body = {"message": message}
-            whole_res = requests.post(self.server_url + '/message', json=body)
-            return whole_res.json().get('message')
+            res = requests.post(self.server_url + '/message', json=body)
+            res = res.json()
+            self.assertIsNotNone(res.get('success'))
+            return res.get('message', '')
 
         res = _query("Set up my work environment")
         self.assertIn("music?", res)
@@ -101,8 +101,30 @@ class TestController(unittest.TestCase):
         res = _query("ASE")
         self.assertIn("Todo", res)
 
+    def test_update_location(self):
+        def _query(lat, lon):
+            body = {"location": [lat, lon]}
+            res = requests.post(self.server_url + '/location', json=body)
+            res = res.json()
+            self.assertIsNotNone(res.get('success'))
+            return res
+
+        location_handler = LocationHandler.instance()
+
+        lat, lon = 53.47554, 9.69618
+        _query(lat, lon)
+        g_lat, g_lon = location_handler.get()
+        self.assertEqual(lat, g_lat)
+        self.assertEqual(lon, g_lon)
+
+        lat, lon = 52.3086091, 9.8328946
+        _query(lat, lon)
+        g_lat, g_lon = location_handler.get()
+        self.assertEqual(lat, g_lat)
+        self.assertEqual(lon, g_lon)
+
     @classmethod
     def tearDownClass(self):
         self.shutdown_event.set()
-        body ={'message': 'shutdown'}
+        body = {'message': 'shutdown'}
         requests.post(self.server_url + '/message', json=body)

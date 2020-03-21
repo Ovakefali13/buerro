@@ -1,3 +1,4 @@
+from usecase import FinishedException
 
 class StateMachine:
     def __init__(self):
@@ -5,7 +6,6 @@ class StateMachine:
         self.startState = None
         self.endStates = []
         self.currentState = None
-        self.finished = False
 
     def add_state(self, name:str, fun, end_state=False):
         name = name.upper()
@@ -17,11 +17,14 @@ class StateMachine:
     def set_start(self, name:str):
         self.startState = name.upper()
 
+    def is_finished(self):
+        return self.currentState in self.endStates
+
     def advance(self, data):
         if not self.endStates:
             raise  Exception("at least one state must be an end_state")
-        if self.finished:
-            raise Exception("advance called on finished machine")
+        if self.is_finished():
+            raise  FinishedException("advance called on a finished FSM")
 
         handler = None
         if not self.currentState:
@@ -42,9 +45,6 @@ class StateMachine:
         (new_state, data) = ret
         new_state = new_state.upper()
 
-        if new_state in self.endStates:
-            self.finished = True
-
         self.currentState = new_state
 
         return data
@@ -54,7 +54,7 @@ class StateMachine:
 
     def reset(self):
         self.currentState = None
-        self.finished = False
 
-
+    def _set_state(self, state:str):
+        self.currentState = state.upper()
 
