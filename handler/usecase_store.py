@@ -1,7 +1,6 @@
 import queue
 
 from util import Singleton
-from usecase.usecase import Usecase
 
 @Singleton
 class UsecaseStore:
@@ -21,7 +20,7 @@ class UsecaseStore:
             self.usecase_instances[UsecaseCls] = usecase
         return self.usecase_instances[UsecaseCls]
 
-    def set_running(self, usecase:Usecase):
+    def set_running(self, usecase):
         self.running = usecase
 
     def get_running(self):

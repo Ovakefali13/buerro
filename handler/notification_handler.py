@@ -6,7 +6,7 @@ import os
 import pathlib
 
 from util import Singleton
-from . import UsecaseStore
+from handler import UsecaseStore
 
 class Notification(dict):
     def __init__(self, title):
@@ -94,6 +94,7 @@ class NotificationHandler(BaseNotificationHandler):
                     "M5xqEwuPM7VuQcyiLDhvovthPIXx+gsQRQ=="
                 )
             try:
+                print("pushing to {self.get_subscription()['endpoint']}")
                 webpush(
                     subscription_info=self.get_subscription(),
                     data=json.dumps(notification),
@@ -112,7 +113,11 @@ class NotificationHandler(BaseNotificationHandler):
                           extra.errno,
                           extra.message
                     )
-        UsecaseStore.instance().register_fin_callback(_push, notification)
+        store = UsecaseStore.instance()
+        if store.get_running() is not None:
+            store.register_fin_callback(_push, notification)
+        else:
+            _push(notification)
 
 if __name__ == "__main__":
     notification = Notification('Test Notification')
