@@ -6,7 +6,8 @@ ifdef MODULE
     ARGS := --module $(MODULE)
 endif
 
-all: mock no_mock
+default: mock 
+integration: mock no_mock
 
 .PHONY: mock no_mock
 mock:

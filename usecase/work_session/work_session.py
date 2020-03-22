@@ -134,8 +134,6 @@ class WorkSession(Usecase):
                         return _event_too_close(next_event, journey)
 
                     journey_event = journey.to_event()
-                    reminder = self.pref['remind_min_before_leaving']
-                    journey_event.set_reminder(timedelta(minutes=reminder))
                     self.cal_service.add_event(journey_event)
 
                     # TODO create notification
