@@ -1,8 +1,20 @@
+
 import unittest
-from datetime import datetime
-from usecase.lunchbreak import Lunchbreak
 import os
-from services.cal.event import Event
+from datetime import datetime
+
+from usecase.lunchbreak import Lunchbreak
+
+from services.weatherAPI.weather_service import WeatherAdapter
+from services.weatherAPI.test.test_service import WeatherMock,WeatherAdapterRemote
+from services.yelp.yelp_service import YelpService
+from services.yelp.yelp_request import YelpRequest
+from services.yelp.test.test_service import YelpMock, YelpServiceRemote
+from services.maps import GeocodingService, GeocodingJSONRemote, \
+    MapService, MapJSONRemote
+from services.maps.test.test_service import GeocodingMockRemote, MapMockRemote
+from services.cal.cal_service import CalService, iCloudCaldavRemote, Event
+from services.cal.test.test_service import CalMockRemote
 
 
 class TestLunchbreak(unittest.TestCase):
@@ -10,18 +22,41 @@ class TestLunchbreak(unittest.TestCase):
     @classmethod
     def setUpClass(self):
         if 'DONOTMOCK' in os.environ:
-            self.MOCK = False
+            self.weather_adapter = WeatherAdapter.instance(
+                WeatherAdapterRemote.instance())
+            self.yelp_service = YelpService.instance(
+                YelpServiceRemote.instance())
+            self.geocoding_service = GeocodingService.instance(
+                GeocodingJSONRemote.instance())
+            self.map_service = MapService.instance(
+                MapJSONRemote.instance())
+            self.calendar_service = CalService.instance(
+                iCloudCaldavRemote.instance())
         else:
             print("Mocking remotes...")
-            self.MOCK = True
-        self.MOCK_LOCATION = [48.76533759999999, 9.161932799999999]
-        self.dhbw = [48.773563, 9.170963]
+            self.weather_adapter = WeatherAdapter.instance(
+                WeatherMock.instance())
+            self.calendar_service = CalService.instance(
+                CalMockRemote.instance())
+            self.geocoding_service = GeocodingService.instance(
+                GeocodingMockRemote.instance())
+            self.map_service = MapService.instance(
+                MapMockRemote.instance())
+            self.yelp_service = YelpService.instance(
+                YelpMock.instance())
+
+        self.dhbw = (48.7735115, 9.1710448)
 
     @classmethod
     def setUp(self):
         self.lb = Lunchbreak()
-        if(self.MOCK):
-            self.lb.set_mock_remotes()
+        self.lb.set_services(
+            weather_adapter=self.weather_adapter,
+            yelp_service=self.yelp_service,
+            geocoding_service=self.geocoding_service,
+            map_service=self.map_service,
+            calendar_service=self.calendar_service
+        )
 
     def test_check_lunch_options(self):
         nearby_restaurants, start, end, duration = self.lb.check_lunch_options(self.dhbw)

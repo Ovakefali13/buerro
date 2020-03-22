@@ -1,21 +1,13 @@
-import difflib
-
-from services.weatherAPI.weather_service import WeatherAdapter
-from services.weatherAPI.test.test_service import WeatherMock,WeatherAdapterRemote
-from services.yelp.yelp_service import YelpService
-from services.yelp.test.test_service import YelpMock, YelpServiceRemote
 from datetime import datetime
-from services.preferences import PrefService
-from services.maps.geocoding_service import GeocodingJSONRemote
-from services.maps.test.test_service import GeocodingMockRemote
-from services.maps import MapService, GeocodingService, GeocodingRemote
-from services.yelp.yelp_request import YelpRequest
-from services.cal.cal_service import CalService, iCloudCaldavRemote, Event,CaldavRemote
-from services.cal.test.test_service import CaldavMockRemote
 import pytz
 import re
-from controller.notification_handler import Notification, NotificationHandler
-from controller.location_handler import LocationHandler
+
+from services import WeatherAdapter, YelpService, GeocodingService, \
+    MapService, CalService
+from services.cal import Event
+from services.yelp.yelp_request import YelpRequest
+
+from handler import Notification, NotificationHandler, LocationHandler
 from usecase.usecase import Usecase, Reply
 
 class Lunchbreak(Usecase):
@@ -24,29 +16,25 @@ class Lunchbreak(Usecase):
     end = None
     lunch_set = None
 
-
-    def __init__(self):
-        self.lunch_is_set = False
-        geocoding = GeocodingService.instance()
-        geocoding.remote = GeocodingJSONRemote.instance()
-        calendar_service = CalService.instance()
-        calendar_service.set_remote(iCloudCaldavRemote())
-
-    def set_mock_remotes(self):
-        weather_adapter = WeatherAdapter.instance()
-        weather_adapter.set_remote(WeatherMock())
-        yelp_service = YelpService.instance()
-        yelp_service.set_remote(YelpMock())
-        geocoding = GeocodingService.instance()
-        geocoding.remote = GeocodingMockRemote.instance()
-        calendar_service = CalService.instance()
-        calendar_service.set_remote(CaldavMockRemote())
-
+    def set_services(self,
+                     weather_adapter: WeatherAdapter,
+                     yelp_service: YelpService,
+                     geocoding_service: GeocodingService,
+                     map_service: MapService,
+                     calendar_service: CalService):
+        self.weather_adapter = weather_adapter
+        self.yelp_service = yelp_service
+        self.geocoding_service = geocoding_service
+        self.map_service = map_service
+        self.calendar_service = calendar_service
 
     def advance(self, message):
-        location = self.get_location()
+        if not self.weather_adapter:
+            raise Exception("Set Services!")
+
+        lat, lon = self.get_location()
         if not self.restaurants:
-            restaurants, start, end, duration = self.check_lunch_options(location)
+            restaurants, start, end, duration = self.check_lunch_options((lat, lon))
 
             return_message = f"Your lunch starts at {start}. You have {duration} minutes until your next event starts. " \
                 f"I looked up the best five restaurants near you. Where would you like to eat for lunch?"
@@ -55,7 +43,7 @@ class Lunchbreak(Usecase):
             return Reply({'message': return_message, 'dict': return_dict})
         else:
             choice = self.evaluate_user_request(message)
-            link = self.open_maps_route(location, self.restaurants[choice])
+            link = self.open_maps_route((lat, lon), self.restaurants[choice])
             self.create_cal_event(self.start, self.end, self.restaurants[choice], link)
 
             #Reset if usecases are singletions
@@ -77,9 +65,8 @@ class Lunchbreak(Usecase):
 
         hours_until_lunch = self.time_diff_in_hours(self.lunch_start, datetime.now(pytz.utc))
 
-        geocoding = GeocodingService.instance()
-        geocoding.remote = GeocodingJSONRemote.instance()
-        city = geocoding.get_city_from_coords(location)
+        (lat, lon) = location
+        city = self.geocoding_service.get_city_from_coords([lat, lon])
 
         ### Check Weather ###
         weather_adapter = WeatherAdapter.instance()
