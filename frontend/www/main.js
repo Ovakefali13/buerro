@@ -111,8 +111,8 @@ $(document).ready(function() {
         sendCurrentLocation();
     }, 1000 * 60 * minutes)  
 
-    $(".chatcontainer").append(generateChatBubble(true, "Hello its me the bot"));
-    $(".chatcontainer").append(generateChatBubble(false, "Hello its me the user"));
+    $(".bubblecontainer").append(generateChatBubble(true, "Hello its me the bot"));
+    $(".bubblecontainer").append(generateChatBubble(false, "Hello its me the user"));
 
     $("#prompt_input").keypress(function(e) {
         if(e.which == 13) {
@@ -128,11 +128,11 @@ $(document).ready(function() {
 })
 
 function putUserMessage(message) {
-    $(".chatcontainer").append(generateChatBubble(false, message)); 
+    $(".bubblecontainer").append(generateChatBubble(false, message)); 
 }
 
 function putBotMessage(message) {
-    $(".chatcontainer").append(generateChatBubble(true, message));
+    $(".bubblecontainer").append(generateChatBubble(true, message));
 }
 
 

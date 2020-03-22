@@ -15,15 +15,16 @@
   </head>
   <body>
     <div class="chatcontainer">
-        
-        
-        <div class="input-group stay-bottom">
-            <div class="input-group-prepend">
-                <span class="input-group-text">Chat:</span>
-            </div>
-            <input type=text id="prompt_input" class="form-control" aria-label="With textarea"></textarea>
-            <input id="submit-btn" type="submit">
-        </div>
+      <div id="chatbubbles" class="bubblecontainer">
+
+      </div>
+      <div class="input-group stay-bottom chat-input">
+          <div class="input-group-prepend">
+              <span class="input-group-text">Chat:</span>
+          </div>
+          <input type=text id="prompt_input" class="form-control chat-input-field" aria-label="With textarea"></textarea>
+          <input id="submit-btn" class="chat-send-button" type="submit">
+      </div>
     </div>
   </body>
 </html>
