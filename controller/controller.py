@@ -4,42 +4,12 @@ import sqlite3
 import re
 import json
 from apscheduler.schedulers.base import BaseScheduler
+import asyncio
 
 from chatbot import Chatbot
-from handler import NotificationHandler, LocationHandler
+from handler import NotificationHandler, LocationHandler, UsecaseStore
 from usecase import Usecase, Reply
-from util import Singleton
 
-@Singleton
-class UsecaseStore:
-    def __init__(self):
-        # TODO Multi-User: by User
-        self.usecase_instances = {}
-        self.running = None
-
-    def get(self, UsecaseCls):
-        if UsecaseCls not in self.usecase_instances:
-            usecase = UsecaseCls()
-            if hasattr(usecase, 'set_scheduler'):
-                if not self.scheduler:
-                    raise Exception("scheduler must be set")
-                usecase.set_scheduler(self.scheduler)
-            self.usecase_instances[UsecaseCls] = usecase
-        return self.usecase_instances[UsecaseCls]
-
-    def set_running(self, usecase:Usecase):
-        self.running = usecase
-
-    def get_running(self):
-        if self.running:
-            return self.running
-        return None
-
-    def finished(self):
-        self.running = None
-
-    def set_scheduler(self, scheduler):
-        self.scheduler = scheduler
 
 def ControllerFromArgs(scheduler:BaseScheduler, chatbot:Chatbot, usecase_by_context:dict):
     class CustomController(BaseHTTPRequestHandler):
@@ -141,7 +111,7 @@ def ControllerFromArgs(scheduler:BaseScheduler, chatbot:Chatbot, usecase_by_cont
 
                     reply = usecase.advance(msg)
                     if usecase.is_finished():
-                        store.finished()
+                        store.usecase_finished()
                     else:
                         store.set_running(usecase)
 

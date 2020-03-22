@@ -3,9 +3,10 @@ import sqlite3
 import json
 from abc import ABC, abstractmethod
 import os
+import pathlib
 
 from util import Singleton
-
+from . import UsecaseStore
 
 class Notification(dict):
     def __init__(self, title):
@@ -37,57 +38,81 @@ class NotificationHandler(BaseNotificationHandler):
         else:
             self.db = 'handler/test.db'
 
-        self.schema = ('endpoint', 'p256dh', 'auth')
+        self.schema = ('user', 'endpoint', 'p256dh', 'auth')
 
     def save_subscription(self, subscription:dict):
+        # TODO determine user
+        user = 123456
+
         conn = sqlite3.connect(self.db)
         c = conn.cursor()
         c.execute('''CREATE TABLE IF NOT EXISTS subscription
-                        (endpoint text not null primary key,
+                        (user number not null primary key,
+                        endpoint text not null,
                         p256dh text,
                         auth text)''')
-        values = (subscription['endpoint'], subscription['keys']['p256dh'],
-            subscription['keys']['auth'])
-        c.execute('INSERT OR REPLACE INTO subscription VALUES (?,?,?)', values)
+        values = (user, subscription['endpoint'],
+            subscription['keys']['p256dh'], subscription['keys']['auth'])
+        c.execute('INSERT OR REPLACE INTO subscription VALUES (?,?,?,?)', values)
         conn.commit()
         conn.close()
 
     def get_subscription(self):
+        # TODO determine user
+        user = 123456
+
         conn = sqlite3.connect(self.db)
         c = conn.cursor()
-        c.execute('SELECT * from subscription')
-        row = c.fetchone()
-        subscription_info = dict(zip(self.schema, row))
-        subscription_info = {
-            'endpoint': subscription_info['endpoint'],
-            'keys': {
-                'p256dh': subscription_info['p256dh'],
-                'auth': subscription_info['auth']
+        try:
+            c.execute('SELECT * from subscription')
+            row = c.fetchone()
+            subscription_info = dict(zip(self.schema, row))
+            subscription_info = {
+                'endpoint': subscription_info['endpoint'],
+                'keys': {
+                    'p256dh': subscription_info['p256dh'],
+                    'auth': subscription_info['auth']
+                }
             }
-        }
-        conn.close()
+        except sqlite3.OperationalError as e:
+            subscription_info = None
+        finally:
+            conn.close()
         return subscription_info
 
-    def push(self, notification:Notification):
-        try:
-            webpush(
-                subscription_info=self.get_subscription(),
-                data=json.dumps(notification),
-                vapid_private_key="sec/vapid_private_key.pem",
-                vapid_claims={
-                        "sub": "mailto:buerro@icloud.com"
-                    }
-            )
-        except WebPushException as ex:
-            print("Failed to push notification: {}", repr(ex))
 
-            if ex.response and ex.response.json():
-                extra = ex.response.json()
-                print("Remote service replied with a {}:{}, {}",
-                      extra.code,
-                      extra.errno,
-                      extra.message
+    def push(self, notification:Notification):
+        def _push(notification:Notification):
+            key_file="sec/vapid_private_key.pem"
+            if pathlib.Path(key_file).exists():
+                priv_key = key_file
+            else:
+                # snagged from pywebpush/test
+                priv_key = (
+                    "MHcCAQEEIPeN1iAipHbt8+/KZ2NIF8NeN24jqAmnMLFZEMocY8RboAoGCCqGSM49"
+                    "AwEHoUQDQgAEEJwJZq/GN8jJbo1GGpyU70hmP2hbWAUpQFKDByKB81yldJ9GTklB"
+                    "M5xqEwuPM7VuQcyiLDhvovthPIXx+gsQRQ=="
                 )
+            try:
+                webpush(
+                    subscription_info=self.get_subscription(),
+                    data=json.dumps(notification),
+                    vapid_private_key=priv_key,
+                    vapid_claims={
+                            "sub": "mailto:buerro@icloud.com"
+                        }
+                )
+            except WebPushException as ex:
+                print("Failed to push notification: {}", repr(ex))
+
+                if ex.response and ex.response.json():
+                    extra = ex.response.json()
+                    print("Remote service replied with a {}:{}, {}",
+                          extra.code,
+                          extra.errno,
+                          extra.message
+                    )
+        UsecaseStore.instance().register_fin_callback(_push, notification)
 
 if __name__ == "__main__":
     notification = Notification('Test Notification')
