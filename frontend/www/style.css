@@ -66,3 +66,19 @@ body {
     color:white;font-size:18px;
     background-color:#718FAD;
 }
+
+.chat-record-btn {
+    height:100%;
+    border: solid transparent;
+    border-bottom-color: rgb(0, 0, 0, 0.1);
+    color:white;font-size:18px;
+    background-color:#D1766D;
+}
+
+.chat-say-btn {
+    height:100%;
+    border: solid transparent;
+    border-bottom-color: rgb(0, 0, 0, 0.1);
+    color:white;font-size:18px;
+    background-color:#719F7D;
+}
