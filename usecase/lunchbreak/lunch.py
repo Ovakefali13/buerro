@@ -1,3 +1,5 @@
+import difflib
+
 from services.weatherAPI.weather_service import WeatherAdapter
 from services.weatherAPI.test.test_service import WeatherMock,WeatherAdapterRemote
 from services.yelp.yelp_service import YelpService
@@ -21,7 +23,7 @@ class Lunchbreak(Usecase):
     start = None
     end = None
 
-    lunch_is_set = None
+    lunch_set = None
 
 
     def __init__(self):
@@ -59,7 +61,7 @@ class Lunchbreak(Usecase):
 
             #Reset if usecases are singletions
             self.restaurants = self.start = self.end = None
-            self.lunch_is_set = True
+            self.lunch_set = datetime.now(pytz.utc)
             return {'message': link}
 
     def is_finished(self):
@@ -114,7 +116,7 @@ class Lunchbreak(Usecase):
         cal_service.add_event(lunch)
         return lunch
 
-    def evaluate_user_request(self, data):
+    def evaluate_user_request(self, data, restaurants):
         ### Wait for user decision ###
         seletedRestaurant = -1
         options = [{"One": 1}, {"Two": 2}, {"Three": 3}, {"Four": 4}, {"Five" : 5}]
@@ -124,6 +126,13 @@ class Lunchbreak(Usecase):
                 seletedRestaurant = int(list(opts.values())[0])
         if(seletedRestaurant == -1):
             print("Retry")
+
+            # Try names
+            r_names = self.prepare_restaurants_for_transmission(restaurants)
+            for opts in r_names:
+                match = re.search(str(list(opts.values())[0]), data, re.IGNORECASE)
+                if (match):
+                    seletedRestaurant = int(list(opts.keys())[0])
         else:
             return (seletedRestaurant-1)
 
@@ -161,9 +170,11 @@ class Lunchbreak(Usecase):
 
     def trigger_proactive_usecase(self):
         print("Check Lunchbreak Proactive")
-        if(self.notify()):
-            self.create_proactive_notification()
-            self.advance({'message': 'proactive'})
+        self.check_reset_usecase()
+        if(self.lunch_set):
+            if(self.notify()):
+                self.create_proactive_notification()
+                self.advance({'message': 'proactive'})
 
 
     def get_location(self):
@@ -177,3 +188,10 @@ class Lunchbreak(Usecase):
             return_dict[r]:restaurants[r]['name']
         return return_dict
 
+
+    def check_reset_usecase(self):
+        if(self.lunch_set):
+            now = datetime.now(pytz.utc)
+            delta = now - self.lunch_set
+            if (delta.days >= 1):
+                self.lunch_set = None
