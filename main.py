@@ -7,13 +7,6 @@ import os
 from apscheduler.schedulers.background import BackgroundScheduler
 from pytz import utc
 
-from usecase import Lunchbreak, WorkSession
-
-usecaseByContext = {
-    "lunch": Lunchbreak,
-    "work": WorkSession
-}
-
 hostName = "localhost"
 serverPort = 9150
 
@@ -33,7 +26,7 @@ if __name__ == '__main__':
 
         chatbot = Chatbot(BuerroBot())
 
-        Controller = ControllerFromArgs(scheduler, chatbot, usecaseByContext)
+        Controller = ControllerFromArgs(scheduler, chatbot)
         httpd = HTTPServer((hostName, serverPort),
             Controller)
         print("serving at port", serverPort)

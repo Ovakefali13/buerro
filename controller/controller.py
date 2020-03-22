@@ -11,20 +11,15 @@ from handler import NotificationHandler, LocationHandler, UsecaseStore
 from usecase import Usecase, Reply
 
 
-def ControllerFromArgs(scheduler:BaseScheduler, chatbot:Chatbot, usecase_by_context:dict):
+def ControllerFromArgs(scheduler:BaseScheduler, chatbot:Chatbot):
     class CustomController(BaseHTTPRequestHandler):
         def __init__(self, *args, **kwargs):
             self.scheduler = scheduler
             UsecaseStore.instance().set_scheduler(scheduler)
             self.chatbot = chatbot
-            self.usecase_by_context = usecase_by_context
 
             self.notification_handler = NotificationHandler.instance()
             self.location_handler = LocationHandler.instance()
-            for usecase in usecase_by_context.values():
-                if not issubclass(usecase, Usecase):
-                    raise Exception(f'Usecase {usecase} is not a sub-class of '
-                        +'Usecase')
 
             super(CustomController, self).__init__(*args, **kwargs)
 
@@ -98,12 +93,10 @@ def ControllerFromArgs(scheduler:BaseScheduler, chatbot:Chatbot, usecase_by_cont
                     store = UsecaseStore.instance()
                     usecase = store.get_running()
                     if not usecase:
-                        context = self.chatbot.get_context(msg)
+                        UsecaseCls = self.chatbot.get_usecase(msg)
 
-                        UsecaseCls = self.usecase_by_context.get(context, None)
                         if not UsecaseCls:
-                            respond_succ(("I was not able to map this request"
-                                        " to any usecase.\n"
+                            respond_succ(("I did not understand that. \n"
                                         "Try one of the following: ")) #TODO
                             return
 

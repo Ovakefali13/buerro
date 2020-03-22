@@ -94,7 +94,7 @@ class NotificationHandler(BaseNotificationHandler):
                     "M5xqEwuPM7VuQcyiLDhvovthPIXx+gsQRQ=="
                 )
             try:
-                print("pushing to {self.get_subscription()['endpoint']}")
+                print(f"pushing to {self.get_subscription()['endpoint']}")
                 webpush(
                     subscription_info=self.get_subscription(),
                     data=json.dumps(notification),
