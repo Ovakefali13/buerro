@@ -22,7 +22,6 @@ class Lunchbreak(Usecase):
     restraurants = None
     start = None
     end = None
-
     lunch_set = None
 
 
@@ -65,7 +64,7 @@ class Lunchbreak(Usecase):
             return {'message': link}
 
     def is_finished(self):
-        pass
+        return (not self.restaurants)
 
     def check_lunch_options(self, location:list):
         ### Search Calender for timeslot sufficent for a lunchbreak ###
