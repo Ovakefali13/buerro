@@ -102,8 +102,10 @@ def ControllerFromArgs(scheduler:BaseScheduler, chatbot:Chatbot, usecase_by_cont
 
                         UsecaseCls = self.usecase_by_context.get(context, None)
                         if not UsecaseCls:
-                            respond_error(500, f'no usecase detected for intent {intent}')
-                            raise Exception(f'no usecase detected for intent {intent}')
+                            respond_succ(("I was not able to map this request"
+                                        " to any usecase.\n"
+                                        "Try one of the following: ")) #TODO
+                            return
 
                         usecase = store.get(UsecaseCls)
 
