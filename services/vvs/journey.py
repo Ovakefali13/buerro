@@ -61,12 +61,12 @@ class Journey:
 
     def to_event(self):
         event = Event()
-        event.set_title('VVS: ' + self.origin + ' - ' + self.dest)
+        event.set_title('From ' + self.origin + ' to ' + self.dest)
         event.set_start(self.dep_time)
         event.set_end(self.arr_time)
         event.set_description(str(self))
         return event
-        
+
     def to_link(self):
         link = ''.join("""https://www3.vvs.de/mng/#!/XSLT_TRIP_REQUEST2@details?
             deeplink={

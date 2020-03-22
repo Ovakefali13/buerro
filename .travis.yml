@@ -4,6 +4,6 @@ python:
 install:
     - pip install -r requirements.txt
 script:
-    - make mock PYTHON=python
+    - make integration PYTHON=python
 git:
     submodules: false

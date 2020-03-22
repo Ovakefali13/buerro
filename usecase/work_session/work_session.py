@@ -4,6 +4,7 @@ import re
 
 
 from services import TodoistService, VVSService, CalService, PrefService, MusicService
+from services.cal import Event
 from usecase import Usecase, Reply, StateMachine
 #from usecase import TransportUsecase
 from handler import NotificationHandler
@@ -129,8 +130,6 @@ class WorkSession(Usecase):
                         return _event_too_close(next_event, journey)
 
                     journey_event = journey.to_event()
-                    reminder = self.pref['remind_min_before_leaving']
-                    journey_event.set_reminder(timedelta(minutes=reminder))
                     self.cal_service.add_event(journey_event)
 
                     # TODO create notification
