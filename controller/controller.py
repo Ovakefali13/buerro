@@ -72,13 +72,11 @@ def ControllerFromArgs(scheduler:BaseScheduler, chatbot:Chatbot, usecase_by_cont
                     'success': True,
                 }
                 if isinstance(message, str):
-                    answer = {
-                        **answer,
+                    answer['data'] = {
                         'message': message
                     }
                 elif isinstance(message, dict):
-                    answer = {
-                        **answer,
+                    answer['data'] = {
                         **message
                     }
                 elif message is None:

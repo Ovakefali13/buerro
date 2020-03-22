@@ -71,8 +71,7 @@ if ('serviceWorker' in navigator) {
                 console.log('User is subscribed.');
             } else {
                 console.log('User is not subscribed.');
-                subscribeUser();
-            }
+                subscribeUser(); }
         }, err => {
             console.error(err);
         });
@@ -98,7 +97,7 @@ function sendSubscriptionToBackEnd(subscription) {
     return response.json();
   })
   .then(function(responseData) {
-    if (!(responseData.data && responseData.data.success)) {
+    if (!responseData.success) {
       throw new Error('Bad response from server.');
     }
   });
@@ -106,10 +105,13 @@ function sendSubscriptionToBackEnd(subscription) {
 
 
 $(document).ready(function() {
+    sendCurrentLocation();
+    /*
     var minutes = 1
     setInterval(() => {
         sendCurrentLocation();
     }, 1000 * 60 * minutes)  
+    */
 
     $(".bubblecontainer").append(generateChatBubble(true, "Hello its me the bot"));
     $(".bubblecontainer").append(generateChatBubble(false, "Hello its me the user"));
@@ -159,11 +161,11 @@ function processUserPrompt(prompt) {
             return response.json();
         })
         .then(function(responseData) {
-            if (!(responseData.data && responseData.data.success)) {
+            if (!(responseData.success && responseData.data)) {
               throw new Error('Bad response from server.');
             }
 
-            putBotMessage(responseData.message);
+            putBotMessage(responseData.data.message);
         });
     });
 }
@@ -181,9 +183,12 @@ function getCurrentLocation(callback) {
     //Dummy one, which will result in a working next statement.
     navigator.geolocation.getCurrentPosition(function () {}, function () {}, {});
     navigator.geolocation.getCurrentPosition(pos => {
-        const { latitude: lat, longitute: lon } = pos.coords;
+        console.log('succ', pos)
+        var lat = pos.coords.latitude;
+        var lon = pos.coords.longitude;
         callback( [ lat, lon ] );
     }, err => {
+        console.log('err')
         console.error(err);
         callback( undefined );
     }, {timeout: 5000});
@@ -211,7 +216,7 @@ function sendCurrentLocation() {
             return response.json();
         })
         .then(function(responseData) {
-            if (!(responseData.data && responseData.data.success)) {
+            if (!(responseData.success)) {
               throw new Error('Bad response from server.');
             }
         });
