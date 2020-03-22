@@ -130,11 +130,17 @@ $(document).ready(function() {
 })
 
 function putUserMessage(message) {
-    $(".bubblecontainer").append(generateChatBubble(false, message)); 
+    var container = $(".bubblecontainer")
+    container.append(generateChatBubble(false, message));
+
+    container[0].scrollTop = container[0].scrollHeight
 }
 
 function putBotMessage(message) {
-    $(".bubblecontainer").append(generateChatBubble(true, message));
+    var container = $(".bubblecontainer")
+    container.append(generateChatBubble(true, message));
+
+    container[0].scrollTop = container[0].scrollHeight
 }
 
 
