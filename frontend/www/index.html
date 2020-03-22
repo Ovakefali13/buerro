@@ -12,6 +12,8 @@
     <link rel="stylesheet" href="style.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
     <script src="main.js"></script>
+    <script src="stt.js"></script>
+    <script src="tts.js"></script>
   </head>
   <body>
     <div class="chatcontainer">
@@ -24,6 +26,8 @@
           </div>
           <input type=text id="prompt_input" class="form-control chat-input-field" aria-label="With textarea"></textarea>
           <input id="submit-btn" class="chat-send-button" type="submit">
+          <button onclick="record(event)">Record</button>
+          <button onclick="speak(event)">Say it!</button>
       </div>
     </div>
   </body>
