@@ -69,17 +69,15 @@ class Lunchbreak(Usecase):
         city = self.geocoding_service.get_city_from_coords([lat, lon])
 
         ### Check Weather ###
-        weather_adapter = WeatherAdapter.instance()
-        weather_adapter.update(city)
-        will_be_bad_weather = weather_adapter.will_be_bad_weather(hours_until_lunch)
+        self.weather_adapter.update(city)
+        will_be_bad_weather = self.weather_adapter.will_be_bad_weather(hours_until_lunch)
 
         search_params = YelpRequest()
         search_params.set_coordinates(location)
         search_params.set_time(lunch_timestamp)
         search_params.set_radius(self.duration, will_be_bad_weather)
 
-        yelp_service = YelpService.instance()
-        self.restaurants = yelp_service.get_short_information_of_restaurants(search_params)
+        self.restaurants = self.yelp_service.get_short_information_of_restaurants(search_params)
         #for x in restaurants:
         #    print(x['name'])
         return self.restaurants, self.lunch_start, self.lunch_end, self.duration
@@ -87,8 +85,7 @@ class Lunchbreak(Usecase):
 
     def open_maps_route(self, location, restaurant):
         coords_dest = restaurant['coordinates']
-        map_service = MapService.instance()
-        link = map_service.get_route_link(location, coords_dest)
+        link = self.map_service.get_route_link(location, coords_dest)
         return link
 
     def create_cal_event(self, start, end, restaurant, link):
@@ -98,8 +95,7 @@ class Lunchbreak(Usecase):
         lunch.add('description', "Route information: " + str(link) + "\nWebsite: " + restaurant['url'])
         lunch.set_start(start)
         lunch.set_end(end)
-        cal_service = CalService.instance()
-        cal_service.add_event(lunch)
+        self.calendar_service.add_event(lunch)
         return lunch
 
     def evaluate_user_request(self, data, restaurants):
@@ -130,8 +126,7 @@ class Lunchbreak(Usecase):
 
 
     def find_longest_timeslot_between_hours(self, search_start, search_end):
-        cal_service = CalService.instance()
-        time, before, after = cal_service.get_max_available_time_between(search_start, search_end)
+        time, before, after = self.calendar_service.get_max_available_time_between(search_start, search_end)
         return int((time.total_seconds() / 60)), before, after
 
     def notify(self):
