@@ -64,8 +64,3 @@ class GeocodingService:
         results = self.remote.get_information_from_coords(coords)[0]['components']
 
         return results.get('city') or results.get('village')
-
-geo = GeocodingService.instance()
-add = geo.get_address_from_coords([49.906673, 8.745958])
-print(add)
-print(geo.get_coords_from_address(add))
