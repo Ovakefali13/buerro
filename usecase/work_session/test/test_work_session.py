@@ -16,7 +16,7 @@ from services.music import MusicService, SpotifyRemote
 from services.music.test import MusicMockRemote
 from services.cal import CalService, Event, iCloudCaldavRemote
 from services.cal.test import CalMockRemote
-from services.vvs import VVSService, VVSEfaJSONRemote
+from services.vvs import VVSService, VVSEfaJSONRemote, Journey
 from services.vvs.test import VVSMockRemote
 from services.preferences import PrefService, PrefRemote
 
@@ -39,9 +39,9 @@ class MockPrefRemote(PrefRemote):
 class MockVVSService:
     def get_location_id(self, location):
         if location == "Stuttgart Hauptbahnhof":
-            return 'de:08111:6118',
+            return 'de:08111:6118'
         elif location == "Rotebühlplatz":
-            return 'de:08111:6056',
+            return 'de:08111:6056'
 
     def get_journeys_for_id(self, origin_id, dest_id, arr_dep:str, by:dt):
         return [
@@ -101,9 +101,8 @@ class TestWorkSession(unittest.TestCase):
         if 'DONOTMOCK' in os.environ:
             self.cal_service = CalService.instance(
                 iCloudCaldavRemote.instance())
-            vvs_service = MockVVSService.instance()
-            #vvs_service = VVSService.instance(
-            #    VVSEfaJSONRemote.instance())
+            vvs_service = VVSService.instance(
+                VVSEfaJSONRemote.instance())
             todo_service = TodoistService.instance(
                 TodoistJSONRemote.instance())
             music_service = MusicService.instance(
@@ -111,8 +110,9 @@ class TestWorkSession(unittest.TestCase):
         else:
             self.cal_service = CalService.instance(
                 CalMockRemote.instance())
-            vvs_service = VVSService.instance(
-                VVSMockRemote.instance())
+            vvs_service = MockVVSService.instance()
+            #vvs_service = VVSService.instance(
+            #    VVSMockRemote.instance())
             todo_service = TodoistService.instance(
                 TodoistMockRemote.instance())
             music_service = MusicService.instance(
