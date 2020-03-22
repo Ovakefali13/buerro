@@ -1,3 +1,4 @@
+const HTTPS=false
 
 const express = require('express');
 const app = express();
@@ -12,12 +13,18 @@ app.get("/", (req, res) => {
    res.sendFile(__dirname + '/index.html');
 });
 
-const httpsOptions = {
-    key: fs.readFileSync('./ssl/device.key'),
-    cert: fs.readFileSync('./ssl/localhost.crt')
+if(HTTPS) {
+
+    const httpsOptions = {
+        key: fs.readFileSync('./ssl/device.key'),
+        cert: fs.readFileSync('./ssl/localhost.crt')
+    }
+
+    const server = https.createServer(httpsOptions, app).listen(port, () => {
+        console.log(`Frontend Server listening at ${port}`);
+    });
+} else {
+    app.listen(port, () => {
+        console.log(`Frontend Server listening at ${port}`);
+    });
 }
-
-const server = https.createServer(httpsOptions, app).listen(port, () => {
-    console.log(`Frontend Server listening at ${port}`);
-});
-
