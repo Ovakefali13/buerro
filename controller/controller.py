@@ -136,9 +136,10 @@ def ControllerFromArgs(scheduler:BaseScheduler, chatbot:Chatbot, usecase_by_cont
                     lat, lon = tuple(body['location'])
                     self.location_handler.set(lat, lon)
                     respond_succ()
+
+                    del lat, lon
                 else:
                     respond_error(400, 'bad location request')
-                del lat, lon
             else:
                 respond_error(404, 'Not Found')
 
