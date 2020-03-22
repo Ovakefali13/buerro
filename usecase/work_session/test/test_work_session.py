@@ -182,6 +182,7 @@ class TestWorkSession(unittest.TestCase):
         expected = "You have no upcoming events."
         self.assertIn(expected, reply.message)
 
+    @unittest.skipIf('TRAVIS' in os.environ and 'DONOTMOCK' in os.environ)
     def test_creates_reminder_for_upcoming(self):
         event = Event()
         event.set_start(dt.now(pytz.utc) + timedelta(minutes=270))
