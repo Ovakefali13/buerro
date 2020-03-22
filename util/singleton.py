@@ -17,18 +17,26 @@ class Singleton:
     def __init__(self, decorated):
         self._decorated = decorated
 
-    def instance(self):
+    def instance(self, *args, **kwargs):
         """
         Returns the singleton instance. Upon its first call, it creates a
         new instance of the decorated class and calls its `__init__` method.
         On all subsequent calls, the already created instance is returned.
 
         """
-        try:
-            return self._instance
-        except AttributeError:
-            self._instance = self._decorated()
-            return self._instance
+        def _construct():
+            self.last_args = args
+            self.last_kwargs = kwargs
+
+            self._instance = self._decorated(*args, **kwargs)
+
+        if hasattr(self, '_instance'):
+            if args != self.last_args or kwargs != self.last_kwargs:
+                _construct()
+        else:
+            _construct()
+
+        return self._instance
 
     def __call__(self):
         raise TypeError('Singletons must be accessed through `instance()`.')

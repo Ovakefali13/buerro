@@ -2,11 +2,11 @@ import unittest
 import os
 from urllib.parse import urlparse
 
-from services.singleton import Singleton
+from util import Singleton
 from .. import MusicRemote, SpotifyRemote, MusicService
 
 @Singleton
-class MockMusicRemote(MusicRemote):
+class MusicMockRemote(MusicRemote):
     def get_playlist_for_mood(self, mood:str):
         return "https://open.spotify.com/playlist/37i9dQZF1DX576ecqLnVqL?si=xij5j2DsQwClphFotqa3dQ"
 
@@ -15,12 +15,10 @@ class TestMusicService(unittest.TestCase):
 
     @classmethod
     def setUpClass(self):
-        self.music_service = MusicService.instance()
         if 'DONOTMOCK' in os.environ:
-            self.remote = SpotifyRemote.instance()
+            self.music_service = MusicService.instance(SpotifyRemote.instance())
         else:
-            self.remote = MockMusicRemote.instance()
-        self.music_service.set_remote(self.remote)
+            self.music_service = MusicService.instance(MusicMockRemote.instance())
 
     def test_can_get_playlist_link_for_mood(self):
         def uri_valid(x):

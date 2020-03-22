@@ -2,8 +2,10 @@ import unittest
 import os
 import json
 
+from util import Singleton
 from .. import WeatherAdapter, WeatherAdapterRemote, WeatherAdapterModule
 
+@Singleton
 class WeatherMock(WeatherAdapterModule):
 
     def update_current_weather_by_city(self, city):
@@ -26,17 +28,18 @@ class TestWeatherService(unittest.TestCase):
     def setUpClass(self):
         self.remote = None
         if 'DONOTMOCK' in os.environ:
-            self.remote = WeatherAdapterRemote()
+            self.weather_adapter = WeatherAdapter.instance(
+                WeatherMock.instance())
         else:
             print("Mocking remotes...")
-            self.remote = WeatherMock()
-        self.city = 'Stuttgart'
+            self.weather_adapter = WeatherAdapter.instance(
+                WeatherAdapterRemote.instance())
+
+        self.weather_adapter.update(city='Stuttgart')
 
     @classmethod
     def setUp(self):
-        self.weather_adapter = WeatherAdapter.instance()
-        self.weather_adapter.set_remote(self.remote)
-        self.weather_adapter.update(self.city)
+        pass
 
     def test_get_current_temperature(self):
         temp = self.weather_adapter.get_current_temperature()
@@ -58,9 +61,3 @@ class TestWeatherService(unittest.TestCase):
     def test_will_be_bad_weather(self):
         will_be_bad_weather = self.weather_adapter.will_be_bad_weather(3)
         self.assertIsInstance(will_be_bad_weather, bool)
-
-
-
-
-
-

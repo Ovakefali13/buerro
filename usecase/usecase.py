@@ -1,6 +1,12 @@
 from abc import ABC, abstractmethod
 
+from handler import Notification
+
+class FinishedException(Exception):
+    pass
+
 class Usecase(ABC):
+
     @abstractmethod
     def advance(self, message:str):
         pass
@@ -37,14 +43,16 @@ class Reply(CaselessDict):
                     raise Exception('Provided an undefined reply attribute, '
                         + 'only allowed attributes: ' + self.attributes)
                 self[key] = values[key]
+        elif values is None:
+            pass
         else:
-            raise Exception("""Provided values of improper type to Reply: either
+            raise Exception("""Provided values of improper type {wrong_type}: either
                                 Reply("I created an event.")
                                 # or
-                                Reply({
+                                Reply({{
                                     'message': 'How about this restaurant?',
                                     'link': restaurant_link
-                                })""")
+                                }})""".format(wrong_type=type(values)))
 
     def __setitem__(self, key, value):
         if key not in self.attributes:
@@ -52,3 +60,11 @@ class Reply(CaselessDict):
                 + 'only allowed attributes: ' + self.attributes)
         setattr(self, key, value)
         super().__setitem__(key, value)
+
+    def to_notification(self):
+        if not self.message:
+            raise Exception("At least set a message.")
+
+        notification = Notification(self.message)
+        notification.add_message(self.message)
+        return notification

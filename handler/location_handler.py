@@ -1,11 +1,16 @@
 import sqlite3
-from services.singleton import Singleton
+import os
+
+from util import Singleton
 
 @Singleton
 class LocationHandler:
 
     def __init__(self):
-        self.db = 'buerro.db'
+        if 'DONOTMOCK' in os.environ:
+            self.db = 'handler/buerro.db'
+        else:
+            self.db = 'handler/test.db'
         self.schema = ('user_id', 'lat', 'lon')
 
     def set_db(self, db):
