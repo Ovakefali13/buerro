@@ -38,7 +38,7 @@ class TestLunchbreak(unittest.TestCase):
         self.assertEqual(diff_hours, 24)
 
     def test_open_maps_route(self):
-        nearby_restaurants, start, end = self.lb.check_lunch_options(self.dhbw)
+        nearby_restaurants, start, end, duration = self.lb.check_lunch_options(self.dhbw)
         google_link = self.lb.open_maps_route(self.dhbw, nearby_restaurants[1])
         self.assertIsInstance(google_link, str)
 
@@ -47,13 +47,14 @@ class TestLunchbreak(unittest.TestCase):
         self.assertIsInstance(is_active, bool)
 
     def test_create_cal_event(self):
-        nearby_restaurants, start, end = self.lb.check_lunch_options(self.dhbw)
+        nearby_restaurants, start, end, duration = self.lb.check_lunch_options(self.dhbw)
         google_link = self.lb.open_maps_route(self.dhbw, nearby_restaurants[1])
         ret = self.lb.create_cal_event(start,end, nearby_restaurants[1], google_link)
         self.assertIsInstance(ret, Event)
 
     def test_wait_for_user_input(self):
-        ret = self.lb.evaluate_user_request("Four")
+        nearby_restaurants, start, end, duration = self.lb.check_lunch_options(self.dhbw)
+        ret = self.lb.evaluate_user_request("Four", nearby_restaurants)
         self.assertEqual(ret, 3)
-        ret = self.lb.evaluate_user_request("four")
+        ret = self.lb.evaluate_user_request("four", nearby_restaurants)
         self.assertEqual(ret, 3)
