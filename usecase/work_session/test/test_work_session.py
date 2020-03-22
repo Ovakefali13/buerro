@@ -26,7 +26,7 @@ class MockPrefRemote(PrefRemote):
             "general": {},
             "work_session": {
                 "min_work_period_minutes": 30,
-                "be_minutes_early": 15,
+                "be_minutes_early": 10,
                 "remind_min_before_leaving": 15,
                 "pomodoro_minutes": 0.1 / 60,
                 "break_minutes": 0.1 / 60
@@ -34,6 +34,29 @@ class MockPrefRemote(PrefRemote):
         }
     def merge_json_files(self, dict1, dict2):
         return {**dict1, **dict2}
+
+@Singleton
+class MockVVSService:
+    def get_location_id(self, location):
+        if location == "Stuttgart Hauptbahnhof":
+            return 'de:08111:6118',
+        elif location == "Rotebühlplatz":
+            return 'de:08111:6056',
+
+    def get_journeys_for_id(self, origin_id, dest_id, arr_dep:str, by:dt):
+        return [
+            Journey(origin_id, dest_id,
+                dep_time=by - timedelta(minutes=30),
+                arr_time=by - timedelta(minutes=15)
+            ),
+            Journey(origin_id, dest_id,
+                dep_time=by - timedelta(minutes=25),
+                arr_time=by - timedelta(minutes=10)
+            )
+        ]
+
+    def recommend_journey_to_arrive_by(self, journeys, by:dt):
+        return journeys[-1]
 
 @Singleton
 class MockNotificationHandler(BaseNotificationHandler):
@@ -78,8 +101,9 @@ class TestWorkSession(unittest.TestCase):
         if 'DONOTMOCK' in os.environ:
             self.cal_service = CalService.instance(
                 iCloudCaldavRemote.instance())
-            vvs_service = VVSService.instance(
-                VVSEfaJSONRemote.instance())
+            vvs_service = MockVVSService.instance()
+            #vvs_service = VVSService.instance(
+            #    VVSEfaJSONRemote.instance())
             todo_service = TodoistService.instance(
                 TodoistJSONRemote.instance())
             music_service = MusicService.instance(
