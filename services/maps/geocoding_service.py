@@ -41,25 +41,31 @@ class GeocodingService:
         self.remote = remote
 
     def get_coords_from_address(self, address:str):
-        results = self.remote.get_information_from_address(address)
-        latitude  = results[0]['geometry']['lat']
-        longitude = results[0]['geometry']['lng']
+        # filter blank strings
+        if address:
+            results = self.remote.get_information_from_address(address)[0]['geometry']
+            latitude  = results.get('lat')
+            longitude = results.get('lng')
 
-        return [latitude, longitude]
+            return [latitude, longitude]
 
 
     def get_address_from_coords(self, coords:list):
-        results = self.remote.get_information_from_coords(coords)
-        return results[0]['formatted']
+        results = self.remote.get_information_from_coords(coords)[0]['components']        
+        street = results.get('road') or results.get('pedestrian')
+        house_number = results.get('house_number')
+        postcode = results.get('postcode')
+        town = results.get('city') or results.get('village')
+
+        return ' '.join(filter(None, (street, house_number, postcode, town)))
 
 
     def get_city_from_coords(self, coords:list):
         results = self.remote.get_information_from_coords(coords)[0]['components']
 
-        if 'city' in results:
-            return results['city']
-        elif 'village' in results:
-            return results['village']
-        else:
-            return 'No city or village found.'
+        return results.get('city') or results.get('village')
 
+geo = GeocodingService.instance()
+add = geo.get_address_from_coords([49.906673, 8.745958])
+print(add)
+print(geo.get_coords_from_address(add))
