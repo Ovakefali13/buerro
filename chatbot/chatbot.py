@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 
 class ChatbotBehavior(ABC):
     @abstractmethod
-    def get_intent(self, prompt):
+    def get_context(self, prompt):
         pass
 
     @abstractmethod
@@ -19,7 +19,7 @@ class BuerroBot(ChatbotBehavior):
         "kalender": "$$next_calendar_event"
     }
 
-    def get_intent(self, prompt):
+    def get_context(self, prompt):
         if prompt == None or prompt == "":
             return "$$undefined_behaviour"
         prompt = prompt.lower()
@@ -46,5 +46,5 @@ class Chatbot:
     def __init__(self, behaviour):
         self.behaviour = behaviour
 
-    def get_intent(self, prompt):
-        return self.behaviour.get_intent(prompt)
+    def get_context(self, prompt):
+        return self.behaviour.get_context(prompt)
