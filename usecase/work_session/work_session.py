@@ -126,7 +126,6 @@ class WorkSession(Usecase):
 
                     now = pytz.utc.localize(dt.now())
                     minutes_until = (journey.dep_time - now).seconds / 60
-                    breakpoint()
                     if minutes_until < min_work_period:
                         return _event_too_close(next_event, journey)
 
