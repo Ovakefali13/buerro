@@ -103,15 +103,16 @@ function sendSubscriptionToBackEnd(subscription) {
   });
 }
 
-
-$(document).ready(function() {
+window.onload(function() {
     sendCurrentLocation();
-    /*
-    var minutes = 1
+    var minutes = 5
     setInterval(() => {
         sendCurrentLocation();
     }, 1000 * 60 * minutes)  
-    */
+})
+
+
+$(document).ready(function() {
 
     $(".bubblecontainer").append(generateChatBubble(true, "Hello its me the bot"));
     $(".bubblecontainer").append(generateChatBubble(false, "Hello its me the user"));
@@ -198,7 +199,11 @@ function getCurrentLocation(callback) {
         callback( [ lat, lon ], undefined );
     }, err => {
         callback( null, err );
-    }, {timeout: 5000});
+    },
+    {
+        timeout: 5000,
+        enableHighAccuracy: true
+    });
 }
             
 
