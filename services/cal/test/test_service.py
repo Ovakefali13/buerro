@@ -50,7 +50,6 @@ class TestCalService(unittest.TestCase):
             print('Mocking Remote...')
 
     def setUp(self):
-        print("purge")
         self.cal_service.purge()
 
     def now(self):
