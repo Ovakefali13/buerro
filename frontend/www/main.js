@@ -103,16 +103,12 @@ function sendSubscriptionToBackEnd(subscription) {
   });
 }
 
-window.onload(function() {
+$(document).ready(function() {
     sendCurrentLocation();
     var minutes = 5
     setInterval(() => {
         sendCurrentLocation();
     }, 1000 * 60 * minutes)  
-})
-
-
-$(document).ready(function() {
 
     $(".bubblecontainer").append(generateChatBubble(true, "Hello its me the bot"));
     $(".bubblecontainer").append(generateChatBubble(false, "Hello its me the user"));

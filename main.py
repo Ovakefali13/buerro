@@ -7,6 +7,8 @@ import os
 from apscheduler.schedulers.background import BackgroundScheduler
 from pytz import utc
 
+from usecase import Lunchbreak
+
 hostName = "localhost"
 serverPort = 9150
 

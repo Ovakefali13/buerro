@@ -2,6 +2,16 @@ import queue
 
 from util import Singleton
 
+from services.todoAPI import TodoistService, TodoistJSONRemote
+from services.todoAPI.test import TodoistMockRemote
+from services.music import MusicService, SpotifyRemote
+from services.music.test import MusicMockRemote
+from services.cal import CalService, iCloudCaldavRemote
+from services.cal.test import CalMockRemote
+from services.vvs import VVSService, VVSEfaJSONRemote
+from services.vvs.test import VVSMockRemote
+from services.preferences import PrefService, PrefRemote
+
 @Singleton
 class UsecaseStore:
     def __init__(self):
@@ -13,6 +23,7 @@ class UsecaseStore:
     def get(self, UsecaseCls):
         if UsecaseCls not in self.usecase_instances:
             usecase = UsecaseCls()
+            usecase.set_default_services()
             if hasattr(usecase, 'set_scheduler'):
                 if not self.scheduler:
                     raise Exception("scheduler must be set")

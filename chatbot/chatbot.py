@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+import inspect
 from usecase import Usecase, \
     Lunchbreak, WorkSession, Cook
 
@@ -33,7 +34,7 @@ class BuerroBot(ChatbotBehavior):
             return None
         prompt = prompt.lower()
         response = self.parse_dic(self.usecase_by_keyword, prompt)
-        if issubclass(response, Usecase):
+        if inspect.isclass(response) and issubclass(response, Usecase):
             return response
         else:
             return None
@@ -41,8 +42,7 @@ class BuerroBot(ChatbotBehavior):
     def parse_dic(self, dic, prompt):
         for key, value in dic.items():
             if key in prompt:
-                breakpoint()
-                if issubclass(value, Usecase):
+                if inspect.isclass(value) and issubclass(value, Usecase):
                     return value
                 elif isinstance(value, dict):
                     return self.parse_dic(value, prompt)

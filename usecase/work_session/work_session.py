@@ -30,11 +30,19 @@ class WorkSession(Usecase):
         # TODO self.transport_usecase = None
 
         self.pref_service = pref_service
-        self.pref = pref_service.get_preferences('work_session')
+        self.pref = self.pref_service.get_preferences('work_session')
         self.cal_service = cal_service
         self.vvs_service = vvs_service
         self.todo_service = todo_service
         self.music_service = music_service
+
+    def set_default_services(self):
+        self.pref_service = PrefService()
+        self.pref = self.pref_service.get_preferences('work_session')
+        self.cal_service = CalService.instance()
+        self.vvs_service = VVSService.instance()
+        self.todo_service = TodoistService.instance()
+        self.music_service = MusicService.instance()
 
     def set_scheduler(self, scheduler):
         self.scheduler = scheduler
@@ -45,7 +53,7 @@ class WorkSession(Usecase):
         self.fsm.reset()
 
     def advance(self, message):
-        if not self.cal_service:
+        if not hasattr(self, 'cal_service'):
             raise Exception("Set Services!")
         if not isinstance(message, str) and message is not None:
             raise Exception("wrong data type for message passed: "
@@ -144,10 +152,10 @@ class WorkSession(Usecase):
                     msg += '\nWould you like to listen to music?'
 
                     return "music", msg
-            else:
-                msg = 'You have no upcoming events.'
-                msg += '\nWould you like to listen to music?'
-                return "music", msg
+
+            msg = 'You have no upcoming events.'
+            msg += '\nWould you like to listen to music?'
+            return "music", msg
 
         def music_trans(message):
             msg =""
@@ -228,7 +236,7 @@ class WorkSession(Usecase):
             if self.expire_by:
                 period = self.expire_by - dt.now()
                 minutes, seconds = divmod(period.seconds, 60)
-                msg = (  "Timer running."
+                msg = (  "Timer running. "
                         f"I will notify you in {minutes}:{seconds}." )
                 return "wait_state", msg
             else:

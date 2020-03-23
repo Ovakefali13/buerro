@@ -14,6 +14,10 @@ class Usecase(ABC):
     def is_finished(self):
         pass
 
+    @abstractmethod
+    def set_default_services(self):
+        pass
+
 
 class CaselessDict(dict):
     """ A dictionary sub-class with case-insensitive keys """

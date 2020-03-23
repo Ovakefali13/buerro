@@ -28,8 +28,15 @@ class Lunchbreak(Usecase):
         self.map_service = map_service
         self.calendar_service = calendar_service
 
+    def set_default_services(self):
+        self.weather_adapter = WeatherAdapter.instance()
+        self.yelp_service = YelpService.instance()
+        self.geocoding_service = GeocodingService.instance()
+        self.map_service = MapService.instance()
+        self.calendar_service = CalService.instance()
+
     def advance(self, message):
-        if not self.weather_adapter:
+        if not hasattr(self, 'weather_adapter'):
             raise Exception("Set Services!")
 
         lat, lon = self.get_location()
