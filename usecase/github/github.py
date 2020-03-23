@@ -11,7 +11,6 @@ from services.yelp import YelpRequest
 
 class Github(Usecase):
     finished = False
-    
 
     def __init__(self):
         self.pref_service = PrefService(PrefJSONRemote())
@@ -23,6 +22,11 @@ class Github(Usecase):
         self.todoist_service = todoist_service
         self.calendar_service = calendar_service
         self.github_service = github_service
+    
+    def set_default_services(self):
+        self.todoist_service = TodoistService.instance()
+        self.calendar_service = CalService.instance()
+        self.github_service = GithubService.instance()
     
     def advance(self, message):
         if not self.todoist_service:

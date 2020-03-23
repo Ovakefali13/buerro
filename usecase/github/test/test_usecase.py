@@ -20,7 +20,7 @@ class TestGithub(unittest.TestCase):
                 TodoistJSONRemote.instance())
             self.calendar_service = CalService.instance(
                 iCloudCaldavRemote.instance())
-            self.github_service = GithubService.instance()
+            self.github_service = GithubService.instance(fallback=GithubMockRemote.instance())
             
         else:
             print("Mocking remotes...")
