@@ -31,4 +31,4 @@ class Github(Usecase):
     
     def is_finished(self):
         return self.finished
-
+        

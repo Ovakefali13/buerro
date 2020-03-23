@@ -8,7 +8,8 @@ from services.todoAPI.todoist_service import TodoistJSONRemote, TodoistService
 from services.todoAPI.test.test_service import TodoistMockRemote
 from services.cal.cal_service import CalService, iCloudCaldavRemote
 from services.cal.test.test_service import CalMockRemote
-from services.github.github_service import GithubService
+from services.github.github_service import GithubService, GithubRealRemote
+from services.github.test.test_service import GithubMockRemote
 
 class TestGithub(unittest.TestCase):
 
@@ -19,7 +20,7 @@ class TestGithub(unittest.TestCase):
                 TodoistJSONRemote.instance())
             self.calendar_service = CalService.instance(
                 iCloudCaldavRemote.instance())
-            # Create real GitHub Service
+            self.github_service = GithubService.instance()
             
         else:
             print("Mocking remotes...")
@@ -27,13 +28,13 @@ class TestGithub(unittest.TestCase):
                 TodoistMockRemote.instance())
             self.calendar_service = CalService.instance(
                 CalMockRemote.instance())
-            # Create mock Github Service
+            self.github_service = GithubService.instance(remote=GithubMockRemote.instance())
 
         self.use_case = Github()
         self.use_case.set_services(
             todoist_service=self.todoist_service,
             calendar_service=self.calendar_service,
-            github_service = None,
+            github_service = self.github_service,
         )
 
     def test_usecase(self):
