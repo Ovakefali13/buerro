@@ -10,6 +10,7 @@ from services.cal import Event
 from services.yelp import YelpRequest
 
 class Github(Usecase):
+    user_asked = False
     finished = False
 
     def __init__(self):
@@ -32,6 +33,9 @@ class Github(Usecase):
         if not self.todoist_service:
             raise Exception("Set services!")
         message = message.lower()
+        if user_asked:
+            return Reply({'message': "Some reply"})
+
     
     def is_finished(self):
         return self.finished
