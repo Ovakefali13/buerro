@@ -11,11 +11,9 @@ integration: mock no_mock
 
 .PHONY: mock no_mock
 mock:
-	$(PYTHON) test_loader.py $(ARGS)
-	(cd frontend && npm run test)
+	$(PYTHON) test_loader.py $(ARGS) && (cd frontend && npm install >/dev/null && npm run test)
 no_mock: 
-	DONOTMOCK=1 $(PYTHON) test_loader.py $(ARGS)
-	(cd frontend && npm run test)
+	DONOTMOCK=1 $(PYTHON) test_loader.py $(ARGS) && (cd frontend && npm install >/dev/null && npm run test)
 
 .PHONY: vapid_app_key
 vapid_app_key: sec/vapid_public_key.pem

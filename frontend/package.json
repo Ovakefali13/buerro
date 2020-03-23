@@ -14,7 +14,9 @@
     "start": "node server.js"
   },
   "jest": {
-      "setupFiles": ["./jest-setup.js"]
+    "setupFiles": [
+      "./jest-setup.js"
+    ]
   },
   "author": "",
   "license": "ISC"
