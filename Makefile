@@ -15,7 +15,7 @@ install: venv
 	cd frontend && npm install
 
 venv:
-	virtualenv -p 3.7 venv && \
+	virtualenv -p 3.7 venv
 
 .PHONY: mock no_mock frontend_test
 mock:
