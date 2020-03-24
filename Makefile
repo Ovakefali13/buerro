@@ -7,13 +7,15 @@ ifdef MODULE
 endif
 
 default: mock 
-integration: mock no_mock
+integration: mock no_mock frontend_test
 
-.PHONY: mock no_mock
+.PHONY: mock no_mock frontend_test
 mock:
-	$(PYTHON) test_loader.py $(ARGS) && (cd frontend && npm install >/dev/null && npm run test)
+	$(PYTHON) test_loader.py $(ARGS)
 no_mock: 
-	DONOTMOCK=1 $(PYTHON) test_loader.py $(ARGS) && (cd frontend && npm install >/dev/null && npm run test)
+	DONOTMOCK=1 $(PYTHON) test_loader.py $(ARGS)
+frontend_test:
+	cd frontend && npm run test
 
 .PHONY: vapid_app_key
 vapid_app_key: sec/vapid_public_key.pem
