@@ -11,11 +11,8 @@ integration: mock no_mock frontend_test
 
 .PHONY: install
 install: venv
-	venv/bin/pip install -r requirements.txt
+	pip install -r requirements.txt
 	cd frontend && npm install
-
-venv:
-	virtualenv -p 3.7 venv
 
 .PHONY: mock no_mock frontend_test
 mock:
