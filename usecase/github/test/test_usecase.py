@@ -36,9 +36,34 @@ class TestGithub(unittest.TestCase):
             calendar_service=self.calendar_service,
             github_service = self.github_service,
         )
-
-    def test_usecase(self):
-        self.assertTrue(False)
+    
+    def test_usecase_should_start_unfinished(self):
+        self.assertFalse(self.use_case.finished)
+    
+    def test_usecase_handles_mock_notification(self):
+        if 'DONOTMOCK' not in os.environ:
+            self.use_case.trigger_proactive_usecase()
+            self.assertTrue(self.use_case.issue)
+        else:
+            self.assertTrue(True)
+    
+    def test_usecase_handles_ignore_issue(self):
+        if 'DONOTMOCK' not in os.environ:
+            self.use_case.trigger_proactive_usecase()
+            reply = self.use_case.advance("Ignore the issue.")
+            self.assertEqual(reply, {'message': "Okay I will ignore the issue."})
+        else:
+            self.assertTrue(True)
+    
+    def test_usecase_handles_todo_and_calendar_entry(self):
+        if 'DONOTMOCK' not in os.environ:
+            self.use_case.trigger_proactive_usecase()
+            reply = self.use_case.advance("Put the issue on my todo list.")
+            self.assertEqual(reply, {'message': "I will add the issue to your todos."})
+            reply = self.use_case.advance("Find space in my calendar for it.")
+            self.assertEqual(reply, {'message': "Let me find a free time slot in your calendar."})
+        else:
+            self.assertTrue(True)
 
     def tearDown(self):
         self.calendar_service.purge()
