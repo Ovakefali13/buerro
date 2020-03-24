@@ -10,7 +10,7 @@ default: mock
 integration: mock no_mock frontend_test
 
 .PHONY: install
-install: venv
+install:
 	pip install -r requirements.txt
 	cd frontend && npm install
 
