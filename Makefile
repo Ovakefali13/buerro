@@ -9,6 +9,12 @@ endif
 default: mock 
 integration: mock no_mock frontend_test
 
+.PHONY: install
+install:
+	virtualenv -p 3.7 venv && \
+            venv/bin/pip install -r requirements.txt
+	cd frontend && npm install
+
 .PHONY: mock no_mock frontend_test
 mock:
 	$(PYTHON) test_loader.py $(ARGS)
