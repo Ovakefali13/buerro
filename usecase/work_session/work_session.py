@@ -167,8 +167,7 @@ class WorkSession(Usecase):
 
             msg += "\nWhich project do you want to work on?\n"
             self.projects = self.todo_service.get_project_names()
-            msg += str(self.projects)
-            reply = {**reply, 'message': msg}
+            reply = {**reply, 'message': msg, 'list': self.projects}
             return "todo", reply
 
         def todo_trans(message):
@@ -182,8 +181,12 @@ class WorkSession(Usecase):
                 return "todo", msg
 
             todos = self.todo_service.get_project_items(self.chosen_project)
-            reply = {'list': todos}
-            msg = f"Here are your Todo's for {self.chosen_project}."
+            if todos:
+                reply = {'list': todos}
+                msg = f"Here are your Todo's for {self.chosen_project}."
+            else:
+                reply = {}
+                msg = f"There are no Todo's for {self.chosen_project}."
             msg += "\nDo you want to start a pomodoro session?"
             return "pomodoro", {**reply, 'message': msg}
 

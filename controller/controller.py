@@ -112,7 +112,8 @@ def ControllerFromArgs(scheduler:BaseScheduler, chatbot:Chatbot):
                         respond_error(500, 'usecase advance does not Reply')
                         raise Exception(f"Usecase {usecase}'s advance does"
                                         +" not return a Reply object")
-                    respond_succ(reply)
+
+                    respond_succ(reply.to_html())
                 del msg
 
             elif self.path == "/save-subscription":

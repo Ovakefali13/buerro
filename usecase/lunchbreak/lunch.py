@@ -171,12 +171,11 @@ class Lunchbreak(Usecase):
     def trigger_proactive_usecase(self):
         print("Check Lunchbreak Proactive")
         self.check_reset_usecase()
-        if(True):
-        #if(self.hours_until_lunch() < 3):
+        if not self.lunch_set and self.hours_until_lunch() < 3:
             reply = self.advance('proactive')
             if 'No restaurants found' in reply.message:
                 return
-            self.create_proactive_notification(reply.message)
+            self.create_proactive_notification(reply.to_html())
             UsecaseStore.instance().set_running(self)
 
 
