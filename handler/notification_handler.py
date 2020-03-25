@@ -33,7 +33,7 @@ class BaseNotificationHandler(ABC):
 class NotificationHandler(BaseNotificationHandler):
 
     def __init__(self):
-        if 'DONOTMOCK' in os.environ:
+        if 'PRODUCTION' in os.environ:
             self.db = 'handler/buerro.db'
         else:
             self.db = 'handler/test.db'
@@ -93,10 +93,14 @@ class NotificationHandler(BaseNotificationHandler):
                     "AwEHoUQDQgAEEJwJZq/GN8jJbo1GGpyU70hmP2hbWAUpQFKDByKB81yldJ9GTklB"
                     "M5xqEwuPM7VuQcyiLDhvovthPIXx+gsQRQ=="
                 )
+
+            subscription = self.get_subscription()
+            if not subscription:
+                raise Exception("No user subscribed to notifications.")
             try:
-                print(f"pushing to {self.get_subscription()['endpoint']}")
+                print(f"pushing to {subscription['endpoint']}")
                 webpush(
-                    subscription_info=self.get_subscription(),
+                    subscription_info=subscription,
                     data=json.dumps(notification),
                     vapid_private_key=priv_key,
                     vapid_claims={
@@ -120,8 +124,9 @@ class NotificationHandler(BaseNotificationHandler):
             _push(notification)
 
 if __name__ == "__main__":
+    os.environ['PRODUCTION'] = '1'
     notification = Notification('Test Notification')
-    notification.set_body('Did you know? buerro is super cool.')
+    notification.set_body('You have a new message.')
     notification.add_message('''Hey it's me the PDA for your buerro.
         Should I order some Kaesspaetzle?''')
     notification_handler = NotificationHandler.instance()
