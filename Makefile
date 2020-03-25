@@ -42,8 +42,8 @@ cert:
 
 .PHONY: backend
 backend:
-	$(PYTHON) main.py
+	PRODUCTION=1 $(PYTHON) main.py
 
 .PHONY: frontend
 frontend:
-	cd frontend && npm start
+	PRODUCTION=1 cd frontend && npm start
