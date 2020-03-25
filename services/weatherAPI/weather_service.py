@@ -18,11 +18,11 @@ class WeatherAdapterModule(ABC):
         pass
 
     @abstractmethod
-    def get_current_weather_by_coordinates(self, coordinates:tuple):
+    def get_current_weather_by_coordinates(self, lat, lon):
         pass
 
     @abstractmethod
-    def get_weather_forecast_by_coordinates(self, coordinates:tuple):
+    def get_weather_forecast_by_coordinates(self, lat, lon):
         pass
 
 @Singleton

@@ -21,11 +21,11 @@ class WeatherMock(WeatherAdapterModule):
             mock_weather_forecast = json.load(mockWeather_f)
         return mock_weather_forecast
 
-    def get_current_weather_by_coordinates(self, coordinates):
-       return self.get_current_weather_by_city(self, 'Stuttgart')
+    def get_current_weather_by_coordinates(self, lat, lon):
+       return self.get_current_weather_by_city('Stuttgart')
 
-    def get_weather_forecast_by_coordinates(self, coordinates):
-       return self.get_weather_forecast_by_city(self, 'Stuttgart')
+    def get_weather_forecast_by_coordinates(self, lat, lon):
+       return self.get_weather_forecast_by_city('Stuttgart')
 
 
 class TestWeatherService(unittest.TestCase):
