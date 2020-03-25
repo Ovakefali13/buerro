@@ -8,20 +8,39 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from pytz import utc
 
 from usecase import Lunchbreak
+from handler import UsecaseStore
 
 hostName = "localhost"
 serverPort = 9150
 
-def schedule_usecases(scheduler):
-    scheduler.add_job(func=Lunchbreak().trigger_proactive_usecase,
-                      args=(),
-                      trigger='interval',
-                      hours=1)
-
 
 if __name__ == '__main__':
+
+    def block_trigger(func, *args, **kwargs):
+        if store.get_running() is not None:
+            print('Blocked')
+            store.register_fin_callback(func, *args, **kwargs)
+        else:
+            func(*args, **kwargs)
+
+    def tick(test_var):
+        print('tick ', test_var)
+
+    def schedule_usecases():
+        scheduler.add_job(func=block_trigger,
+                          args=(Lunchbreak().trigger_proactive_usecase,),
+                          trigger='interval',
+                          hours=1)
+        scheduler.add_job(func=block_trigger,
+                          args=(tick,),
+                          kwargs={'test_var': 123},
+                          trigger='interval',
+                          seconds=10)
+
+    store = UsecaseStore.instance()
+
     scheduler = BackgroundScheduler(timezone=utc)
-    schedule_usecases(scheduler)
+    schedule_usecases()
     scheduler.start()
 
     try:

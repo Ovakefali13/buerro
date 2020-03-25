@@ -42,11 +42,17 @@ class UsecaseStore:
     def usecase_finished(self):
         self.running = None
         while not self.callback_queue.empty():
-            fun, args = self.callback_queue.get()
-            fun(*args)
+            fun, arg_dict = self.callback_queue.get()
+            args = arg_dict['args']
+            kwargs = arg_dict['kwargs']
+            fun(*args, **kwargs)
 
-    def register_fin_callback(self, fun, *args):
-        self.callback_queue.put((fun, args))
+    def register_fin_callback(self, fun, *args, **kwargs):
+        arg_dict = {
+            'args': args,
+            'kwargs': kwargs
+        }
+        self.callback_queue.put((fun, arg_dict))
 
     def set_scheduler(self, scheduler):
         self.scheduler = scheduler
