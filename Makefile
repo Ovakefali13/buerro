@@ -6,13 +6,21 @@ ifdef MODULE
     ARGS := --module $(MODULE)
 endif
 
-all: mock no_mock
+default: mock 
+integration: mock no_mock frontend_test
 
-.PHONY: mock no_mock
+.PHONY: install
+install:
+	pip install -r requirements.txt
+	cd frontend && npm install
+
+.PHONY: mock no_mock frontend_test
 mock:
 	$(PYTHON) test_loader.py $(ARGS)
 no_mock: 
 	DONOTMOCK=1 $(PYTHON) test_loader.py $(ARGS)
+frontend_test:
+	cd frontend && npm run test
 
 .PHONY: vapid_app_key
 vapid_app_key: sec/vapid_public_key.pem
@@ -46,3 +54,8 @@ backend:
 .PHONY: frontend
 frontend:
 	cd frontend && npm start
+
+.PHONY: set_buerro_path
+set_buerro_path:
+	cd $(shell $(PYTHON) -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())") && \
+	echo $(ROOT_DIR) > buerro.pth

@@ -69,6 +69,7 @@ class TestCalService(unittest.TestCase):
         event.add('dtstart', pytz.utc.localize(dt(2020, 2, 26, 18, 00)))
         event.add('dtend', pytz.utc.localize(dt(2020, 2, 26, 19, 00)))
         event.add('location', "My Hood")
+        event.set_reminder(timedelta(minutes=10))
 
         self.cal_service.add_event(event)
         all_events = self.cal_service.get_all_events()

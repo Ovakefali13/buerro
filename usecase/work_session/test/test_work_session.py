@@ -16,7 +16,7 @@ from services.music import MusicService, SpotifyRemote
 from services.music.test import MusicMockRemote
 from services.cal import CalService, Event, iCloudCaldavRemote
 from services.cal.test import CalMockRemote
-from services.vvs import VVSService, VVSEfaJSONRemote
+from services.vvs import VVSService, VVSEfaJSONRemote, Journey
 from services.vvs.test import VVSMockRemote
 from services.preferences import PrefService, PrefRemote
 
@@ -26,7 +26,7 @@ class MockPrefRemote(PrefRemote):
             "general": {},
             "work_session": {
                 "min_work_period_minutes": 30,
-                "be_minutes_early": 15,
+                "be_minutes_early": 10,
                 "remind_min_before_leaving": 15,
                 "pomodoro_minutes": 0.1 / 60,
                 "break_minutes": 0.1 / 60
@@ -34,6 +34,29 @@ class MockPrefRemote(PrefRemote):
         }
     def merge_json_files(self, dict1, dict2):
         return {**dict1, **dict2}
+
+@Singleton
+class MockVVSService:
+    def get_location_id(self, location):
+        if location == "Stuttgart Hauptbahnhof":
+            return 'de:08111:6118'
+        elif location == "Rotebühlplatz":
+            return 'de:08111:6056'
+
+    def get_journeys_for_id(self, origin_id, dest_id, arr_dep:str, by:dt):
+        return [
+            Journey(origin_id, dest_id,
+                dep_time=by - timedelta(minutes=30),
+                arr_time=by - timedelta(minutes=15)
+            ),
+            Journey(origin_id, dest_id,
+                dep_time=by - timedelta(minutes=25),
+                arr_time=by - timedelta(minutes=10)
+            )
+        ]
+
+    def recommend_journey_to_arrive_by(self, journeys, by:dt):
+        return journeys[-1]
 
 @Singleton
 class MockNotificationHandler(BaseNotificationHandler):
@@ -87,8 +110,9 @@ class TestWorkSession(unittest.TestCase):
         else:
             self.cal_service = CalService.instance(
                 CalMockRemote.instance())
-            vvs_service = VVSService.instance(
-                VVSMockRemote.instance())
+            vvs_service = MockVVSService.instance()
+            #vvs_service = VVSService.instance(
+            #    VVSMockRemote.instance())
             todo_service = TodoistService.instance(
                 TodoistMockRemote.instance())
             music_service = MusicService.instance(
@@ -158,6 +182,8 @@ class TestWorkSession(unittest.TestCase):
         expected = "You have no upcoming events."
         self.assertIn(expected, reply.message)
 
+    @unittest.skipIf('TRAVIS' in os.environ and 'DONOTMOCK' in os.environ,
+                    "travis IP might be blocked on iCloud")
     def test_creates_reminder_for_upcoming(self):
         event = Event()
         event.set_start(dt.now(pytz.utc) + timedelta(minutes=270))
@@ -221,8 +247,6 @@ class TestWorkSession(unittest.TestCase):
                 if not pomodoro:
                     reply = uc.advance('no')
                     self.assertIn(states['fin_no_pom'], reply.message)
-                    self.assertTrue(uc.is_finished())
-
                 else:
                     uc._set_state('pomodoro')
                     for pomodoro_i in range(5):
@@ -286,11 +310,10 @@ class TestWorkSession(unittest.TestCase):
                     # finally no more pomodoros...
                     reply = uc.advance('no')
                     self.assertIn(states['fin_no_pom'], reply.message)
-                    self.assertTrue(uc.is_finished())
 
                 # starts over...
-                self.assertRaises(FinishedException, uc.advance, None)
-                uc.reset()
+                self.assertTrue(uc.is_finished())
+                # does not need to be reset 
                 reply = uc.advance(None)
                 self.assertIn(states['music'], reply.message)
 

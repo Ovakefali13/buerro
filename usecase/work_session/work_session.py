@@ -4,7 +4,7 @@ import re
 
 
 from services import TodoistService, VVSService, CalService, PrefService, MusicService
-from usecase import Usecase, Reply, StateMachine
+from usecase import Usecase, Reply, StateMachine, FinishedException
 #from usecase import TransportUsecase
 from handler import NotificationHandler
 
@@ -50,7 +50,12 @@ class WorkSession(Usecase):
         if not isinstance(message, str) and message is not None:
             raise Exception("wrong data type for message passed: "
                     +str(type(message)))
-        return Reply(self.fsm.advance(message))
+        try:
+            reply = self.fsm.advance(message)
+        except FinishedException:
+            self.reset()
+            reply = self.fsm.advance(message)
+        return Reply(reply)
 
     def is_finished(self):
         return self.fsm.is_finished()
@@ -129,8 +134,6 @@ class WorkSession(Usecase):
                         return _event_too_close(next_event, journey)
 
                     journey_event = journey.to_event()
-                    reminder = self.pref['remind_min_before_leaving']
-                    journey_event.set_reminder(timedelta(minutes=reminder))
                     self.cal_service.add_event(journey_event)
 
                     # TODO create notification
