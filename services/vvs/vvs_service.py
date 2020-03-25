@@ -1,4 +1,4 @@
-import urllib.request
+import requests
 from urllib.parse import urlencode
 import json
 import sys
@@ -34,7 +34,7 @@ class VVSEfaJSONRemote(VVSRemote):
         }
         url = self.base_url + "/XML_STOPFINDER_REQUEST?" + urlencode(params)
         # TODO error handling
-        return json.loads(urllib.request.urlopen(url).read()).get('locations')
+        return requests.get(url).json().get('locations')
 
     def get_journeys(self, req:JourneyRequest):
 
@@ -44,7 +44,7 @@ class VVSEfaJSONRemote(VVSRemote):
 
         url = self.base_url + "/XML_TRIP_REQUEST2?" + urlencode(params)
         # TODO error handling
-        return json.loads(urllib.request.urlopen(url).read()).get('journeys')
+        return requests.get(url).json().get('journeys')
 
 
 @Singleton
