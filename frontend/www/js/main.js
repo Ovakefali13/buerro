@@ -22,15 +22,6 @@ function urlBase64ToUint8Array(base64String) {
     return outputArray;
 }
 
-navigator.serviceWorker.addEventListener('message', event => {
-    if(event.data.options.data) {
-        if(event.data.options.data.message) {
-            putBotMessage(event.data.options.data.message);
-        }
-    }
-});
-
-
 function subscribeUser() {
 
     const subscribeOptions = {
@@ -132,6 +123,14 @@ $(document).ready(function() {
         processUserPrompt($("#prompt_input").val());
         $("#prompt_input").val("");
     });
+
+    navigator.serviceWorker.addEventListener('message', event => {
+    if(event.data.options.data) {
+        if(event.data.options.data.message) {
+            putBotMessage(event.data.options.data.message);
+        }
+    }
+});
 })
 
 function putUserMessage(message) {

@@ -65,7 +65,7 @@ class TestGeocodingService(unittest.TestCase):
         geocoding_service = GeocodingService.instance(
             GeocodingMockRemote.instance())
 
-    dhbw = ['Rotebühlplatz 41, 70178 Stuttgart, Deutschland', [48.7735115, 9.1710448]]
+    dhbw = ['Rotebühlplatz 41 70178 Stuttgart', [48.7735115, 9.1710448]]
 
     def test_get_coords_from_adress(self):
         coords = self.geocoding_service.get_coords_from_address(self.dhbw[0])
