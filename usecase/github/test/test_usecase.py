@@ -1,6 +1,7 @@
 import unittest
-import datetime
+from datetime import datetime, timedelta
 import os
+import pytz
 
 from usecase.github import Github
 from usecase.usecase import Reply
@@ -64,6 +65,17 @@ class TestGithub(unittest.TestCase):
             self.assertEqual(reply, {'message': "Let me find a free time slot in your calendar."})
         else:
             self.assertTrue(True)
+    
+    def test_usecase_finds_free_time_slot(self):
+        if 'DONOTMOCK' not in os.environ:
+            time_slot = self.use_case.find_available_time_slot()
+            self.assertTrue(time_slot)
+        else:
+            self.assertTrue(True)
+    
+    def test_usecase_can_create_event(self):
+        event = self.use_case.create_cal_event(datetime.now(pytz.utc), datetime.now(pytz.utc) + timedelta(minutes=60),"<Issue Name>")
+        self.assertEqual(event.get_title(),"Work on <Issue Name>")
 
     def tearDown(self):
         self.calendar_service.purge()

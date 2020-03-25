@@ -44,9 +44,28 @@ class Github(Usecase):
                 return Reply({'message': "Let me find a free time slot in your calendar."})
             if "ignore" in message or "nothing" in message:
                 return Reply({'message': "Okay I will ignore the issue."})
-                pass
         else:
             pass
+    
+    def create_cal_event(self, start, end, name):
+        issue_event = Event()
+        issue_event.set_title('Work on ' + name)
+        issue_event.set_start(start)
+        issue_event.set_end(end)
+        self.calendar_service.add_event(issue_event)
+        return issue_event
+
+    def create_todo_item(self):
+        self.todoist_service.set_project_todo("Issue name", "Github Issues")
+
+    def find_available_time_slot(self):
+        end_of_day = datetime.now(pytz.utc).replace(hour=23, minute=59, second=59)
+        max_time, start, end = self.calendar_service.get_max_available_time_between(
+            datetime.now(pytz.utc), end_of_day)
+        time_slot = {'start':start, 'end':start + timedelta(minutes=60)}
+        if timedelta(minutes=60) > max_time:
+            return False
+        return time_slot
     
     def trigger_proactive_usecase(self):
         self.github_service.connect()
@@ -67,7 +86,7 @@ class Github(Usecase):
             notification_handler = NotificationHandler.instance()
             notification_handler.push(notification)
         except:
-            print("WARNING: Could not push notification. Maybe test environment?")
+            print("WARNING: Could not push notification. Maybe you are in test environment?")
 
     def is_finished(self):
         return self.finished
