@@ -13,7 +13,6 @@ from handler import UsecaseStore
 hostName = "localhost"
 serverPort = 9150
 
-
 if __name__ == '__main__':
 
     def block_trigger(usecase, func, *args, **kwargs):
