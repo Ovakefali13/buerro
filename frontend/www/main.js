@@ -40,18 +40,7 @@ function subscribeUser() {
         )
     }
 
-    swRegistration.pushManager.subscribe(subscribeOptions)
-    .then(pushSubscription => {
-        console.log('Received PushSubscription: ', pushSubscription); 
-        try {
-            sendSubscriptionToBackEnd(pushSubscription);
-            console.log('Successfully sent subscription to backend');
-            isSubscribed = true;
-        } catch(err) {
-            console.error(err);
-            pushSubscription.unsubscribe();
-        }
-    });
+    return swRegistration.pushManager.subscribe(subscribeOptions);
 }
 
 if ('serviceWorker' in navigator) {
@@ -65,20 +54,39 @@ if ('serviceWorker' in navigator) {
         }, err => {
             console.error(err);
         })
-        .then((subscription) => {
-            isSubscribed = !(subscription === null)
-            if(isSubscribed) {
+        .then((pushSubscription) => {
+            if(pushSubscription !== null) {
                 console.log('User is subscribed.');
+                sendSubscriptionToBackEnd(pushSubscription)
+                .then(() => { 
+                    console.log('Successfully sent pushSubscription to backend');
+                    isSubscribed = true
+                })
+                .catch((err) => {
+                    console.error('Failed to send subscription: ', err);
+                    pushSubscription.unsubscribe();
+                    isSubscribed = false;
+                });
             } else {
                 console.log('User is not subscribed.');
-                subscribeUser(); }
+                subscribeUser()
+                .then((pushSubscription) => sendSubscriptionToBackEnd(pushSubscription))
+                .then(() => { 
+                    console.log('Successfully sent pushSubscription to backend');
+                    isSubscribed = true
+                })
+                .catch((err) => {
+                    console.error('Failed to send subscription: ', err);
+                    pushSubscription.unsubscribe();
+                    isSubscribed = false;
+                });
+            }
         }, err => {
             console.error(err);
         });
     });
 
 }
-
 
 function sendSubscriptionToBackEnd(subscription) {
   return fetch(BACKEND_HOST+'/save-subscription', {
