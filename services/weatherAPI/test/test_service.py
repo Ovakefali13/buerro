@@ -8,18 +8,24 @@ from .. import WeatherAdapter, WeatherAdapterRemote, WeatherAdapterModule
 @Singleton
 class WeatherMock(WeatherAdapterModule):
 
-    def update_current_weather_by_city(self, city):
+    def get_current_weather_by_city(self, city):
         dirname = os.path.dirname(__file__)
         with open(os.path.join(dirname, 'mock_weather.json'), 'r') as mockWeather_f:
             mock_weather = json.load(mockWeather_f)
         return mock_weather
 
 
-    def update_weather_forecast_by_city(self, city):
+    def get_weather_forecast_by_city(self, city):
         dirname = os.path.dirname(__file__)
         with open(os.path.join(dirname, 'mock_weather_forecast.json'), 'r') as mockWeather_f:
             mock_weather_forecast = json.load(mockWeather_f)
         return mock_weather_forecast
+
+    def get_current_weather_by_coordinates(self, coordinates):
+       return self.get_current_weather_by_city(self, 'Stuttgart')
+
+    def get_weather_forecast_by_coordinates(self, coordinates):
+       return self.get_weather_forecast_by_city(self, 'Stuttgart')
 
 
 class TestWeatherService(unittest.TestCase):
@@ -61,3 +67,9 @@ class TestWeatherService(unittest.TestCase):
     def test_will_be_bad_weather(self):
         will_be_bad_weather = self.weather_adapter.will_be_bad_weather(3)
         self.assertIsInstance(will_be_bad_weather, bool)
+
+    def test_can_work_with_coordinates(self):
+        lat, lon = 52.520007, 13.404954
+        self.weather_adapter.update(coordinates=(lat, lon))
+        self.assertIsInstance(self.weather_adapter.will_be_bad_weather(3),
+                            bool)

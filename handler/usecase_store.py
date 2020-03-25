@@ -2,16 +2,6 @@ import queue
 
 from util import Singleton
 
-from services.todoAPI import TodoistService, TodoistJSONRemote
-from services.todoAPI.test import TodoistMockRemote
-from services.music import MusicService, SpotifyRemote
-from services.music.test import MusicMockRemote
-from services.cal import CalService, iCloudCaldavRemote
-from services.cal.test import CalMockRemote
-from services.vvs import VVSService, VVSEfaJSONRemote
-from services.vvs.test import VVSMockRemote
-from services.preferences import PrefService, PrefRemote
-
 @Singleton
 class UsecaseStore:
     def __init__(self):
@@ -32,6 +22,10 @@ class UsecaseStore:
         return self.usecase_instances[UsecaseCls]
 
     def set_running(self, usecase):
+        stored_instance = self.get(type(usecase))
+        if stored_instance != usecase:
+            raise Exception(("Two separate instances detected. "
+                            f"{stored_instance} != {usecase}"))
         self.running = usecase
 
     def get_running(self):

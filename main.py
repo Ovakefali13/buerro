@@ -16,26 +16,22 @@ serverPort = 9150
 
 if __name__ == '__main__':
 
-    def block_trigger(func, *args, **kwargs):
-        if store.get_running() is not None:
-            print('Blocked')
-            store.register_fin_callback(func, *args, **kwargs)
+    def block_trigger(usecase, func, *args, **kwargs):
+        running_usecase = store.get_running()
+        if running_usecase:
+            if not running_usecase == usecase:
+                store.register_fin_callback(func, *args, **kwargs)
         else:
             func(*args, **kwargs)
 
-    def tick(test_var):
-        print('tick ', test_var)
-
     def schedule_usecases():
+        lunchbreak = UsecaseStore.instance().get(Lunchbreak)
+        lunchbreak.set_default_services()
         scheduler.add_job(func=block_trigger,
-                          args=(Lunchbreak().trigger_proactive_usecase,),
+                          args=(lunchbreak, lunchbreak.trigger_proactive_usecase,),
+                          kwargs={},
                           trigger='interval',
                           hours=1)
-        scheduler.add_job(func=block_trigger,
-                          args=(tick,),
-                          kwargs={'test_var': 123},
-                          trigger='interval',
-                          seconds=10)
 
     store = UsecaseStore.instance()
 

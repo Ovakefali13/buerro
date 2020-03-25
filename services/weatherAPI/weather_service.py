@@ -1,39 +1,81 @@
 import requests
+from abc import ABC, abstractmethod
+import urllib
+
 from services.ApiError import ApiError
 from util import Singleton
-from abc import ABC, abstractmethod
 from services.preferences import PrefService
+
 
 
 class WeatherAdapterModule(ABC):
     @abstractmethod
-    def update_current_weather_by_city(self, city:str):
+    def get_current_weather_by_city(self, city:str):
         pass
 
     @abstractmethod
-    def update_weather_forecast_by_city(self, city:str):
+    def get_weather_forecast_by_city(self, city:str):
+        pass
+
+    @abstractmethod
+    def get_current_weather_by_coordinates(self, coordinates:tuple):
+        pass
+
+    @abstractmethod
+    def get_weather_forecast_by_coordinates(self, coordinates:tuple):
         pass
 
 @Singleton
 class WeatherAdapterRemote(WeatherAdapterModule):
-    API_TOKEN = PrefService().get_specific_pref('openWeatherMapAPIKey')
 
-    def update_current_weather_by_city(self, city):
-        req = 'https://api.openweathermap.org/data/2.5/weather?q=' +  city + '&units=metric&appid=' + self.API_TOKEN
+    def __init__(self):
+        self.API_TOKEN = PrefService().get_specific_pref('openWeatherMapAPIKey')
+        self.base_url = 'https://api.openweathermap.org/data/2.5'
+        self.base_params = {
+            'units': 'metric',
+            'appid': self.API_TOKEN
+        }
+
+    def request(self, url, params):
+        url = self.base_url + url
+        params = {**params, **self.base_params}
+        req = f'{url}?{urllib.parse.urlencode(params)}'
+
         resp = requests.get(req)
         if resp.status_code != 200:
-            raise ApiError('GET /tasks/ {}'.format(resp.status_code))
-            print('Error')
+            raise ApiError((f"GET {req} returned {resp.status_code}:\n"
+                            f"{resp.json()['message']}"))
         return resp.json()
 
+    def get_current_weather_by_coordinates(self, lat, lon):
+        url = '/weather'
+        params = {
+            'lat': lat,
+            'lon': lon
+        }
+        return self.request(url, params)
 
-    def update_weather_forecast_by_city(self, city):
-        req = 'https://api.openweathermap.org/data/2.5/forecast?q=' + city + '&units=metric&appid=' + self.API_TOKEN
-        resp = requests.get(req)
-        if resp.status_code != 200:
-            raise ApiError('GET /tasks/ {}'.format(resp.status_code))
-            print('Error')
-        return resp.json()
+    def get_current_weather_by_city(self, city):
+        url = '/weather'
+        params = {
+            'q': city,
+        }
+        return self.request(url, params)
+
+    def get_weather_forecast_by_coordinates(self, lat, lon):
+        url = '/forecast'
+        params = {
+            'lat': lat,
+            'lon': lon
+        }
+        return self.request(url, params)
+
+    def get_weather_forecast_by_city(self, city):
+        url = '/forecast'
+        params = {
+            'q': city,
+        }
+        return self.request(url, params)
 
 @Singleton
 class WeatherAdapter:
@@ -52,20 +94,21 @@ class WeatherAdapter:
         #get_preferences('weather')
         self.MIN_TEMP = self.pref.get_specific_pref('min_temp')
         self.MAX_WIND = self.pref.get_specific_pref('max_wind')
-        self.update('Stuttgart')
 
     def set_remote(self, remote:WeatherAdapterModule):
         self.remote = remote
 
-    def update(self, city):
-        self.weather = self.update_current_weather_by_city(city)
-        self.weather_forecast = self.update_weather_forecast_by_city(city)
-
-    def update_weather_forecast_by_city(self, city:str):
-        return self.remote.update_weather_forecast_by_city(city)
-
-    def update_current_weather_by_city(self, city:str):
-        return self.remote.update_current_weather_by_city(city)
+    def update(self, city=None, coordinates:tuple=None):
+        if city:
+            self.weather = self.remote.get_current_weather_by_city(city)
+            self.weather_forecast = self.remote.get_weather_forecast_by_city(city)
+        elif coordinates:
+            self.weather = self.remote.get_current_weather_by_coordinates(
+                *coordinates)
+            self.weather_forecast = self.remote.get_weather_forecast_by_coordinates(
+                *coordinates)
+        else:
+            raise Error("Provide either city or coordinates")
 
     def get_current_temperature(self):
         return float(self.weather['main']['temp'])
@@ -104,7 +147,6 @@ class WeatherAdapter:
             return True
         else:
             return False
-
 
     def will_be_bad_weather(self, hours):
         temp = self.get_forecast_temperature(hours)
