@@ -9,7 +9,7 @@ from util import Singleton
 from controller import ControllerFromArgs
 from chatbot import ChatbotBehavior, Chatbot
 from usecase import Usecase, Reply
-from handler import LocationHandler
+from handler import LocationHandler, UsecaseStore
 
 
 class MockUsecase(Usecase):
@@ -47,6 +47,9 @@ class MockUsecase(Usecase):
             return True
         return False
 
+    def set_default_services(self):
+        pass
+
 class QuicklyFinishedUsecase(Usecase):
     def __init__(self):
         self.count = 0
@@ -63,6 +66,9 @@ class QuicklyFinishedUsecase(Usecase):
 
     def is_finished(self):
         return self.count == 1
+
+    def set_default_services(self):
+        pass
 
 @Singleton
 class MockChatbotBehavior(ChatbotBehavior):
@@ -103,6 +109,8 @@ class TestController(unittest.TestCase):
         self.ready_event.wait(3)
         if not self.ready_event.is_set():
             raise Exception("most likely failed to start server")
+
+        UsecaseStore.instance().purge()
 
     def test_can_step_through_usecase(self):
         def _query(message:str):

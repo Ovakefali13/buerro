@@ -38,11 +38,15 @@ class MockUsecase(Usecase):
     def reset(self):
         self.count = 0
 
+    def set_default_services(self):
+        pass
+
 class TestNotificationHandler(unittest.TestCase):
 
     @classmethod
     def setUpClass(self):
         self.notification_handler = NotificationHandler.instance()
+        UsecaseStore.instance().purge()
 
     def get_random_subscription(self):
         def _get_random_p256dh():
@@ -93,7 +97,7 @@ class TestNotificationHandler(unittest.TestCase):
             self.notification_handler.save_subscription(mock_subscription)
 
         store = UsecaseStore.instance()
-        usecase = MockUsecase()
+        usecase = store.get(MockUsecase)
         usecase.advance('foo')
         self.assertFalse(usecase.is_finished())
         store.set_running(usecase)

@@ -22,11 +22,12 @@ class UsecaseStore:
         return self.usecase_instances[UsecaseCls]
 
     def set_running(self, usecase):
-        stored_instance = self.get(type(usecase))
-        if stored_instance != usecase:
+        stored_instance = self.usecase_instances.get(type(usecase), None)
+        if stored_instance and stored_instance != usecase:
             raise Exception(("Two separate instances detected. "
                             f"{stored_instance} != {usecase}"))
         self.running = usecase
+        self.usecase_instances[type(usecase)] = usecase
 
     def get_running(self):
         if self.running:
@@ -50,3 +51,6 @@ class UsecaseStore:
 
     def set_scheduler(self, scheduler):
         self.scheduler = scheduler
+
+    def purge(self):
+        self.__init__()
