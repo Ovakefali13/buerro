@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 
-from handler import Notification
 
 class FinishedException(Exception):
     pass
@@ -28,6 +27,8 @@ class CaselessDict(dict):
         if isinstance(key, str):
             key = key.casefold()
         return super().__getitem__(key)
+
+from handler import Notification
 
 class Reply(CaselessDict):
     attributes = ('message', 'link', 'list', 'dict')
