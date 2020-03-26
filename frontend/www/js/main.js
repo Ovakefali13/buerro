@@ -1,5 +1,3 @@
-BACKEND_HOST = "http://localhost:9150"
-
 swRegistration = null;
 
 /**
@@ -80,7 +78,7 @@ if ('serviceWorker' in navigator) {
 }
 
 function sendSubscriptionToBackEnd(subscription) {
-  return fetch(BACKEND_HOST+'/save-subscription', {
+  return fetch('/api/save-subscription', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -109,8 +107,7 @@ $(document).ready(function() {
         sendCurrentLocation();
     }, 1000 * 60 * minutes)  
 
-    $(".bubblecontainer").append(generateChatBubble(true, "Hello its me the bot"));
-    $(".bubblecontainer").append(generateChatBubble(false, "Hello its me the user"));
+    putBotMessage("Hello, it's me, the PDA for your buerro. Ask me anything.")
 
     $("#prompt_input").keypress(function(e) {
         if(e.which == 13) {
@@ -152,7 +149,7 @@ function processUserPrompt(prompt) {
     //Send to backend with async promise or something
     putUserMessage(prompt);
     getCurrentLocation(location => {
-        return fetch(BACKEND_HOST+'/message', {
+        return fetch('/api/message', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
@@ -166,6 +163,7 @@ function processUserPrompt(prompt) {
             if (!response.ok) {
               console.error(response.json())
               throw new Error('Bad status code from server.');
+              putBotMessage("Server communication failed.");
             }
 
             return response.json();
@@ -173,6 +171,7 @@ function processUserPrompt(prompt) {
         .then(function(responseData) {
             if (!(responseData.success && responseData.data)) {
               throw new Error('Bad response from server.');
+              putBotMessage("Server communication failed.");
             }
 
             putBotMessage(responseData.data.message);
@@ -218,7 +217,7 @@ function sendCurrentLocation() {
             return
         }
 
-        return fetch(BACKEND_HOST+'/location', {
+        return fetch('api/location', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'

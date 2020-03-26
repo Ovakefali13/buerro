@@ -13,6 +13,9 @@ from handler import UsecaseStore
 HOST_NAME = "localhost"
 SERVER_PORT = 9150
 
+if 'BACKEND_PORT' in os.environ:
+    SERVER_PORT = int(os.environ['BACKEND_PORT'])
+
 class Main:
 
     def __init__(self):
@@ -48,7 +51,7 @@ class Main:
         try:
             self.scheduler.start()
 
-            print("serving at port", SERVER_PORT)
+            print("Backend serving at port", SERVER_PORT)
             self.httpd.serve_forever()
 
             print('Press Ctrl+{0} to exit'.format('Break' if os.name == 'nt' else 'C'))
