@@ -1,6 +1,9 @@
 
 import unittest
-import datetime
+from datetime import datetime, timedelta
+from freezegun import freeze_time
+import os
+import json
 
 from usecase.usecase import Reply
 from usecase.transport import Transport
@@ -9,8 +12,8 @@ from services.preferences import PrefService, PrefJSONRemote
 from services.maps import GeocodingService, MapService
 from services.vvs import VVSService, VVSEfaJSONRemote
 from services.weatherAPI.test import WeatherMock
-from services.maps.test import MapMockRemote, GeocodingMockRemote
-from services.vss.test import VVSMockRemote
+#from services.maps.test import MapMockRemote, GeocodingMockRemote
+#from services.vss.test import VVSMockRemote
 
 class TestTransport(unittest.TestCase):
     dhbw = [48.773563, 9.170963]
@@ -18,39 +21,52 @@ class TestTransport(unittest.TestCase):
             
     @classmethod
     def setUpClass(self):
+        self.pref_service=PrefService(PrefJSONRemote()),
+        self.map_service=MapService.instance(),
+        self.vvs_service=VVSService.instance(VVSEfaJSONRemote.instance()),
+        self.geo_service=GeocodingService.instance(),
+        self.wea_service=WeatherAdapter.instance()
+        '''    
         if 'DONOTMOCK' in os.environ:
             self.pref_service=PrefService(PrefJSONRemote()),
             self.map_service=MapService.instance(),
             self.vvs_service=VVSService.instance(VVSEfaJSONRemote.instance()),
             self.geo_service=GeocodingService.instance(),
-            self.wea_service=WeatherAdapter.instance()):
+            self.wea_service=WeatherAdapter.instance()
         else:
             print("Mocking remotes...")
             self.pref_service=PrefService(PrefJSONRemote()),
             self.map_service=MapService.instance(),
             self.vvs_service=VVSService.instance(VVSEfaJSONRemote.instance()),
             self.geo_service=GeocodingService.instance(),
-            self.wea_service=WeatherAdapter.instance()):
-
+            self.wea_service=WeatherAdapter.instance()
+        '''
         self.use_case = Transport()
-        self.use_case.set_services(
-            pref_service=self.pref_service
-            map_service=self.map_service
-            vvs_service=self.vvs_service
-            geo_service=self.geo_service
-            wea_service=self.wea_service
-        )
+        self.use_case.set_services()
 
+    # This test only works correct when the weather is good
+    @freeze_time("2020-03-26 21:30:00")
     def test_usecase(self):
-        reply = self.use_case.advance('I want to go from home to the university and arrive at 10 pm.')
-        response_message = self.use_case.get_response()
-        self.assertIsInstance(reply, Reply)
-        self.assertEquals('pork', self.use_case.ingredient)
-        self.assertIs(type(response_message), str)
-        
+        self.use_case.transport_info['WeatherGood'] = True
 
+        with open(os.path.join(os.path.dirname(__file__), 'mock_data.json'), 'r') as f:
+            mock_route = json.load(f)
 
-    
+        for route in mock_route:
+            mock_req_info = route['req_info']       
+            mock_req_info['Time'] = datetime(2020, 3, mock_req_info['Day'], mock_req_info['Hour'], mock_req_info['Minute']) # Transform time into datetime object 
+            del mock_req_info['Day']
+            del mock_req_info['Hour']
+            del mock_req_info['Minute']
+            mock_reply = route['reply']
+            mock_sentence = route['sentence']
 
+            reply = self.use_case.advance(mock_sentence)
+            
+            # Check if the request information is correct
+            self.assertEqual(mock_req_info, self.use_case.req_info)
 
-    
+            # Check if reply is corret
+            self.assertEqual(mock_reply, reply)
+
+            
