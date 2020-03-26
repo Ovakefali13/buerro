@@ -94,10 +94,6 @@ class TestWorkSession(unittest.TestCase):
         self.notification_handler = setup_notification_handler()
         self.scheduler = setup_scheduler()
 
-    @classmethod
-    def setUp(self):
-        usecase = WorkSession()
-
         if 'DONOTMOCK' in os.environ:
             self.cal_service = CalService.instance(
                 iCloudCaldavRemote.instance())
@@ -120,8 +116,7 @@ class TestWorkSession(unittest.TestCase):
 
         pref_service = PrefService(MockPrefRemote())
 
-        self.cal_service.purge()
-
+        usecase = WorkSession()
         usecase.set_services(
             pref_service=pref_service,
             cal_service=self.cal_service,
@@ -133,8 +128,12 @@ class TestWorkSession(unittest.TestCase):
         usecase.set_scheduler(self.scheduler)
         usecase.set_notification_handler(self.notification_handler)
 
-        usecase.reset()
         self.usecase = usecase
+
+    @classmethod
+    def setUp(self):
+        self.cal_service.purge()
+        self.usecase.reset()
 
     def uri_valid(self, x):
         try:

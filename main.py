@@ -18,14 +18,10 @@ hostName = "localhost"
 serverPort = 9150
 
 def schedule_usecases(scheduler):
-    scheduler.add_job(func=tick, trigger='interval', seconds=3)
     scheduler.add_job(func=Lunchbreak().trigger_proactive_usecase,
                       args=(),
                       trigger='interval',
                       hours=1)
-
-def tick():
-    print('Tick! The time is: %s' % datetime.now())
 
 if __name__ == '__main__':
     scheduler = BackgroundScheduler(timezone=utc)
