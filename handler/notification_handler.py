@@ -6,7 +6,6 @@ import os
 import pathlib
 
 from util import Singleton
-from handler import UsecaseStore
 
 class Notification(dict):
     def __init__(self, title):
@@ -82,46 +81,40 @@ class NotificationHandler(BaseNotificationHandler):
 
 
     def push(self, notification:Notification):
-        def _push(notification:Notification):
-            key_file="sec/vapid_private_key.pem"
-            if pathlib.Path(key_file).exists():
-                priv_key = key_file
-            else:
-                # snagged from pywebpush/test
-                priv_key = (
-                    "MHcCAQEEIPeN1iAipHbt8+/KZ2NIF8NeN24jqAmnMLFZEMocY8RboAoGCCqGSM49"
-                    "AwEHoUQDQgAEEJwJZq/GN8jJbo1GGpyU70hmP2hbWAUpQFKDByKB81yldJ9GTklB"
-                    "M5xqEwuPM7VuQcyiLDhvovthPIXx+gsQRQ=="
-                )
-
-            subscription = self.get_subscription()
-            if not subscription:
-                raise Exception("No user subscribed to notifications.")
-            try:
-                print(f"pushing to {subscription['endpoint']}")
-                webpush(
-                    subscription_info=subscription,
-                    data=json.dumps(notification),
-                    vapid_private_key=priv_key,
-                    vapid_claims={
-                            "sub": "mailto:buerro@icloud.com"
-                        }
-                )
-            except WebPushException as ex:
-                print("Failed to push notification: {}", repr(ex))
-
-                if ex.response and ex.response.json():
-                    extra = ex.response.json()
-                    print("Remote service replied with a {}:{}, {}",
-                          extra.code,
-                          extra.errno,
-                          extra.message
-                    )
-        store = UsecaseStore.instance()
-        if store.get_running() is not None:
-            store.register_fin_callback(_push, notification)
+        key_file="sec/vapid_private_key.pem"
+        if pathlib.Path(key_file).exists():
+            priv_key = key_file
         else:
-            _push(notification)
+            # snagged from pywebpush/test
+            priv_key = (
+                "MHcCAQEEIPeN1iAipHbt8+/KZ2NIF8NeN24jqAmnMLFZEMocY8RboAoGCCqGSM49"
+                "AwEHoUQDQgAEEJwJZq/GN8jJbo1GGpyU70hmP2hbWAUpQFKDByKB81yldJ9GTklB"
+                "M5xqEwuPM7VuQcyiLDhvovthPIXx+gsQRQ=="
+            )
+
+        subscription = self.get_subscription()
+        if not subscription:
+            raise Exception("No user subscribed to notifications.")
+        try:
+            print(f"pushing to {subscription['endpoint']}")
+            webpush(
+                subscription_info=subscription,
+                data=json.dumps(notification),
+                vapid_private_key=priv_key,
+                vapid_claims={
+                        "sub": "mailto:buerro@icloud.com"
+                    }
+            )
+        except WebPushException as ex:
+            print("Failed to push notification: {}", repr(ex))
+
+            if ex.response and ex.response.json():
+                extra = ex.response.json()
+                print("Remote service replied with a {}:{}, {}",
+                      extra.code,
+                      extra.errno,
+                      extra.message
+                )
 
 if __name__ == "__main__":
     os.environ['PRODUCTION'] = '1'

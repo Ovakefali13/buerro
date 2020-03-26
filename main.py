@@ -10,47 +10,53 @@ from pytz import utc
 from usecase import Lunchbreak
 from handler import UsecaseStore
 
-hostName = "localhost"
-serverPort = 9150
+HOST_NAME = "localhost"
+SERVER_PORT = 9150
 
-if __name__ == '__main__':
+class Main:
 
-    def block_trigger(usecase, func, *args, **kwargs):
-        running_usecase = store.get_running()
+    def __init__(self):
+        self.store = UsecaseStore.instance()
+
+        self.scheduler = BackgroundScheduler(timezone=utc)
+        self.schedule_usecases()
+
+        self.chatbot = Chatbot(BuerroBot())
+
+        Controller = ControllerFromArgs(self.scheduler, self.chatbot)
+        self.httpd = HTTPServer((HOST_NAME, SERVER_PORT),
+            Controller)
+
+    def block_trigger(self, usecase, func, *args, **kwargs):
+        running_usecase = self.store.get_running()
         if running_usecase:
             if not running_usecase == usecase:
-                store.register_fin_callback(func, *args, **kwargs)
+                self.store.register_fin_callback(func, *args, **kwargs)
         else:
             func(*args, **kwargs)
 
-    def schedule_usecases():
-        lunchbreak = UsecaseStore.instance().get(Lunchbreak)
+    def schedule_usecases(self):
+        lunchbreak = self.store.get(Lunchbreak)
         lunchbreak.set_default_services()
-        scheduler.add_job(func=block_trigger,
+        self.scheduler.add_job(func=self.block_trigger,
                           args=(lunchbreak, lunchbreak.trigger_proactive_usecase,),
                           kwargs={},
                           trigger='interval',
                           hours=1)
 
-    store = UsecaseStore.instance()
+    def start(self):
+        try:
+            self.scheduler.start()
 
-    scheduler = BackgroundScheduler(timezone=utc)
-    schedule_usecases()
-    scheduler.start()
+            print("serving at port", SERVER_PORT)
+            self.httpd.serve_forever()
 
-    try:
+            print('Press Ctrl+{0} to exit'.format('Break' if os.name == 'nt' else 'C'))
 
-        chatbot = Chatbot(BuerroBot())
+        except (KeyboardInterrupt, SystemExit):
+            self.scheduler.shutdown()
+            httpd.shutdown()
 
-        Controller = ControllerFromArgs(scheduler, chatbot)
-        httpd = HTTPServer((hostName, serverPort),
-            Controller)
-        print("serving at port", serverPort)
-        httpd.serve_forever()
-
-        print('Press Ctrl+{0} to exit'.format('Break' if os.name == 'nt' else 'C'))
-
-    except (KeyboardInterrupt, SystemExit):
-        scheduler.shutdown()
-        httpd.shutdown()
-
+if __name__ == '__main__':
+    main = Main()
+    main.start()
