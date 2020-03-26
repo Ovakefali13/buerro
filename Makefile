@@ -54,3 +54,8 @@ backend:
 .PHONY: frontend
 frontend:
 	cd frontend && npm start
+
+.PHONY: set_buerro_path
+set_buerro_path:
+	cd $(shell $(PYTHON) -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())") && \
+	echo $(ROOT_DIR) > buerro.pth
