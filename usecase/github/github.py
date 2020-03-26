@@ -16,6 +16,7 @@ class Github(Usecase):
     user_asked = False
     seen_notifications = []
     finished = False
+    state = 0
 
     def __init__(self):
         self.pref_service = PrefService(PrefJSONRemote())
@@ -38,12 +39,27 @@ class Github(Usecase):
             raise Exception("Set services!")
         message = message.lower()
         if self.issue:
-            if "todo" in message:
-                return Reply({'message': "I will add the issue to your todos."})
-            if "cal" in message:
-                return Reply({'message': "Let me find a free time slot in your calendar."})
-            if "ignore" in message or "nothing" in message:
-                return Reply({'message': "Okay I will ignore the issue."})
+            if self.state == 0:
+                if "todo" in message:
+                    return Reply({'message': "I will add the issue to your todos."})
+                if "cal" in message:
+                    time_slot = self.find_available_time_slot()
+                    if time_slot:
+                        self.state = 1
+                        return Reply({'message': "I have found time in your calendar at " + str(time_slot['start']) + ". Would you like to work on the issue at that time?"})
+                    else:
+                        return Reply({'message': "Sadly I could not find a free time slot in your calendar :/"})
+                if "ignore" in message or "nothing" in message:
+                    return Reply({'message': "Okay I will ignore the issue."})
+            if self.state == 1:
+                if "yes" in message:
+                    self.state = 0
+                    issue = False
+                    return Reply({'message': "Okay I will set an event in your calendar at that time :)"})
+                if "no" in message:
+                    self.state = 0
+                    issue = False
+                    return Reply({'message': "Okay I maybe you want to look for a time yourself :)"})
         else:
             pass
     

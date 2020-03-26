@@ -62,7 +62,7 @@ class TestGithub(unittest.TestCase):
             reply = self.use_case.advance("Put the issue on my todo list.")
             self.assertEqual(reply, {'message': "I will add the issue to your todos."})
             reply = self.use_case.advance("Find space in my calendar for it.")
-            self.assertEqual(reply, {'message': "Let me find a free time slot in your calendar."})
+            self.assertTrue("calendar" in reply['message'])
         else:
             self.assertTrue(True)
     
