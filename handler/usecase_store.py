@@ -41,6 +41,8 @@ class UsecaseStore:
             args = arg_dict['args']
             kwargs = arg_dict['kwargs']
             fun(*args, **kwargs)
+            if self.running:
+                break
 
     def register_fin_callback(self, fun, *args, **kwargs):
         arg_dict = {
