@@ -1,18 +1,32 @@
 ROOT_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
-PYTHON ?= $(ROOT_DIR)/venv/bin/python3.7
+PY_VERSION ?= 3.7
+PYTHON ?= $(ROOT_DIR)/venv/bin/python$(PY_VERSION)
 #MODULE=controller
 
 ifdef MODULE
     ARGS := --module $(MODULE)
 endif
 
+PIP ?= $(ROOT_DIR)/venv/bin/pip
+ifdef TRAVIS
+    PIP = pip
+endif
+
 default: mock 
 integration: mock no_mock frontend_test
+test: mock frontend_test
 
 .PHONY: install
-install:
-	pip install -r requirements.txt
+install: venv/
+	$(PIP) install -r requirements.txt
 	cd frontend && npm install
+
+ifdef TRAVIS
+venv/:
+else
+venv/:
+	virtualenv -p $(PY_VERSION) venv
+endif
 
 .PHONY: mock no_mock frontend_test
 mock:
@@ -33,7 +47,7 @@ sec:
 	mkdir $@
         
 vapid/python/venv/bin/vapid: vapid/python
-	cd vapid/python && virtualenv -p 3.7 venv && \
+	cd vapid/python && virtualenv -p $(PY_VERSION) venv && \
             venv/bin/pip install -r requirements.txt && \
             venv/bin/python setup.py install
 
@@ -49,10 +63,11 @@ cert:
 
 .PHONY: backend
 backend:
-	$(PYTHON) main.py
+	PRODUCTION=1 $(PYTHON) main.py
 
 .PHONY: frontend
 frontend:
+	PRODUCTION=1 cd frontend && npm start
 	cd frontend && npm start
 
 .PHONY: set_buerro_path

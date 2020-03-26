@@ -49,6 +49,19 @@ body {
     overflow: scroll;
 }
 
+.bubblecontainer {
+    border-collapse: collapse;
+}
+
+.bubblecontainer table, th, td {
+    border: 1px solid white;
+    padding: 8px;
+}
+
+.bubblecontainer table tr:hover {
+    background-color: #ffffff3d;
+}
+
 .chat-input {
     height:8%;
     font-size:18px;

@@ -77,10 +77,6 @@ class TestLunchbreak(unittest.TestCase):
         google_link = self.lb.open_maps_route(self.dhbw, nearby_restaurants[1])
         self.assertIsInstance(google_link, str)
 
-    def test_notify(self):
-        is_active = self.lb.notify()
-        self.assertIsInstance(is_active, bool)
-
     def test_create_cal_event(self):
         nearby_restaurants, start, end, duration = self.lb.check_lunch_options(self.dhbw)
         google_link = self.lb.open_maps_route(self.dhbw, nearby_restaurants[1])
