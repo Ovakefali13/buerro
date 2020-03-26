@@ -6,6 +6,25 @@ required:
 
 - Python 3.7
 
+## Install
+
+```
+make install
+```
+
+## Test
+
+```
+make test
+```
+
+## Deploy
+
+```
+make frontend &
+make backend
+```
+
 ## Git Workflow
 
 We use Feature Branches. Refer to [`doc/git_workflow.md`](doc/git_workflow.md) for instructions and [attlasion.com](https://www.atlassian.com/git/tutorials/comparing-workflows/feature-branch-workflow) for a more in-depth explanation.
@@ -70,5 +89,5 @@ Use the target `make test` to discover tests within a module tracking coverage. 
 Insert this line anywhere in your code: this will add a breakpoint during unittest execution.
 
 ```py
-from nose.tools import set_trace; set_trace()
+breakpoint()
 ```

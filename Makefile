@@ -6,13 +6,22 @@ ifdef MODULE
     ARGS := --module $(MODULE)
 endif
 
+PIP ?= $(ROOT_DIR)/venv/bin/pip
+ifdef TRAVIS
+    PIP = pip
+endif
+
 default: mock 
 integration: mock no_mock frontend_test
+test: mock frontend_test
 
 .PHONY: install
-install:
-	pip install -r requirements.txt
+install: venv/
+	$(PIP) install -r requirements.txt
 	cd frontend && npm install
+
+venv/:
+	virtualenv -p python3.7 venv
 
 .PHONY: mock no_mock frontend_test
 mock:
