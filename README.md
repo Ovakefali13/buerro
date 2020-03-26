@@ -2,9 +2,7 @@
 
 This is a super cool PDA from super cool people.
 
-required:
-
-- Python 3.7
+Best deployed using the [Docker buerro *wrap*per](https://github.com/mariushegele/buerro_docker).
 
 ## Install
 
