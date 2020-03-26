@@ -1,5 +1,6 @@
 ROOT_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
-PYTHON ?= $(ROOT_DIR)/venv/bin/python3.7
+PY_VERSION ?= 3.7
+PYTHON ?= $(ROOT_DIR)/venv/bin/python$(PY_VERSION)
 #MODULE=controller
 
 ifdef MODULE
@@ -21,7 +22,7 @@ install: venv/
 	cd frontend && npm install
 
 venv/:
-	virtualenv -p python3.7 venv
+	virtualenv -p $(PY_VERSION) venv
 
 .PHONY: mock no_mock frontend_test
 mock:
@@ -42,7 +43,7 @@ sec:
 	mkdir $@
         
 vapid/python/venv/bin/vapid: vapid/python
-	cd vapid/python && virtualenv -p 3.7 venv && \
+	cd vapid/python && virtualenv -p $(PY_VERSION) venv && \
             venv/bin/pip install -r requirements.txt && \
             venv/bin/python setup.py install
 
