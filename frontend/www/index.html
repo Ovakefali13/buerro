@@ -8,12 +8,19 @@
     <link rel="icon" type="image/png" sizes="16x16" href="ico/favicon-16x16.png">
     <link rel="manifest" href="ico/site.webmanifest">
 
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+   <!-- Latest compiled and minified CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+  <!-- Optional theme -->
+  <!--<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">-->
+
+  <!-- Latest compiled and minified JavaScript -->
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="style.css">
     <script src="js/jquery.min.js" type="text/javascript"></script>
-    <script src="main.js"></script>
-    <script src="stt.js"></script>
-    <script src="tts.js"></script>
+    <script type="text/javascript" src="js/main.js"></script>
+    <script type="text/javascript" src="stt.js"></script>
+    <script type="text/javascript" src="tts.js"></script>
   </head>
   <body>
     <div class="chatcontainer">
@@ -26,9 +33,9 @@
           </div>
           <input type=text id="prompt_input" class="form-control chat-input-field" aria-label="With textarea"></textarea>
           <input id="submit-btn" class="chat-send-button" type="submit">
-          <button onclick="record(event)" class="chat-record-btn">Record</button>
-          <button onclick="speak(event)" class="chat-say-btn">Say it!</button>
       </div>
+      <button onclick="record(event)" class="chat-record-btn"><span class="glyphicon glyphicon-record" aria-hidden="true"></span></button>
+      <button onclick="speak(event)" class="chat-say-btn"><span class="glyphicon glyphicon-volume-up" aria-hidden="true"></span></button>
     </div>
   </body>
 </html>
