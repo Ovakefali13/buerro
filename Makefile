@@ -21,8 +21,12 @@ install: venv/
 	$(PIP) install -r requirements.txt
 	cd frontend && npm install
 
+ifdef TRAVIS
+venv/:
+else
 venv/:
 	virtualenv -p $(PY_VERSION) venv
+endif
 
 .PHONY: mock no_mock frontend_test
 mock:
