@@ -15,7 +15,7 @@ from services.maps import GeocodingService, GeocodingJSONRemote, \
 from services.maps.test.test_service import GeocodingMockRemote, MapMockRemote
 from services.cal.cal_service import CalService, iCloudCaldavRemote, Event
 from services.cal.test.test_service import CalMockRemote
-from handler import LocationHandler
+from handler import LocationHandler, NotificationHandler
 
 class TestLunchbreak(unittest.TestCase):
 
@@ -75,3 +75,18 @@ class TestLunchbreak(unittest.TestCase):
         location_mock.return_value = (48.76533759999999, 9.161932799999999)
         is_active = self.lb.hours_until_lunch()
         self.assertIsInstance(is_active, bool)
+
+
+    @patch.object(NotificationHandler.instance(), 'push')
+    @patch.object(LocationHandler.instance(), 'get')
+    def test_trigger_proactive_usecase(self, location_mock, mock_push):
+        location_mock.return_value = 48.76533759999999, 9.161932799999999
+        is_triggered = self.lb.trigger_proactive_usecase()
+        self.assertIsInstance(is_triggered, bool)
+        if (is_triggered):
+            message = self.lb.advance("I would like to eat at restaurant number one")
+            self.assertIsInstance(message, dict)
+            self.assertIsInstance(message['message'], str)
+            self.assertTrue(self.lb.is_finished())
+            mock_push.assert_called_once()
+

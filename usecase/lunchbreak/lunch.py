@@ -199,7 +199,8 @@ class Lunchbreak(Usecase):
 
     def get_location(self):
         lh = LocationHandler.instance()
-        return lh.get()
+        lat, lon = lh.get()
+        return lat, lon
 
 
     def prepare_restaurants_for_transmission(self, restaurants):
