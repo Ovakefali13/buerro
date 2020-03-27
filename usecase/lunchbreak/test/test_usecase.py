@@ -71,17 +71,6 @@ class TestLunchbreak(unittest.TestCase):
         self.assertTrue(self.lb.is_finished())
 
     @patch.object(LocationHandler.instance(), 'get')
-    def test_trigger_proactive_usecase(self, location_mock):
-        location_mock.return_value = (48.76533759999999, 9.161932799999999)
-        is_triggered = self.lb.trigger_proactive_usecase()
-        self.assertIsInstance(is_triggered, bool)
-        if(is_triggered):
-            message = self.lb.advance("I would like to eat at restaurant number one")
-            self.assertIsInstance(message, dict)
-            self.assertIsInstance(message['message'], str)
-            self.assertTrue(self.lb.is_finished())
-
-    @patch.object(LocationHandler.instance(), 'get')
     def test_notify(self, location_mock):
         location_mock.return_value = (48.76533759999999, 9.161932799999999)
         is_active = self.lb.hours_until_lunch()
