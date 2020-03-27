@@ -7,7 +7,8 @@ from services import WeatherAdapter, YelpService, GeocodingService, \
 from services.cal import Event
 from services.yelp.yelp_request import YelpRequest
 
-from handler import Notification, NotificationHandler, LocationHandler
+from handler import Notification, NotificationHandler, LocationHandler, \
+    UsecaseStore
 from usecase.usecase import Usecase, Reply
 
 class Lunchbreak(Usecase):
@@ -28,28 +29,46 @@ class Lunchbreak(Usecase):
         self.map_service = map_service
         self.calendar_service = calendar_service
 
+    def set_default_services(self):
+        self.weather_adapter = WeatherAdapter.instance()
+        self.yelp_service = YelpService.instance()
+        self.geocoding_service = GeocodingService.instance()
+        self.map_service = MapService.instance()
+        self.calendar_service = CalService.instance()
+
     def advance(self, message):
-        if not self.weather_adapter:
+        if not hasattr(self, 'weather_adapter'):
             raise Exception("Set Services!")
 
         lat, lon = self.get_location()
-        if not self.restaurants:
-            restaurants, start, end, duration = self.check_lunch_options((lat, lon))
+        if not hasattr(self, 'restaurants') or not self.restaurants or message == 'proactive':
+            if not hasattr(self, 'restaurants') or not self.restaurants:
+                self.check_lunch_options((lat, lon))
 
-            return_message = f"Your lunch starts at {start}. You have {duration} minutes until your next event starts. " \
-                f"I looked up the best five restaurants near you. Where would you like to eat for lunch?"
+            if len(self.restaurants) == 0:
+                return Reply("No restaurants found in your area.")
 
-            return_dict = self.prepare_restaurants_for_transmission(restaurants)
+            return_message = (f"Your lunch starts at {self.lunch_start}. "
+                            f"You have {self.duration} minutes until your next event starts. "
+                            f"I looked up the best five restaurants near you. "
+                            "Where would you like to eat for lunch?")
+
+            return_dict = self.prepare_restaurants_for_transmission(self.restaurants)
             return Reply({'message': return_message, 'dict': return_dict})
         else:
-            choice = self.evaluate_user_request(message)
-            link = self.open_maps_route((lat, lon), self.restaurants[choice])
-            self.create_cal_event(self.start, self.end, self.restaurants[choice], link)
+            choice = self.evaluate_user_request(message, self.restaurants)
+            if choice is None:
+                return Reply(("I could not match your answer to any restaurant. "
+                              "Please try again."))
 
-            #Reset if usecases are singletions
+            link = self.open_maps_route((lat, lon), self.restaurants[choice])
+            self.create_cal_event(self.lunch_start, self.lunch_end, self.restaurants[choice], link)
+
+            # Reset
             self.restaurants = self.start = self.end = None
             self.lunch_set = datetime.now(pytz.utc)
-            return {'message': link}
+            return Reply({'message': "With this link you can navigate there: ",
+                        'link': link})
 
     def is_finished(self):
         return (not self.restaurants)
@@ -65,11 +84,8 @@ class Lunchbreak(Usecase):
 
         hours_until_lunch = self.time_diff_in_hours(self.lunch_start, datetime.now(pytz.utc))
 
-        (lat, lon) = location
-        city = self.geocoding_service.get_city_from_coords([lat, lon])
-
         ### Check Weather ###
-        self.weather_adapter.update(city)
+        self.weather_adapter.update(coordinates=location)
         will_be_bad_weather = self.weather_adapter.will_be_bad_weather(hours_until_lunch)
 
         search_params = YelpRequest()
@@ -78,10 +94,9 @@ class Lunchbreak(Usecase):
         search_params.set_radius(self.duration, will_be_bad_weather)
 
         self.restaurants = self.yelp_service.get_short_information_of_restaurants(search_params)
-        #for x in restaurants:
-        #    print(x['name'])
         return self.restaurants, self.lunch_start, self.lunch_end, self.duration
 
+        return self.restaurants, self.lunch_start, self.lunch_end, self.duration
 
     def open_maps_route(self, location, restaurant):
         coords_dest = restaurant['coordinates']
@@ -98,25 +113,33 @@ class Lunchbreak(Usecase):
         self.calendar_service.add_event(lunch)
         return lunch
 
-    def evaluate_user_request(self, data, restaurants):
-        ### Wait for user decision ###
-        seletedRestaurant = -1
-        options = [{"One": 1}, {"Two": 2}, {"Three": 3}, {"Four": 4}, {"Five" : 5}]
-        for opts in options:
-            match = re.search(str(list(opts.keys())[0]) , data, re.IGNORECASE)
-            if(match):
-                seletedRestaurant = int(list(opts.values())[0])
-        if(seletedRestaurant == -1):
-            print("Retry")
+    def evaluate_user_request(self, message, restaurants):
+        selectedRestaurant = -1
+        try:
+            selectedRestaurant = int(message)
+            if selectedRestaurant > 5: selectedRestaurant = 5
+        except:
+            pass # no number
 
+            options = {"One": 1, "Two": 2, "Three": 3, "Four": 4, "Five" : 5}
+            for word, num in options.items():
+                match = re.search(word, message, re.IGNORECASE)
+                if(match):
+                    selectedRestaurant = num
+
+        if selectedRestaurant == -1:
             # Try names
             r_names = self.prepare_restaurants_for_transmission(restaurants)
-            for opts in r_names:
-                match = re.search(str(list(opts.values())[0]), data, re.IGNORECASE)
+            for num, r_name in r_names.items():
+                match = re.search(r_name, message, re.IGNORECASE)
                 if (match):
-                    seletedRestaurant = int(list(opts.keys())[0])
-        else:
-            return (seletedRestaurant-1)
+                    selectedRestaurant = num
+                else:
+                    # no restaurant found...
+                    return None
+
+
+        return (selectedRestaurant-1)
 
     def time_diff_in_hours(self, date1, date2):
         time_until_lunch = date1 - date2
@@ -129,7 +152,7 @@ class Lunchbreak(Usecase):
         time, before, after = self.calendar_service.get_max_available_time_between(search_start, search_end)
         return int((time.total_seconds() / 60)), before, after
 
-    def notify(self):
+    def hours_until_lunch(self):
         start = datetime.now(pytz.utc).replace(hour=10, minute=0, second=0, microsecond=0)
         end = datetime.now(pytz.utc).replace(hour=15, minute=0, second=0, microsecond=0)
         duration, lunch_start, lunch_end = self.find_longest_timeslot_between_hours(start, end)
@@ -137,14 +160,10 @@ class Lunchbreak(Usecase):
         lunch_timestamp = datetime.timestamp(lunch_start)
 
         hours_until_lunch = self.time_diff_in_hours(lunch_start, datetime.now(pytz.utc))
-        if(hours_until_lunch < 3):
-            return True
-        else:
-            return False
 
-    def create_proactive_notification(self):
+    def create_proactive_notification(self, message):
         notification = Notification('Where would you like to have lunch?')
-        notification.add_message('Check out the best restaurant nearby for lunch. Just open the Buerro PDA!')
+        notification.add_message(message)
         notification.set_body('Check out the best restaurant nearby for lunch. Just open the Buerro PDA!')
         notification_handler = NotificationHandler.instance()
         notification_handler.push(notification)
@@ -152,10 +171,12 @@ class Lunchbreak(Usecase):
     def trigger_proactive_usecase(self):
         print("Check Lunchbreak Proactive")
         self.check_reset_usecase()
-        if(self.lunch_set):
-            if(self.notify()):
-                self.create_proactive_notification()
-                self.advance({'message': 'proactive'})
+        if not self.lunch_set and self.hours_until_lunch() < 3:
+            reply = self.advance('proactive')
+            if 'No restaurants found' in reply.message:
+                return
+            self.create_proactive_notification(reply.to_html())
+            UsecaseStore.instance().set_running(self)
 
 
     def get_location(self):
@@ -166,7 +187,8 @@ class Lunchbreak(Usecase):
     def prepare_restaurants_for_transmission(self, restaurants):
         return_dict = {}
         for r in range(1,5):
-            return_dict[r]:restaurants[r]['name']
+            if r <= len(restaurants):
+                return_dict[r] = restaurants[r]['name']
         return return_dict
 
 
