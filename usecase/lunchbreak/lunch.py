@@ -32,9 +32,9 @@ class Lunchbreak(Usecase):
         if not self.weather_adapter:
             raise Exception("Set Services!")
 
-        lat, lon = self.get_location()
+        coords = self.get_location()
         if not self.restaurants:
-            restaurants, start, end, duration = self.check_lunch_options((lat, lon))
+            restaurants, start, end, duration = self.check_lunch_options(coords)
 
             return_message = f"Your lunch starts at {start}. You have {duration} minutes until your next event starts. " \
                 f"I looked up the best five restaurants near you. Where would you like to eat for lunch?"
@@ -43,7 +43,7 @@ class Lunchbreak(Usecase):
             return Reply({'message': return_message, 'dict': return_dict})
         else:
             choice = self.evaluate_user_request(message)
-            link = self.open_maps_route((lat, lon), self.restaurants[choice])
+            link = self.open_maps_route(coords, self.restaurants[choice])
             self.create_cal_event(self.start, self.end, self.restaurants[choice], link)
 
             #Reset if usecases are singletions
@@ -65,8 +65,7 @@ class Lunchbreak(Usecase):
 
         hours_until_lunch = self.time_diff_in_hours(self.lunch_start, datetime.now(pytz.utc))
 
-        (lat, lon) = location
-        city = self.geocoding_service.get_city_from_coords([lat, lon])
+        city = self.geocoding_service.get_city_from_coords(location)
 
         ### Check Weather ###
         self.weather_adapter.update(city)
@@ -85,7 +84,7 @@ class Lunchbreak(Usecase):
 
     def open_maps_route(self, location, restaurant):
         coords_dest = restaurant['coordinates']
-        link = self.map_service.get_route_link(location, coords_dest)
+        link = self.map_service.get_route_link(location, tuple(coords_dest))
         return link
 
     def create_cal_event(self, start, end, restaurant, link):
