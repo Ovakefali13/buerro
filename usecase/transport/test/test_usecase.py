@@ -44,11 +44,9 @@ class TestTransport(unittest.TestCase):
         self.use_case = Transport()
         self.use_case.set_services()
 
-    # This test only works correct when the weather is good
-    @freeze_time("2020-03-26 21:30:00")
-    def test_usecase(self):
-        self.use_case.transport_info['WeatherGood'] = True
-
+    @freeze_time('2020-03-26 21:30:00')
+    @patch.object(WeatherAdapter._decorated, 'is_bad_weather', return_value=False)
+    def test_usecase(self, is_bad_weather):
         with open(os.path.join(os.path.dirname(__file__), 'mock_data.json'), 'r') as f:
             mock_route = json.load(f)
 
