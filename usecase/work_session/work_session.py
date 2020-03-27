@@ -4,8 +4,7 @@ import re
 
 
 from services import TodoistService, VVSService, CalService, PrefService, MusicService
-from services.cal import Event
-from usecase import Usecase, Reply, StateMachine
+from usecase import Usecase, Reply, StateMachine, FinishedException
 #from usecase import TransportUsecase
 from handler import NotificationHandler
 
@@ -31,11 +30,19 @@ class WorkSession(Usecase):
         # TODO self.transport_usecase = None
 
         self.pref_service = pref_service
-        self.pref = pref_service.get_preferences('work_session')
+        self.pref = self.pref_service.get_preferences('work_session')
         self.cal_service = cal_service
         self.vvs_service = vvs_service
         self.todo_service = todo_service
         self.music_service = music_service
+
+    def set_default_services(self):
+        self.pref_service = PrefService()
+        self.pref = self.pref_service.get_preferences('work_session')
+        self.cal_service = CalService.instance()
+        self.vvs_service = VVSService.instance()
+        self.todo_service = TodoistService.instance()
+        self.music_service = MusicService.instance()
 
     def set_scheduler(self, scheduler):
         self.scheduler = scheduler
@@ -46,12 +53,17 @@ class WorkSession(Usecase):
         self.fsm.reset()
 
     def advance(self, message):
-        if not self.cal_service:
+        if not hasattr(self, 'cal_service'):
             raise Exception("Set Services!")
         if not isinstance(message, str) and message is not None:
             raise Exception("wrong data type for message passed: "
                     +str(type(message)))
-        return Reply(self.fsm.advance(message))
+        try:
+            reply = self.fsm.advance(message)
+        except FinishedException:
+            self.reset()
+            reply = self.fsm.advance(message)
+        return Reply(reply)
 
     def is_finished(self):
         return self.fsm.is_finished()
@@ -140,10 +152,10 @@ class WorkSession(Usecase):
                     msg += '\nWould you like to listen to music?'
 
                     return "music", msg
-            else:
-                msg = 'You have no upcoming events.'
-                msg += '\nWould you like to listen to music?'
-                return "music", msg
+
+            msg = 'You have no upcoming events.'
+            msg += '\nWould you like to listen to music?'
+            return "music", msg
 
         def music_trans(message):
             msg =""
@@ -155,8 +167,7 @@ class WorkSession(Usecase):
 
             msg += "\nWhich project do you want to work on?\n"
             self.projects = self.todo_service.get_project_names()
-            msg += str(self.projects)
-            reply = {**reply, 'message': msg}
+            reply = {**reply, 'message': msg, 'list': self.projects}
             return "todo", reply
 
         def todo_trans(message):
@@ -170,8 +181,12 @@ class WorkSession(Usecase):
                 return "todo", msg
 
             todos = self.todo_service.get_project_items(self.chosen_project)
-            reply = {'list': todos}
-            msg = f"Here are your Todo's for {self.chosen_project}."
+            if todos:
+                reply = {'list': todos}
+                msg = f"Here are your Todo's for {self.chosen_project}."
+            else:
+                reply = {}
+                msg = f"There are no Todo's for {self.chosen_project}."
             msg += "\nDo you want to start a pomodoro session?"
             return "pomodoro", {**reply, 'message': msg}
 
@@ -224,7 +239,7 @@ class WorkSession(Usecase):
             if self.expire_by:
                 period = self.expire_by - dt.now()
                 minutes, seconds = divmod(period.seconds, 60)
-                msg = (  "Timer running."
+                msg = (  "Timer running. "
                         f"I will notify you in {minutes}:{seconds}." )
                 return "wait_state", msg
             else:

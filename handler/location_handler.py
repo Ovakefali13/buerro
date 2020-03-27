@@ -7,7 +7,7 @@ from util import Singleton
 class LocationHandler:
 
     def __init__(self):
-        if 'DONOTMOCK' in os.environ:
+        if 'PRODUCTION' in os.environ:
             self.db = 'handler/buerro.db'
         else:
             self.db = 'handler/test.db'

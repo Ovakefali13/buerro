@@ -3,9 +3,9 @@ import sqlite3
 import json
 from abc import ABC, abstractmethod
 import os
+import pathlib
 
 from util import Singleton
-
 
 class Notification(dict):
     def __init__(self, title):
@@ -32,48 +32,75 @@ class BaseNotificationHandler(ABC):
 class NotificationHandler(BaseNotificationHandler):
 
     def __init__(self):
-        if 'DONOTMOCK' in os.environ:
+        if 'PRODUCTION' in os.environ:
             self.db = 'handler/buerro.db'
         else:
             self.db = 'handler/test.db'
 
-        self.schema = ('endpoint', 'p256dh', 'auth')
+        self.schema = ('user', 'endpoint', 'p256dh', 'auth')
 
     def save_subscription(self, subscription:dict):
+        # TODO determine user
+        user = 123456
+
         conn = sqlite3.connect(self.db)
         c = conn.cursor()
         c.execute('''CREATE TABLE IF NOT EXISTS subscription
-                        (endpoint text not null primary key,
+                        (user number not null primary key,
+                        endpoint text not null,
                         p256dh text,
                         auth text)''')
-        values = (subscription['endpoint'], subscription['keys']['p256dh'],
-            subscription['keys']['auth'])
-        c.execute('INSERT OR REPLACE INTO subscription VALUES (?,?,?)', values)
+        values = (user, subscription['endpoint'],
+            subscription['keys']['p256dh'], subscription['keys']['auth'])
+        c.execute('INSERT OR REPLACE INTO subscription VALUES (?,?,?,?)', values)
         conn.commit()
         conn.close()
 
     def get_subscription(self):
+        # TODO determine user
+        user = 123456
+
         conn = sqlite3.connect(self.db)
         c = conn.cursor()
-        c.execute('SELECT * from subscription')
-        row = c.fetchone()
-        subscription_info = dict(zip(self.schema, row))
-        subscription_info = {
-            'endpoint': subscription_info['endpoint'],
-            'keys': {
-                'p256dh': subscription_info['p256dh'],
-                'auth': subscription_info['auth']
+        try:
+            c.execute('SELECT * from subscription')
+            row = c.fetchone()
+            subscription_info = dict(zip(self.schema, row))
+            subscription_info = {
+                'endpoint': subscription_info['endpoint'],
+                'keys': {
+                    'p256dh': subscription_info['p256dh'],
+                    'auth': subscription_info['auth']
+                }
             }
-        }
-        conn.close()
+        except sqlite3.OperationalError as e:
+            subscription_info = None
+        finally:
+            conn.close()
         return subscription_info
 
+
     def push(self, notification:Notification):
+        key_file="sec/vapid_private_key.pem"
+        if pathlib.Path(key_file).exists():
+            priv_key = key_file
+        else:
+            # snagged from pywebpush/test
+            priv_key = (
+                "MHcCAQEEIPeN1iAipHbt8+/KZ2NIF8NeN24jqAmnMLFZEMocY8RboAoGCCqGSM49"
+                "AwEHoUQDQgAEEJwJZq/GN8jJbo1GGpyU70hmP2hbWAUpQFKDByKB81yldJ9GTklB"
+                "M5xqEwuPM7VuQcyiLDhvovthPIXx+gsQRQ=="
+            )
+
+        subscription = self.get_subscription()
+        if not subscription:
+            raise Exception("No user subscribed to notifications.")
         try:
+            print(f"pushing to {subscription['endpoint']}")
             webpush(
-                subscription_info=self.get_subscription(),
+                subscription_info=subscription,
                 data=json.dumps(notification),
-                vapid_private_key="sec/vapid_private_key.pem",
+                vapid_private_key=priv_key,
                 vapid_claims={
                         "sub": "mailto:buerro@icloud.com"
                     }
@@ -90,9 +117,10 @@ class NotificationHandler(BaseNotificationHandler):
                 )
 
 if __name__ == "__main__":
+    os.environ['PRODUCTION'] = '1'
     notification = Notification('Test Notification')
-    notification.set_body('Did you know? buerro is super cool.')
+    notification.set_body('You have a new message.')
     notification.add_message('''Hey it's me the PDA for your buerro.
         Should I order some Kaesspaetzle?''')
-    notification_handler = NotificationHandler.instance('handler/test.db')
+    notification_handler = NotificationHandler.instance()
     notification_handler.push(notification)

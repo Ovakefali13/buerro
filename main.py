@@ -7,44 +7,59 @@ import os
 from apscheduler.schedulers.background import BackgroundScheduler
 from pytz import utc
 
-from usecase import Lunchbreak, WorkSession
+from usecase import Lunchbreak
+from handler import UsecaseStore
 
-usecaseByContext = {
-    "lunch": Lunchbreak,
-    "work": WorkSession
-}
+HOST_NAME = "localhost"
+SERVER_PORT = 9150
 
-hostName = "localhost"
-serverPort = 9150
+if 'BACKEND_PORT' in os.environ:
+    SERVER_PORT = int(os.environ['BACKEND_PORT'])
 
-def schedule_usecases(scheduler):
-    scheduler.add_job(func=tick, trigger='interval', seconds=3)
-    scheduler.add_job(func=Lunchbreak().trigger_proactive_usecase,
-                      args=(),
-                      trigger='interval',
-                      hours=1)
+class Main:
 
-def tick():
-    print('Tick! The time is: %s' % datetime.now())
+    def __init__(self):
+        self.store = UsecaseStore.instance()
+
+        self.scheduler = BackgroundScheduler(timezone=utc)
+        self.schedule_usecases()
+
+        self.chatbot = Chatbot(BuerroBot())
+
+        Controller = ControllerFromArgs(self.scheduler, self.chatbot)
+        self.httpd = HTTPServer((HOST_NAME, SERVER_PORT),
+            Controller)
+
+    def block_trigger(self, usecase, func, *args, **kwargs):
+        running_usecase = self.store.get_running()
+        if running_usecase:
+            if not running_usecase == usecase:
+                self.store.register_fin_callback(func, *args, **kwargs)
+        else:
+            func(*args, **kwargs)
+
+    def schedule_usecases(self):
+        lunchbreak = self.store.get(Lunchbreak)
+        lunchbreak.set_default_services()
+        self.scheduler.add_job(func=self.block_trigger,
+                          args=(lunchbreak, lunchbreak.trigger_proactive_usecase,),
+                          kwargs={},
+                          trigger='interval',
+                          hours=1)
+
+    def start(self):
+        try:
+            self.scheduler.start()
+
+            print("Backend serving at port", SERVER_PORT)
+            self.httpd.serve_forever()
+
+            print('Press Ctrl+{0} to exit'.format('Break' if os.name == 'nt' else 'C'))
+
+        except (KeyboardInterrupt, SystemExit):
+            self.scheduler.shutdown()
+            httpd.shutdown()
 
 if __name__ == '__main__':
-    scheduler = BackgroundScheduler(timezone=utc)
-    schedule_usecases(scheduler)
-    scheduler.start()
-
-    try:
-
-        chatbot = Chatbot(BuerroBot())
-
-        Controller = ControllerFromArgs(scheduler, chatbot, usecaseByContext)
-        httpd = HTTPServer((hostName, serverPort),
-            Controller)
-        print("serving at port", serverPort)
-        httpd.serve_forever()
-
-        print('Press Ctrl+{0} to exit'.format('Break' if os.name == 'nt' else 'C'))
-
-    except (KeyboardInterrupt, SystemExit):
-        scheduler.shutdown()
-        httpd.shutdown()
-
+    main = Main()
+    main.start()

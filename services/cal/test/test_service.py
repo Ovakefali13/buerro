@@ -49,7 +49,6 @@ class TestCalService(unittest.TestCase):
             self.cal_service = CalService.instance(CalMockRemote.instance())
             print('Mocking Remote...')
 
-    @classmethod
     def setUp(self):
         self.cal_service.purge()
 

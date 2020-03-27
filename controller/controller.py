@@ -4,45 +4,22 @@ import sqlite3
 import re
 import json
 from apscheduler.schedulers.base import BaseScheduler
+import asyncio
 
 from chatbot import Chatbot
-from handler import NotificationHandler, LocationHandler
+from handler import NotificationHandler, LocationHandler, UsecaseStore
 from usecase import Usecase, Reply
-from util import Singleton
 
-@Singleton
-class UsecaseStore:
-    def __init__(self):
-        # TODO Multi-User: by User
-        self.usecase_instances = {}
 
-    def get(self, UsecaseCls):
-        if UsecaseCls not in self.usecase_instances:
-            usecase = UsecaseCls()
-            if hasattr(usecase, 'set_scheduler'):
-                if not self.scheduler:
-                    raise Exception("scheduler must be set")
-                usecase.set_scheduler(self.scheduler)
-            self.usecase_instances[UsecaseCls] = usecase
-        return self.usecase_instances[UsecaseCls]
-
-    def set_scheduler(self, scheduler):
-        self.scheduler = scheduler
-
-def ControllerFromArgs(scheduler:BaseScheduler, chatbot:Chatbot, usecase_by_context:dict):
+def ControllerFromArgs(scheduler:BaseScheduler, chatbot:Chatbot):
     class CustomController(BaseHTTPRequestHandler):
         def __init__(self, *args, **kwargs):
             self.scheduler = scheduler
             UsecaseStore.instance().set_scheduler(scheduler)
             self.chatbot = chatbot
-            self.usecase_by_context = usecase_by_context
 
             self.notification_handler = NotificationHandler.instance()
             self.location_handler = LocationHandler.instance()
-            for usecase in usecase_by_context.values():
-                if not issubclass(usecase, Usecase):
-                    raise Exception(f'Usecase {usecase} is not a sub-class of '
-                        +'Usecase')
 
             super(CustomController, self).__init__(*args, **kwargs)
 
@@ -72,13 +49,11 @@ def ControllerFromArgs(scheduler:BaseScheduler, chatbot:Chatbot, usecase_by_cont
                     'success': True,
                 }
                 if isinstance(message, str):
-                    answer = {
-                        **answer,
+                    answer['data'] = {
                         'message': message
                     }
                 elif isinstance(message, dict):
-                    answer = {
-                        **answer,
+                    answer['data'] = {
                         **message
                     }
                 elif message is None:
@@ -115,28 +90,30 @@ def ControllerFromArgs(scheduler:BaseScheduler, chatbot:Chatbot, usecase_by_cont
                 if msg == 'shutdown':
                     respond_succ('shutdown')
                 else:
-                    intent = self.chatbot.get_intent(msg)
+                    store = UsecaseStore.instance()
+                    usecase = store.get_running()
+                    if not usecase:
+                        UsecaseCls = self.chatbot.get_usecase(msg)
 
-                    UsecaseCls = self.usecase_by_context.get(intent, None)
-                    if not UsecaseCls:
-                        respond_error(500, f'no usecase detected for intent {intent}')
+                        if not UsecaseCls:
+                            respond_succ(("I did not understand that. \n"
+                                        "Try one of the following: ")) #TODO
+                            return
+
+                        usecase = store.get(UsecaseCls)
+
+                    reply = usecase.advance(msg)
+                    if usecase.is_finished():
+                        store.usecase_finished()
                     else:
-                        usecase = UsecaseStore.instance().get(UsecaseCls)
+                        store.set_running(usecase)
 
-                        reply = None
-                        try:
-                            reply = usecase.advance(msg)
-                        except FinishedException:
-                            # TODO store that info
-                            usecase.reset()
-                            reply = usecase.advance(msg)
+                    if not isinstance(reply, Reply):
+                        respond_error(500, 'usecase advance does not Reply')
+                        raise Exception(f"Usecase {usecase}'s advance does"
+                                        +" not return a Reply object")
 
-                        if not isinstance(reply, Reply):
-                            respond_error(500, 'usecase advance does not Reply')
-                            raise Exception(f"Usecase {usecase}'s advance does"
-                                            +" not return a Reply object")
-                        respond_succ(reply)
-
+                    respond_succ(reply.to_html())
                 del msg
 
             elif self.path == "/save-subscription":
@@ -155,10 +132,14 @@ def ControllerFromArgs(scheduler:BaseScheduler, chatbot:Chatbot, usecase_by_cont
                     lat, lon = tuple(body['location'])
                     self.location_handler.set(lat, lon)
                     respond_succ()
+
+                    del lat, lon
                 else:
                     respond_error(400, 'bad location request')
             else:
                 respond_error(404, 'Not Found')
+
+            del body
 
     return CustomController
 

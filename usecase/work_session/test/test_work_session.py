@@ -94,10 +94,6 @@ class TestWorkSession(unittest.TestCase):
         self.notification_handler = setup_notification_handler()
         self.scheduler = setup_scheduler()
 
-    @classmethod
-    def setUp(self):
-        usecase = WorkSession()
-
         if 'DONOTMOCK' in os.environ:
             self.cal_service = CalService.instance(
                 iCloudCaldavRemote.instance())
@@ -120,8 +116,7 @@ class TestWorkSession(unittest.TestCase):
 
         pref_service = PrefService(MockPrefRemote())
 
-        self.cal_service.purge()
-
+        usecase = WorkSession()
         usecase.set_services(
             pref_service=pref_service,
             cal_service=self.cal_service,
@@ -133,8 +128,12 @@ class TestWorkSession(unittest.TestCase):
         usecase.set_scheduler(self.scheduler)
         usecase.set_notification_handler(self.notification_handler)
 
-        usecase.reset()
         self.usecase = usecase
+
+    @classmethod
+    def setUp(self):
+        self.cal_service.purge()
+        self.usecase.reset()
 
     def uri_valid(self, x):
         try:
@@ -247,8 +246,6 @@ class TestWorkSession(unittest.TestCase):
                 if not pomodoro:
                     reply = uc.advance('no')
                     self.assertIn(states['fin_no_pom'], reply.message)
-                    self.assertTrue(uc.is_finished())
-
                 else:
                     uc._set_state('pomodoro')
                     for pomodoro_i in range(5):
@@ -312,11 +309,10 @@ class TestWorkSession(unittest.TestCase):
                     # finally no more pomodoros...
                     reply = uc.advance('no')
                     self.assertIn(states['fin_no_pom'], reply.message)
-                    self.assertTrue(uc.is_finished())
 
                 # starts over...
-                self.assertRaises(FinishedException, uc.advance, None)
-                uc.reset()
+                self.assertTrue(uc.is_finished())
+                # does not need to be reset 
                 reply = uc.advance(None)
                 self.assertIn(states['music'], reply.message)
 
