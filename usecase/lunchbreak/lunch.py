@@ -11,7 +11,7 @@ from handler import Notification, NotificationHandler, LocationHandler
 from usecase.usecase import Usecase, Reply
 
 class Lunchbreak(Usecase):
-    restraurants = None
+    restaurants = None
     start = None
     end = None
     lunch_set = None
@@ -34,15 +34,15 @@ class Lunchbreak(Usecase):
 
         lat, lon = self.get_location()
         if not self.restaurants:
-            restaurants, start, end, duration = self.check_lunch_options((lat, lon))
+            restaurants, self.start, self.end, duration = self.check_lunch_options((lat, lon))
 
-            return_message = f"Your lunch starts at {start}. You have {duration} minutes until your next event starts. " \
+            return_message = f"Your lunch starts at {self.start}. You have {duration} minutes until your next event starts. " \
                 f"I looked up the best five restaurants near you. Where would you like to eat for lunch?"
 
             return_dict = self.prepare_restaurants_for_transmission(restaurants)
             return Reply({'message': return_message, 'dict': return_dict})
         else:
-            choice = self.evaluate_user_request(message)
+            choice = self.evaluate_user_request(message, self.restaurants)
             link = self.open_maps_route((lat, lon), self.restaurants[choice])
             self.create_cal_event(self.start, self.end, self.restaurants[choice], link)
 
@@ -156,6 +156,8 @@ class Lunchbreak(Usecase):
             if(self.notify()):
                 self.create_proactive_notification()
                 self.advance({'message': 'proactive'})
+                return True
+        return False
 
 
     def get_location(self):
