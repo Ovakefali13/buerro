@@ -205,7 +205,10 @@ class Lunchbreak(Usecase):
 
     def prepare_restaurants_for_transmission(self, restaurants):
         return_dict = {}
-        for r in range(1,5):
+        length = len(restaurants)
+        if(length > 5):
+            length = 5
+        for r in range(1,length):
             if r <= len(restaurants):
                 return_dict[r] = restaurants[r]['name']
         return return_dict
