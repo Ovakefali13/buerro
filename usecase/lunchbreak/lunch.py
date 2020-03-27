@@ -43,6 +43,17 @@ class Lunchbreak(Usecase):
         lat, lon = self.get_location()
         if not self.restaurants:
             restaurants, self.start, self.end, duration = self.check_lunch_options((lat, lon))
+            if len(self.restaurants) == 0:
+                return Reply("No restaurants found in your area.")
+
+            return_message = (f"Your lunch starts at {self.lunch_start}. "
+                            f"You have {self.duration} minutes until your next event starts. "
+                            f"I looked up the best five restaurants near you. "
+                            "Where would you like to eat for lunch?")
+
+            return_dict = self.prepare_restaurants_for_transmission(self.restaurants)
+            return Reply({'message': return_message, 'dict': return_dict})
+
         if not hasattr(self, 'restaurants') or not self.restaurants or message == 'proactive':
             if not hasattr(self, 'restaurants') or not self.restaurants:
                 self.check_lunch_options((lat, lon))
