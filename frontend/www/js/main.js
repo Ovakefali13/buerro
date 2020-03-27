@@ -1,5 +1,3 @@
-BACKEND_HOST = "http://localhost:9150"
-
 swRegistration = null;
 
 /**
@@ -31,24 +29,13 @@ function subscribeUser() {
         )
     }
 
-    swRegistration.pushManager.subscribe(subscribeOptions)
-    .then(pushSubscription => {
-        console.log('Received PushSubscription: ', pushSubscription); 
-        try {
-            sendSubscriptionToBackEnd(pushSubscription);
-            console.log('Successfully sent subscription to backend');
-            isSubscribed = true;
-        } catch(err) {
-            console.error(err);
-            pushSubscription.unsubscribe();
-        }
-    });
+    return swRegistration.pushManager.subscribe(subscribeOptions);
 }
 
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', function() {
 
-        navigator.serviceWorker.register('/service-worker.js')
+        navigator.serviceWorker.register('/js/service-worker.js')
         .then((registration) => {
             console.log('ServiceWorker registration successful: ', registration);
             swRegistration = registration
@@ -56,13 +43,32 @@ if ('serviceWorker' in navigator) {
         }, err => {
             console.error(err);
         })
-        .then((subscription) => {
-            isSubscribed = !(subscription === null)
-            if(isSubscribed) {
+        .then((pushSubscription) => {
+            if(pushSubscription !== null) {
                 console.log('User is subscribed.');
+                sendSubscriptionToBackEnd(pushSubscription)
+                .then(() => { 
+                    console.log('Successfully sent pushSubscription to backend');
+                    isSubscribed = true
+                })
+                .catch((err) => {
+                    console.error('Failed to send subscription: ', err);
+                    pushSubscription.unsubscribe();
+                    isSubscribed = false;
+                });
             } else {
                 console.log('User is not subscribed.');
-                subscribeUser();
+                subscribeUser()
+                .then((pushSubscription) => sendSubscriptionToBackEnd(pushSubscription))
+                .then(() => { 
+                    console.log('Successfully sent pushSubscription to backend');
+                    isSubscribed = true
+                })
+                .catch((err) => {
+                    console.error('Failed to send subscription: ', err);
+                    pushSubscription.unsubscribe();
+                    isSubscribed = false;
+                });
             }
         }, err => {
             console.error(err);
@@ -71,9 +77,8 @@ if ('serviceWorker' in navigator) {
 
 }
 
-
 function sendSubscriptionToBackEnd(subscription) {
-  return fetch(BACKEND_HOST+'/save-subscription', {
+  return fetch('/api/save-subscription', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -89,21 +94,20 @@ function sendSubscriptionToBackEnd(subscription) {
     return response.json();
   })
   .then(function(responseData) {
-    if (!(responseData.data && responseData.data.success)) {
+    if (!responseData.success) {
       throw new Error('Bad response from server.');
     }
   });
 }
 
-
 $(document).ready(function() {
-    var minutes = 1
+    sendCurrentLocation();
+    var minutes = 5
     setInterval(() => {
         sendCurrentLocation();
     }, 1000 * 60 * minutes)  
 
-    $(".bubblecontainer").append(generateChatBubble(true, "Hello its me the bot"));
-    $(".bubblecontainer").append(generateChatBubble(false, "Hello its me the user"));
+    putBotMessage("Hello, it's me, the PDA for your buerro. Ask me anything.")
 
     $("#prompt_input").keypress(function(e) {
         if(e.which == 13) {
@@ -127,11 +131,17 @@ $(document).ready(function() {
 })
 
 function putUserMessage(message) {
-    $(".bubblecontainer").append(generateChatBubble(false, message)); 
+    var container = $(".bubblecontainer")
+    container.append(generateChatBubble(false, message));
+
+    container[0].scrollTop = container[0].scrollHeight
 }
 
 function putBotMessage(message) {
-    $(".bubblecontainer").append(generateChatBubble(true, message));
+    var container = $(".bubblecontainer")
+    container.append(generateChatBubble(true, message));
+
+    container[0].scrollTop = container[0].scrollHeight
 }
 
 
@@ -139,7 +149,7 @@ function processUserPrompt(prompt) {
     //Send to backend with async promise or something
     putUserMessage(prompt);
     getCurrentLocation(location => {
-        return fetch(BACKEND_HOST+'/message', {
+        return fetch('/api/message', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
@@ -153,16 +163,18 @@ function processUserPrompt(prompt) {
             if (!response.ok) {
               console.error(response.json())
               throw new Error('Bad status code from server.');
+              putBotMessage("Server communication failed.");
             }
 
             return response.json();
         })
         .then(function(responseData) {
-            if (!(responseData.data && responseData.data.success)) {
+            if (!(responseData.success && responseData.data)) {
               throw new Error('Bad response from server.');
+              putBotMessage("Server communication failed.");
             }
 
-            putBotMessage(responseData.message);
+            putBotMessage(responseData.data.message);
         });
     });
 }
@@ -180,19 +192,32 @@ function getCurrentLocation(callback) {
     //Dummy one, which will result in a working next statement.
     navigator.geolocation.getCurrentPosition(function () {}, function () {}, {});
     navigator.geolocation.getCurrentPosition(pos => {
-        const { latitude: lat, longitute: lon } = pos.coords;
-        callback( [ lat, lon ] );
+        if(typeof pos == 'undefined') {
+            callback(null, "could not determine geolocation")
+        }
+        console.log('succ', pos)
+        var lat = pos.coords.latitude;
+        var lon = pos.coords.longitude;
+        callback( [ lat, lon ], undefined );
     }, err => {
-        console.error(err);
-        callback( undefined );
-    }, {timeout: 5000});
+        callback( null, err );
+    },
+    {
+        timeout: 5000,
+        enableHighAccuracy: true
+    });
 }
             
 
 function sendCurrentLocation() {
     console.log('Sending...');
-    getCurrentLocation(location => {
-        return fetch(BACKEND_HOST+'/location', {
+    getCurrentLocation((location, err) => {
+        if(err) {
+            console.error(err)
+            return
+        }
+
+        return fetch('api/location', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
@@ -201,6 +226,7 @@ function sendCurrentLocation() {
                     'location': location 
                 })
             })
+
         .then(function(response) {
             if (!response.ok) {
               console.error(response.json())
@@ -210,7 +236,7 @@ function sendCurrentLocation() {
             return response.json();
         })
         .then(function(responseData) {
-            if (!(responseData.data && responseData.data.success)) {
+            if (!(responseData.success)) {
               throw new Error('Bad response from server.');
             }
         });

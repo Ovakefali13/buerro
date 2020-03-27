@@ -9,17 +9,8 @@ from util import Singleton
 from controller import ControllerFromArgs
 from chatbot import ChatbotBehavior, Chatbot
 from usecase import Usecase, Reply
-from handler import LocationHandler
+from handler import LocationHandler, UsecaseStore
 
-@Singleton
-class MockChatbotBehavior(ChatbotBehavior):
-
-    def get_context(self, message:str):
-        if message == "exception": return "mock_exc"
-        return "mock_work"
-
-    def clear_context(self):
-        pass
 
 class MockUsecase(Usecase):
     def __init__(self):
@@ -56,6 +47,9 @@ class MockUsecase(Usecase):
             return True
         return False
 
+    def set_default_services(self):
+        pass
+
 class QuicklyFinishedUsecase(Usecase):
     def __init__(self):
         self.count = 0
@@ -73,6 +67,20 @@ class QuicklyFinishedUsecase(Usecase):
     def is_finished(self):
         return self.count == 1
 
+    def set_default_services(self):
+        pass
+
+@Singleton
+class MockChatbotBehavior(ChatbotBehavior):
+
+    def get_usecase(self, message:str):
+        if message == "exception":
+            return QuicklyFinishedUsecase
+        return MockUsecase
+
+    def clear_context(self):
+        pass
+
 class TestController(unittest.TestCase):
     @classmethod
     def setUpClass(self):
@@ -81,11 +89,7 @@ class TestController(unittest.TestCase):
         self.server_url = "http://" + self.hostName + ":" + str(self.serverPort)
 
         MockController = ControllerFromArgs(scheduler=None,
-                chatbot=Chatbot(MockChatbotBehavior.instance()),
-                usecase_by_context={
-                    "mock_work": MockUsecase,
-                    "mock_exc": QuicklyFinishedUsecase
-                }
+                chatbot=Chatbot(MockChatbotBehavior.instance())
         )
 
         self.httpd = HTTPServer((self.hostName, self.serverPort),
@@ -106,13 +110,15 @@ class TestController(unittest.TestCase):
         if not self.ready_event.is_set():
             raise Exception("most likely failed to start server")
 
+        UsecaseStore.instance().purge()
+
     def test_can_step_through_usecase(self):
         def _query(message:str):
             body = {"message": message}
             res = requests.post(self.server_url + '/message', json=body)
             res = res.json()
             self.assertIsNotNone(res.get('success'))
-            return res.get('message', '')
+            return res.get('data').get('message', '')
 
         res = _query("exception")
         self.assertIn("already over", res)

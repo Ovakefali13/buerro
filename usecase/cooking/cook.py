@@ -35,9 +35,15 @@ class Cook(Usecase):
         self.calendar_service = calendar_service
         self.yelp_service = yelp_service
         self.spoonacle_service = spoonacle_service
-    
+
+    def set_default_services(self):
+        self.todoist_service = TodoistSerivce.instance()
+        self.calendar_service = CalService.instance()
+        self.yelp_service = YelpService.instance()
+        self.spoonacle_service = SpoonacularService.instance()
+
     def advance(self, message):
-        if not self.todoist_service:
+        if not hasattr(self, 'todoist_service'):
             raise Exception("Set services!")
         message = message.lower()
         if self.no_time:

@@ -84,6 +84,5 @@ class TestLunchbreak(unittest.TestCase):
     @patch.object(LocationHandler.instance(), 'get')
     def test_notify(self, location_mock):
         location_mock.return_value = (48.76533759999999, 9.161932799999999)
-        is_active = self.lb.notify()
+        is_active = self.lb.hours_until_lunch()
         self.assertIsInstance(is_active, bool)
-

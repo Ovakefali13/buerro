@@ -1,8 +1,11 @@
 from abc import ABC, abstractmethod
+import inspect
+from usecase import Usecase, \
+    Lunchbreak, WorkSession, Cook
 
 class ChatbotBehavior(ABC):
     @abstractmethod
-    def get_context(self, prompt):
+    def get_usecase(self, prompt):
         pass
 
     @abstractmethod
@@ -12,30 +15,40 @@ class ChatbotBehavior(ABC):
 class BuerroBot(ChatbotBehavior):
 
     context = None
-    keyword_dict = {
-        "bahn": {
-            "uni": "$$next_train_to_university"
-        },
-        "kalender": "$$next_calendar_event"
+    usecase_by_keyword = {
+        #"train": Transport,
+        "work session": WorkSession,
+        "lunch": Lunchbreak,
+        #"github": Github,
+        "cook": Cook
     }
 
-    def get_context(self, prompt):
+    def __init__(self):
+        for usecase in self.usecase_by_keyword.values():
+            if not issubclass(usecase, Usecase):
+                raise Exception(f'Usecase {usecase} is not a sub-class of '
+                    +'Usecase')
+
+    def get_usecase(self, prompt):
         if prompt == None or prompt == "":
-            return "$$undefined_behaviour"
+            return None
         prompt = prompt.lower()
-        response = self.parse_dic(self.keyword_dict, prompt)
-        if type(response) is str:
+        response = self.parse_dic(self.usecase_by_keyword, prompt)
+        if inspect.isclass(response) and issubclass(response, Usecase):
             return response
         else:
-            return "$$undefined_behaviour"
+            return None
 
     def parse_dic(self, dic, prompt):
-        for key in dic.keys():
+        for key, value in dic.items():
             if key in prompt:
-                if type(dic[key]) is str:
-                    return dic[key]
+                if inspect.isclass(value) and issubclass(value, Usecase):
+                    return value
+                elif isinstance(value, dict):
+                    return self.parse_dic(value, prompt)
                 else:
-                    return self.parse_dic(dic[key], prompt)
+                    raise Exception(("keyword to usecase dictionary "
+                                    f"contains an invalid type: {type(value)}"))
 
     def clear_context(self):
         context = None
@@ -46,5 +59,5 @@ class Chatbot:
     def __init__(self, behaviour):
         self.behaviour = behaviour
 
-    def get_context(self, prompt):
-        return self.behaviour.get_context(prompt)
+    def get_usecase(self, prompt):
+        return self.behaviour.get_usecase(prompt)
