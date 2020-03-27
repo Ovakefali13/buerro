@@ -2,7 +2,7 @@
 import unittest
 import os
 from datetime import datetime
-
+from unittest.mock import patch
 from usecase.lunchbreak import Lunchbreak
 
 from services.weatherAPI.weather_service import WeatherAdapter
@@ -15,7 +15,7 @@ from services.maps import GeocodingService, GeocodingJSONRemote, \
 from services.maps.test.test_service import GeocodingMockRemote, MapMockRemote
 from services.cal.cal_service import CalService, iCloudCaldavRemote, Event
 from services.cal.test.test_service import CalMockRemote
-
+from handler import LocationHandler
 
 class TestLunchbreak(unittest.TestCase):
 
@@ -58,7 +58,9 @@ class TestLunchbreak(unittest.TestCase):
             calendar_service=self.calendar_service
         )
 
-    def test_advance(self):
+    @patch.object(LocationHandler.instance(), 'get')
+    def test_advance(self, location_mock):
+        location_mock.return_value = (42.102390, 9.1029312)
         message = self.lb.advance("Where can I eat for lunch?")
         self.assertIsInstance(message, dict)
         self.assertIsInstance(message['dict'], dict)
@@ -68,7 +70,9 @@ class TestLunchbreak(unittest.TestCase):
         self.assertIsInstance(message['message'], str)
         self.assertTrue(self.lb.is_finished())
 
-    def test_trigger_proactive_usecase(self):
+    @patch.object(LocationHandler.instance(), 'get')
+    def test_trigger_proactive_usecase(self, location_mock):
+        location_mock.return_value = (42.102390, 9.1029312)
         is_triggered = self.lb.trigger_proactive_usecase()
         self.assertIsInstance(is_triggered, bool)
         if(is_triggered):
@@ -77,6 +81,9 @@ class TestLunchbreak(unittest.TestCase):
             self.assertIsInstance(message['message'], str)
             self.assertTrue(self.lb.is_finished())
 
-    def test_notify(self):
+    @patch.object(LocationHandler.instance(), 'get')
+    def test_notify(self, location_mock):
+        location_mock.return_value = (42.102390, 9.1029312)
         is_active = self.lb.notify()
         self.assertIsInstance(is_active, bool)
+
