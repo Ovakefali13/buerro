@@ -22,7 +22,7 @@ class Transport(Usecase):
         'Car': None,
         'Walking': None,
         'VVS': None,
-        'WeatherGood': None,
+        'WeatherBad': None,
         }
     transport_recommendation = {
         'Favorite': None,
@@ -50,7 +50,7 @@ class Transport(Usecase):
         self.pref = pref_service.get_preferences('transport')
 
 
-    def get_transport_mode(self, start:list, dest:list, arr_dep:str='Dep', time:datetime=datetime.now()):
+    def get_transport_mode(self, start:tuple, dest:tuple, arr_dep:str='Dep', time:datetime=datetime.now()):
         self.req_info['Start'] = start
         self.req_info['Dest'] = dest
         self.req_info['ArrDep'] = arr_dep
@@ -88,7 +88,7 @@ class Transport(Usecase):
         special_locations = ['home', 'work', 'mainstation', 'university']
 
         def get_special_location(location:str):
-            return self.pref.get(location + '_coords')
+            return tuple(self.pref.get(location + '_coords'))
 
         def get_datetime(time:str):
             strings = time.split()
@@ -110,8 +110,7 @@ class Transport(Usecase):
 
         def get_location():
             lh = LocationHandler.instance()     
-            location = lh.get()       
-            return [location[1], location[0]]
+            return lh.get()
 
         """ Regex tested with
         I want to go from Stuttgart to Frankfurt and arrive at 4 p.m.
@@ -180,7 +179,7 @@ class Transport(Usecase):
         
         def weather_service(self):
             self.wea_service.update(self.geo_service.get_city_from_coords(start_coords))            
-            self.transport_info['WeatherGood'] = self.wea_service.is_bad_weather()
+            self.transport_info['WeatherBad'] = self.wea_service.is_bad_weather()
 
 
         def map_service(self):
@@ -238,7 +237,7 @@ class Transport(Usecase):
             return Reply({'message': f'This route is not available.'})
 
         # Check if weather is good
-        if not self.transport_info.get('WeatherGood'):    
+        if self.transport_info.get('WeatherBad'):    
             if 'cycling' in viable:
                 viable.remove('cycling')
             if 'walking' in viable:            

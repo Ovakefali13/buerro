@@ -66,7 +66,7 @@ class Lunchbreak(Usecase):
         hours_until_lunch = self.time_diff_in_hours(self.lunch_start, datetime.now(pytz.utc))
 
         (lat, lon) = location
-        city = self.geocoding_service.get_city_from_coords([lat, lon])
+        city = self.geocoding_service.get_city_from_coords((lat, lon))
 
         ### Check Weather ###
         self.weather_adapter.update(city)
@@ -85,7 +85,7 @@ class Lunchbreak(Usecase):
 
     def open_maps_route(self, location, restaurant):
         coords_dest = restaurant['coordinates']
-        link = self.map_service.get_route_link(location, coords_dest)
+        link = self.map_service.get_route_link(location, tuple(coords_dest))
         return link
 
     def create_cal_event(self, start, end, restaurant, link):
