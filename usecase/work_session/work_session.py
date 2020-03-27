@@ -88,24 +88,34 @@ class WorkSession(Usecase):
                                 trigger='date', run_date=when,
                                 args=(reply, next_state))
 
+    def enough_time_for(self, delta:timedelta):
+        if hasattr(self, 'journey'):
+            leave_buffer = timedelta(minutes=self.pref['remind_min_before_leaving'])
+            get_going_by = (self.journey.dep_time - leave_buffer)
+            end = dt.now(pytz.utc) + delta
+            if end >= get_going_by:
+               return False
+            return True
+        return True
+
     def define_state_transitions(self):
         def find_whole_word(w):
             return re.compile(r'\b({0})\b'.format(w), flags=re.IGNORECASE).search
 
         def start_trans(message):
             def _event_too_close(event, journey=None):
-                msg = "Your next appointment is too close to start working: \n"
+                msg = "Your next appointment is too close to start working: <br>"
                 msg += event.summarize()
                 if journey:
-                    msg += "\nThe recommended journey: \n"
+                    msg += "<br>The recommended journey: <br>"
                     msg += str(journey)
                 next_state = "end_state"
                 return next_state, msg
 
             def _event_possibly_too_close(event):
-                msg = "Your next appointment might be too close to start working:\n"
+                msg = "Your next appointment might be too close to start working:<br>"
                 msg += event.summarize()
-                msg += "\nDo you still want to start working?"
+                msg += "<br>Do you still want to start working?"
                 return "end_state", msg
 
             next_events = self.cal_service.get_next_events()
@@ -142,20 +152,20 @@ class WorkSession(Usecase):
                     if minutes_until < min_work_period:
                         return _event_too_close(next_event, journey)
 
+                    self.journey = journey
                     journey_event = journey.to_event()
                     self.cal_service.add_event(journey_event)
 
-                    # TODO create notification
-                    msg = "I created a reminder for when you have to get going to reach:\n"
+                    msg = "I created a reminder for when you have to get going to reach:<br>"
                     msg += next_event.summarize()
-                    msg += "\n using this VVS journey:\n"
+                    msg += "<br> using this VVS journey:<br>"
                     msg += str(journey)
-                    msg += '\nWould you like to listen to music?'
+                    msg += '<br>Would you like to listen to music?'
 
                     return "music", msg
 
             msg = 'You have no upcoming events.'
-            msg += '\nWould you like to listen to music?'
+            msg += '<br>Would you like to listen to music?'
             return "music", msg
 
         def music_trans(message):
@@ -166,7 +176,7 @@ class WorkSession(Usecase):
                 msg += "How about this Spotify playlist?"
                 reply = {**reply, 'link': link}
 
-            msg += "\nWhich project do you want to work on?\n"
+            msg += "<br>Which project do you want to work on?<br>"
             self.projects = self.todo_service.get_project_names()
             reply = {**reply, 'message': msg, 'list': self.projects}
             return "todo", reply
@@ -188,7 +198,7 @@ class WorkSession(Usecase):
             else:
                 reply = {}
                 msg = f"There are no Todo's for {self.chosen_project}."
-            msg += "\nDo you want to start a pomodoro session?"
+            msg += "<br>Do you want to start a pomodoro session?"
             return "pomodoro", {**reply, 'message': msg}
 
         def pomodoro_trans(message):
@@ -197,10 +207,20 @@ class WorkSession(Usecase):
                 return "end_state", "I hope you'll have a productive session!"
             elif find_whole_word('yes')(message):
                 minutes = self.pref['pomodoro_minutes']
-                self.wait_until(when=dt.now(pytz.utc) + timedelta(minutes=minutes),
+                delta = timedelta(minutes=minutes)
+
+                if not self.enough_time_for(delta):
+                    msg =   ("Can't start another pomodoro. "
+                             "You should get going on your journey. <br>"
+                            )
+                    msg += str(self.journey)
+                    return "end_state", msg
+
+
+                self.wait_until(when=dt.now(pytz.utc) + delta,
                     next_state="break",
                     reply=Reply(("Good Work! You finished your session."
-                            "\nDo you want to take a break, skip it or finish?"))
+                            "<br>Do you want to take a break, skip it or finish?"))
                 )
                 return "wait_state", f"I will notify you in {minutes} minutes."
             else:
@@ -211,21 +231,21 @@ class WorkSession(Usecase):
         def break_trans(message):
             if message is None: message = ""
             if find_whole_word('skip')(message):
-                """
-                minutes = self.pref['pomodoro_minutes']
-                self.wait_until(when=dt.now() + timedelta(minutes=minutes),
-                    next_state="break",
-                    reply=Reply(("Good Work! You finished your session."
-                            "\nDo you want to take a break, skip it or finish?"))
-                )
-                return "wait_state", f"I will notify you in {minutes} minutes."
-                """
                 return "pomodoro", f"Do you want to start another pomodoro?"
             elif find_whole_word('finish')(message):
                 return "end_state", "Okay let's finish up. See you."
             elif find_whole_word('break')(message):
                 minutes = self.pref['break_minutes']
-                self.wait_until(when=dt.now(pytz.utc) + timedelta(minutes=minutes),
+                delta = timedelta(minutes=minutes)
+
+                if not self.enough_time_for(delta):
+                    msg =   ("Can't start another break. "
+                             "You should get going on your journey. <br>"
+                            )
+                    msg += str(self.journey)
+                    return "end_state", msg
+
+                self.wait_until(when=dt.now(pytz.utc) + delta,
                     next_state="pomodoro",
                     reply=Reply(("Your break is over."
                                 " Do you want to get back to work?"))

@@ -64,9 +64,14 @@ class TestJourney(unittest.TestCase):
 
             self.assertEqual(filter_ical(exp_ev.to_ical()),
                 filter_ical(journey.to_event().to_ical()))
+
     def test_to_link(self):
         dep_time = dt(2020, 3, 16, 7, 7)
-        journey = Journey("de:08111:6056","de:08111:13", dep_time, None)
+        journey = Journey("Stadmitte","Hauptbahnhof", dep_time, None)
+
+        journey.origin_id = "de:08111:6056"
+        journey.dest_id = "de:08111:13"
+
         self.maxDiff = None
         expected = """https://www3.vvs.de/mng/#!/XSLT_TRIP_REQUEST2@details?
                         deeplink={
@@ -83,5 +88,6 @@ class TestJourney(unittest.TestCase):
                                 **dest**:**de:08111:13**
                             }
                         }"""
+
         expected = ''.join(expected.split())
         self.assertEqual(journey.to_link(), expected)

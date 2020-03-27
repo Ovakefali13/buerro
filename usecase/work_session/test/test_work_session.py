@@ -45,12 +45,15 @@ class MockVVSService:
             return 'de:08111:6056'
 
     def get_journeys_for_id(self, origin_id, dest_id, arr_dep:str, by:dt):
+        origin = "Stuttgart Hauptbahnhof"
+        dest = "Rotebühlplatz"
+
         return [
-            Journey(origin_id, dest_id,
+            Journey(origin, dest,
                 dep_time=by - timedelta(minutes=30),
                 arr_time=by - timedelta(minutes=15)
             ),
-            Journey(origin_id, dest_id,
+            Journey(origin, dest,
                 dep_time=by - timedelta(minutes=25),
                 arr_time=by - timedelta(minutes=10)
             )
@@ -87,7 +90,7 @@ class TestWorkSession(unittest.TestCase):
         'pom_start': "I will notify you in",
         'pom_block': "Timer running. I will notify you in",
         'pom_fin': ("Good Work! You finished your session."
-                    "\nDo you want to take a break, skip it or finish?"),
+                    "<br>Do you want to take a break, skip it or finish?"),
 
         'break_start': "I will notify you in",
         'break_block': "Timer running. I will notify you in",
@@ -225,6 +228,11 @@ class TestWorkSession(unittest.TestCase):
         events = self.cal_service.get_all_events()
         events = list(filter(lambda e: 'Hauptbahnhof' in e.get_title(), events))
         self.assertIsNotNone(events)
+        journey_event = events[0]
+        self.assertIn('From', journey_event.get_title())
+
+        can_work_until = (journey_event.get_start()
+            - timedelta(minutes=self.usecase.pref['remind_min_before_leaving']))
 
         # and advances correctly...
         self.assertIn(self.states['music'], reply.message)
@@ -239,16 +247,28 @@ class TestWorkSession(unittest.TestCase):
         self.assertIn(self.states['todos'], reply.message)
         self.assertIn(self.states['pomodoro'], reply.message)
 
-
         for pomodoro in (False, True):
             with self.subTest('Pomodoro? '+str(pomodoro)):
                 if not pomodoro:
                     reply = uc.advance('no')
                     self.assertIn(self.states['fin_no_pom'], reply.message)
+
+                    # starts over...
+                    self.assertTrue(uc.is_finished())
+                    # does not need to be reset 
+                    reply = uc.advance(None)
+                    self.assertIn(self.states['music'], reply.message)
                 else:
                     uc._set_state('pomodoro')
-                    for pomodoro_i in range(5):
+                    for pomodoro_i in range(100):
+
                         reply = uc.advance('yes')
+                        one_pomodoro = timedelta(minutes=25)
+                        if dt.now(pytz.utc) + one_pomodoro >= can_work_until:
+                            self.assertIn("You should get going", reply.message)
+                            self.assertTrue(uc.is_finished())
+                            break
+
                         self.assertIn(self.states['pom_start'], reply.message)
 
                         self.assertTrue(self.notification_queue.empty())
@@ -273,6 +293,13 @@ class TestWorkSession(unittest.TestCase):
                             with self.subTest(str(pomodoro_i)+' Break? '+str(take_break)):
                                 if take_break:
                                     reply = uc.advance('I want to take a break')
+
+                                    one_break = timedelta(minutes=5)
+                                    if dt.now(pytz.utc) + one_break >= can_work_until:
+                                        self.assertIn("You should get going", reply.message)
+                                        self.assertTrue(uc.is_finished())
+                                        break
+
                                     self.assertIn(self.states['break_start'], reply.message)
 
                                     self.assertTrue(self.notification_queue.empty())
@@ -307,16 +334,11 @@ class TestWorkSession(unittest.TestCase):
                         self.assertIn(self.states['pomodoro'], reply.message)
                         """
 
-                    # finally no more pomodoros...
-                    reply = uc.advance('no')
-                    self.assertIn(self.states['fin_no_pom'], reply.message)
-
-                # starts over...
-                self.assertTrue(uc.is_finished())
-                # does not need to be reset 
-                reply = uc.advance(None)
-                self.assertTrue(self.states['music'] in reply.message
-                    or "too close to start working" in reply.message)
+                    # starts over...
+                    self.assertTrue(uc.is_finished())
+                    # does not need to be reset 
+                    reply = uc.advance(None)
+                    self.assertIn("too close to start working", reply.message)
 
     def test_can_cancel_timer(self):
         uc = self.usecase
