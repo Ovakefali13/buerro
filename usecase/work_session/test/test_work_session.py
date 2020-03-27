@@ -5,6 +5,7 @@ import pytz
 from apscheduler.schedulers.background import BackgroundScheduler
 import os
 import queue
+from freezegun import freeze_time
 
 from .. import WorkSession
 from usecase import Usecase, Reply, FinishedException
@@ -28,8 +29,8 @@ class MockPrefRemote(PrefRemote):
                 "min_work_period_minutes": 30,
                 "be_minutes_early": 10,
                 "remind_min_before_leaving": 15,
-                "pomodoro_minutes": 0.1 / 60,
-                "break_minutes": 0.1 / 60
+                "pomodoro_minutes": 25,
+                "break_minutes": 5
             }
         }
     def merge_json_files(self, dict1, dict2):
@@ -167,8 +168,7 @@ class TestWorkSession(unittest.TestCase):
         self.usecase.pref['min_work_period_minutes'] = event_in_mins
 
         event = Event()
-        event.set_start(pytz.utc.localize(dt.now()) +
-            timedelta(minutes=event_in_mins-1))
+        event.set_start(dt.now(pytz.utc) + timedelta(minutes=event_in_mins-1))
         event.set_end(event.get_start() + timedelta(minutes=30))
         event.set_title('too soon event')
         self.cal_service.add_event(event)
@@ -184,8 +184,8 @@ class TestWorkSession(unittest.TestCase):
         self.usecase.pref['min_work_period_minutes'] = event_in_mins
 
         event = Event()
-        event.set_start(pytz.utc.localize(dt.now()) +
-            timedelta(minutes=event_in_mins+30))
+        event.set_start(dt.now(pytz.utc) +
+            timedelta(minutes=(event_in_mins+30)))
         event.set_end(event.get_start() + timedelta(minutes=30))
         event.set_title('possibly too soon event')
         self.cal_service.add_event(event)
@@ -201,9 +201,13 @@ class TestWorkSession(unittest.TestCase):
         expected = "You have no upcoming events."
         self.assertIn(expected, reply.message)
 
+    @freeze_time("2020-03-14", as_arg=True)
     @unittest.skipIf('TRAVIS' in os.environ and 'DONOTMOCK' in os.environ,
                     "travis IP might be blocked on iCloud")
-    def test_creates_reminder_for_upcoming(self):
+    def test_creates_reminder_for_upcoming_and_advances(frozen_time, self):
+
+        uc = self.usecase
+
         event = Event()
         event.set_start(dt.now(pytz.utc) + timedelta(minutes=270))
         event.set_end(event.get_start() + timedelta(minutes=30))
@@ -211,7 +215,7 @@ class TestWorkSession(unittest.TestCase):
         event.set_location('Stuttgart Hauptbahnhof')
         self.cal_service.add_event(event)
 
-        reply = self.usecase.advance(None)
+        reply = uc.advance(None)
         expected = "I created a reminder for when you have to get going to reach:"
         self.assertIn(expected, reply.message)
         self.assertIn('upcoming event', reply.message)
@@ -222,8 +226,97 @@ class TestWorkSession(unittest.TestCase):
         events = list(filter(lambda e: 'Hauptbahnhof' in e.get_title(), events))
         self.assertIsNotNone(events)
 
-        # TODO assert reminder is set
-        # self.notificationHandler.get_notifications().contains()
+        # and advances correctly...
+        self.assertIn(self.states['music'], reply.message)
+
+        reply = uc.advance('yes')
+        self.assertIn(self.states['music_rec'], reply.message)
+        self.assertIsNotNone(reply.link)
+        self.assertTrue(self.uri_valid(reply.link))
+        self.assertIn(self.states['project'], reply.message)
+
+        reply = uc.advance('Software Engineering')
+        self.assertIn(self.states['todos'], reply.message)
+        self.assertIn(self.states['pomodoro'], reply.message)
+
+
+        for pomodoro in (False, True):
+            with self.subTest('Pomodoro? '+str(pomodoro)):
+                if not pomodoro:
+                    reply = uc.advance('no')
+                    self.assertIn(self.states['fin_no_pom'], reply.message)
+                else:
+                    uc._set_state('pomodoro')
+                    for pomodoro_i in range(5):
+                        reply = uc.advance('yes')
+                        self.assertIn(self.states['pom_start'], reply.message)
+
+                        self.assertTrue(self.notification_queue.empty())
+                        for i in range(10):
+                            if not self.notification_queue.empty():
+                                break
+                            reply = uc.advance('asdfpoijw')
+                            self.assertIn(self.states['pom_block'], reply.message)
+
+                        frozen_time.tick(timedelta(minutes=25))
+
+                        # assert notification reached Notification Handler
+                        notification = self.notification_queue.get()
+                        self.assertTrue(self.notification_queue.empty())
+                        self.assertIn(self.states['pom_fin'], notification['title'])
+                        self.assertIn(self.states['pom_fin'],
+                                        notification['options']['data']['message'])
+
+                        self.assertEqual(uc.get_state().lower(), "break")
+
+                        for take_break in (True, False):
+                            with self.subTest(str(pomodoro_i)+' Break? '+str(take_break)):
+                                if take_break:
+                                    reply = uc.advance('I want to take a break')
+                                    self.assertIn(self.states['break_start'], reply.message)
+
+                                    self.assertTrue(self.notification_queue.empty())
+                                    for i in range(10):
+                                        if not self.notification_queue.empty():
+                                            break
+                                        reply = uc.advance('asdfpoijw')
+                                        self.assertIn(self.states['break_block'], reply.message)
+
+                                    frozen_time.tick(timedelta(minutes=5))
+
+                                    # assert notification reached Notification Handler
+                                    notification = self.notification_queue.get()
+                                    self.assertTrue(self.notification_queue.empty())
+                                    self.assertIn(self.states['break_fin'], notification['title'])
+                                    self.assertIn(self.states['break_fin'],
+                                                    notification['options']['data']['message'])
+                                else:
+                                    uc._set_state('break')
+                                    reply = uc.advance('skip')
+
+                        self.assertEqual(uc.get_state().lower(), "pomodoro")
+
+                        """
+                        #TODO should also ask for which project to work on
+                        #reply = reply || notification
+                        #self.assertIn(self.states['which_project'], notification.message)
+                        self.assertIn(self.states['project'], reply.message)
+                        self.assertIsNotNone(reply.list) # list of projects
+
+                        reply = uc.advance('Software Engineering')
+                        self.assertIn(self.states['pomodoro'], reply.message)
+                        """
+
+                    # finally no more pomodoros...
+                    reply = uc.advance('no')
+                    self.assertIn(self.states['fin_no_pom'], reply.message)
+
+                # starts over...
+                self.assertTrue(uc.is_finished())
+                # does not need to be reset 
+                reply = uc.advance(None)
+                self.assertTrue(self.states['music'] in reply.message
+                    or "too close to start working" in reply.message)
 
     def test_can_cancel_timer(self):
         uc = self.usecase
@@ -264,99 +357,3 @@ class TestWorkSession(unittest.TestCase):
         self.assertIn(self.states['break_fin'], notification['title'])
         self.assertIn(self.states['break_fin'],
                         notification['options']['data']['message'])
-
-
-
-    def test_advances_correctly(self):
-
-        uc = self.usecase
-
-        reply = uc.advance(None)
-        self.assertIn(self.states['music'], reply.message)
-
-        reply = uc.advance('yes')
-        self.assertIn(self.states['music_rec'], reply.message)
-        self.assertIsNotNone(reply.link)
-        self.assertTrue(self.uri_valid(reply.link))
-        self.assertIn(self.states['project'], reply.message)
-
-        reply = uc.advance('Software Engineering')
-        self.assertIn(self.states['todos'], reply.message)
-        self.assertIn(self.states['pomodoro'], reply.message)
-
-
-        for pomodoro in (False, True):
-            with self.subTest('Pomodoro? '+str(pomodoro)):
-                if not pomodoro:
-                    reply = uc.advance('no')
-                    self.assertIn(self.states['fin_no_pom'], reply.message)
-                else:
-                    uc._set_state('pomodoro')
-                    for pomodoro_i in range(5):
-                        reply = uc.advance('yes')
-                        self.assertIn(self.states['pom_start'], reply.message)
-
-                        self.assertTrue(self.notification_queue.empty())
-                        for i in range(10):
-                            if not self.notification_queue.empty():
-                                break
-                            reply = uc.advance('asdfpoijw')
-                            self.assertIn(self.states['pom_block'], reply.message)
-
-                        # assert notification reached Notification Handler
-                        notification = self.notification_queue.get(
-                                            block=True, timeout=0.2)
-                        self.assertTrue(self.notification_queue.empty())
-                        self.assertIn(self.states['pom_fin'], notification['title'])
-                        self.assertIn(self.states['pom_fin'],
-                                        notification['options']['data']['message'])
-
-                        self.assertEqual(uc.get_state().lower(), "break")
-
-                        for take_break in (True, False):
-                            with self.subTest(str(pomodoro_i)+' Break? '+str(take_break)):
-                                if take_break:
-                                    reply = uc.advance('I want to take a break')
-                                    self.assertIn(self.states['break_start'], reply.message)
-
-                                    self.assertTrue(self.notification_queue.empty())
-                                    for i in range(10):
-                                        if not self.notification_queue.empty():
-                                            break
-                                        reply = uc.advance('asdfpoijw')
-                                        self.assertIn(self.states['break_block'], reply.message)
-
-                                    # assert notification reached Notification Handler
-                                    notification = self.notification_queue.get(
-                                                        block=True, timeout=0.2)
-                                    self.assertTrue(self.notification_queue.empty())
-                                    self.assertIn(self.states['break_fin'], notification['title'])
-                                    self.assertIn(self.states['break_fin'],
-                                                    notification['options']['data']['message'])
-                                else:
-                                    uc._set_state('break')
-                                    reply = uc.advance('skip')
-
-                        self.assertEqual(uc.get_state().lower(), "pomodoro")
-
-                        """
-                        #TODO should also ask for which project to work on
-                        #reply = reply || notification
-                        #self.assertIn(self.states['which_project'], notification.message)
-                        self.assertIn(self.states['project'], reply.message)
-                        self.assertIsNotNone(reply.list) # list of projects
-
-                        reply = uc.advance('Software Engineering')
-                        self.assertIn(self.states['pomodoro'], reply.message)
-                        """
-
-                    # finally no more pomodoros...
-                    reply = uc.advance('no')
-                    self.assertIn(self.states['fin_no_pom'], reply.message)
-
-                # starts over...
-                self.assertTrue(uc.is_finished())
-                # does not need to be reset 
-                reply = uc.advance(None)
-                self.assertIn(self.states['music'], reply.message)
-

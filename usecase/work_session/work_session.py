@@ -111,7 +111,7 @@ class WorkSession(Usecase):
             next_events = self.cal_service.get_next_events()
             if next_events:
                 next_event = next_events[0]
-                now = pytz.utc.localize(dt.now())
+                now = dt.now(pytz.utc)
                 minutes_until = (next_event['dtstart'].dt - now).seconds / 60
                 min_work_period = self.pref['min_work_period_minutes']
                 if minutes_until < min_work_period:
@@ -137,7 +137,7 @@ class WorkSession(Usecase):
                     journey = self.vvs_service.recommend_journey_to_arrive_by(journeys,
                         next_event.get_start())
 
-                    now = pytz.utc.localize(dt.now())
+                    now = dt.now(pytz.utc)
                     minutes_until = (journey.dep_time - now).seconds / 60
                     if minutes_until < min_work_period:
                         return _event_too_close(next_event, journey)
@@ -197,7 +197,7 @@ class WorkSession(Usecase):
                 return "end_state", "I hope you'll have a productive session!"
             elif find_whole_word('yes')(message):
                 minutes = self.pref['pomodoro_minutes']
-                self.wait_until(when=dt.now() + timedelta(minutes=minutes),
+                self.wait_until(when=dt.now(pytz.utc) + timedelta(minutes=minutes),
                     next_state="break",
                     reply=Reply(("Good Work! You finished your session."
                             "\nDo you want to take a break, skip it or finish?"))
@@ -225,7 +225,7 @@ class WorkSession(Usecase):
                 return "end_state", "Okay let's finish up. See you."
             elif find_whole_word('break')(message):
                 minutes = self.pref['break_minutes']
-                self.wait_until(when=dt.now() + timedelta(minutes=minutes),
+                self.wait_until(when=dt.now(pytz.utc) + timedelta(minutes=minutes),
                     next_state="pomodoro",
                     reply=Reply(("Your break is over."
                                 " Do you want to get back to work?"))
@@ -248,7 +248,7 @@ class WorkSession(Usecase):
                     return "wait_state", "Cancelled interval."
 
                 else:
-                    period = self.expire_by - dt.now()
+                    period = self.expire_by - dt.now(pytz.utc)
                     minutes, seconds = divmod(period.seconds, 60)
                     msg = (  "Timer running. "
                             f"I will notify you in {minutes}:{seconds}. "
