@@ -9,7 +9,6 @@ from multiprocessing import Process
 from datetime import datetime, timedelta
 import re
 
-
 class Transport(Usecase): 
     req_info = {
         'Start': None,
@@ -214,6 +213,13 @@ class Transport(Usecase):
         
 
     def compare_transport_options(self):
+
+        def create_link(mode):
+            if mode == 'VVS':
+                return vvs.to_link()            
+            else:
+                return self.map_service.get_route_link(self.req_info.get('Start'), self.req_info.get('Dest'), mode)
+
         viable = self.transport_recommendation.get('Viable')
         cycling = self.transport_info.get('Cycling')
         walking = self.transport_info.get('Walking')
@@ -223,6 +229,9 @@ class Transport(Usecase):
         walking_duration = walking.get('duration')
         car_duration = car.get('duration')
         vvs_duration = vvs.get_duration() * 60 # to seconds
+        reply_dict = {}
+
+        print(self.transport_info)
 
         # Check if mode of travel exist
         if vvs is None:
@@ -242,14 +251,14 @@ class Transport(Usecase):
                 viable.remove('cycling')
             if 'walking' in viable:            
                 viable.remove('walking') 
-
+        
         # Check if there is enough time to get to the destination in time and if the distance is not too long
         if self.req_info.get('ArrDep') == 'Arr':
             time_left = (self.req_info.get('Time') - datetime.now()).total_seconds()
 
-            if (cycling_duration > time_left or cycling.get('distance') > 30000) and 'cycling' in viable:
+            if (cycling_duration > time_left or cycling.get('distance') > 30000.0) and 'cycling' in viable:
                 viable.remove('cycling')
-            if (walking_duration > time_left or walking.get('distance') > 5000) and 'walking' in viable:
+            if (walking_duration > time_left or walking.get('distance') > 5000.0) and 'walking' in viable:
                 viable.remove('walking')
             if car_duration > time_left and 'car' in viable:
                 viable.remove('car')
@@ -259,39 +268,42 @@ class Transport(Usecase):
             if not viable:
                 # TODO provide alternatives 
                 return Reply({'message': f'There is not enough time to get to this destination.'})
-
         
         # Get prefered modes of travel
         walk_or_bike = self.pref.get('walk_or_bike')
-        vvs_or_car = self.pref.get('vvs_or_car')        
+        vvs_or_car = self.pref.get('vvs_or_car')      
         if vvs_or_car in viable:                   
             self.transport_recommendation['Favorite'] = vvs_or_car
         # Set walk or bike first because it is healthy ;)
         if walk_or_bike in viable:            
-            self.transport_recommendation['Favorite'] = walk_or_bike    
+            self.transport_recommendation['Favorite'] = walk_or_bike       
 
-        # Get fastest mode of travel
-        self.transport_recommendation['Fastest'] = sorted({
+        # Get fastest mode of travel        
+        durations_sorted = {k: v for k, v in sorted({
             'cycling': cycling_duration,
             'walking': walking_duration,
             'car': car_duration,
             'VVS': vvs_duration
-        })[0]
+        }.items(), key=lambda item: item[1])}
 
-        fastest = self.transport_recommendation.get('Fastest')
+        fastest = self.transport_recommendation['Fastest'] = list(durations_sorted.keys())[0] 
         favorite = self.transport_recommendation.get('Favorite')
+        fastest_duration = durations_sorted.get(fastest)
+        favorite_duration = durations_sorted.get(favorite)
 
-        # Create link for favorite mode of transport        
-        if favorite == 'VVS':
-            link_fav = vvs.to_link()            
+        if favorite in viable:
+            reply_dict = {'message': f'For this trip your prefered mode of transport {favorite} is available. It will take {timedelta(minutes=favorite_duration/60)} minutes.', 'link': create_link(favorite)}
+            duration = favorite_duration
         else:
-            link_fav = self.map_service.get_route_link(self.req_info.get('Start'), self.req_info.get('Dest'), favorite)
+            reply_dict = {'message': f'For this trip the mode of transport {fastest} is advised. It will take {timedelta(minutes=fastest_duration/60)}.', 'link': create_link(fastest)}
+            duration = fastest_duration
+        
+        if self.req_info.get('ArrDep') is 'Arr':
+            dep_time = self.req_info.get("Time") - timedelta(seconds=duration)
+            reply_dict['message'] = reply_dict['message'] + f' You need to leave at {dep_time.strftime("%H:%M")}.'        
+       
+        if favorite and favorite != fastest:
+            reply_dict['message'] = reply_dict['message'] + f' However, the mode {fastest} is faster by {timedelta(minutes=favorite_duration - fastest_duration)}.'      
 
-        reply_dict = {'message': f'For this trip your prefered mode of transport {favorite} is available.', 'link': link_fav}
-
-        # TODO Provide link for alternative
-        if favorite != fastest:
-            reply_dict['message'] = reply_dict['message'] + f' However, the mode {fastest} is faster.'
-            
         return Reply(reply_dict)
 
