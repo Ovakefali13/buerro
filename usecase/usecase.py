@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from dominate import tags
 
 
 class FinishedException(Exception):
@@ -12,6 +13,10 @@ class Usecase(ABC):
 
     @abstractmethod
     def is_finished(self):
+        pass
+
+    @abstractmethod
+    def set_default_services(self):
         pass
 
 
@@ -31,7 +36,7 @@ class CaselessDict(dict):
 from handler import Notification
 
 class Reply(CaselessDict):
-    attributes = ('message', 'link', 'list', 'dict')
+    attributes = ('message', 'link', 'list', 'dict', 'table')
 
     def __init__(self, values):
 
@@ -61,6 +66,60 @@ class Reply(CaselessDict):
                 + 'only allowed attributes: ' + self.attributes)
         setattr(self, key, value)
         super().__setitem__(key, value)
+
+    def to_html(self):
+        html = ""
+        for key in self.attributes:
+            if key in self:
+                value = self[key]
+                if key == 'message':
+                    html += value
+
+                if key == 'link':
+                    html += '\n<br>\n'+ str(tags.a(value, href=value))
+
+                if key == 'list':
+                    if not isinstance(value, list):
+                        raise Exception("Passed non-list as a list to reply")
+                    l = tags.ul()
+                    for el in value:
+                        l += tags.li(el)
+                    html += '\n<br>\n'+ str(l)
+
+                if key == 'dict':
+                    if not isinstance(value, dict):
+                        raise Exception("Passed non-dict as dict to reply")
+
+                    with tags.table() as table:
+                        with tags.tbody() as tbody:
+                            for k, v in value.items():
+                                with tags.tr() as row:
+                                    tags.td(k)
+                                    tags.td(v)
+
+                    html += '\n<br>\n'+ str(table)
+
+                if key == 'table':
+                    if not isinstance(value, dict):
+                        raise Exception("Passed non-dict as dict to reply")
+                    if not all(len(listA) == len(listB)
+                        for listA in value.values() for listB in value.values()):
+                        raise Exception("Provided lists do not have the same length")
+
+                    columns = value.keys()
+                    with tags.table() as table:
+                        with tags.thead() as head:
+                            for col in columns:
+                                tags.th(col)
+                        with tags.tbody() as body:
+                            tuples = zip(*value.values())
+                            for row in tuples:
+                                with tags.tr() as html_row:
+                                    for val in row:
+                                        tags.td(val)
+
+                    html += '\n<br>\n' + str(table)
+        return html
 
     def to_notification(self):
         if not self.message:

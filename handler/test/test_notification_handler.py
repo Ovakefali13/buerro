@@ -38,11 +38,15 @@ class MockUsecase(Usecase):
     def reset(self):
         self.count = 0
 
+    def set_default_services(self):
+        pass
+
 class TestNotificationHandler(unittest.TestCase):
 
     @classmethod
     def setUpClass(self):
         self.notification_handler = NotificationHandler.instance()
+        UsecaseStore.instance().purge()
 
     def get_random_subscription(self):
         def _get_random_p256dh():
@@ -67,53 +71,3 @@ class TestNotificationHandler(unittest.TestCase):
 
         self.assertEqual(ret, mock_subscription)
 
-    """
-    def decode_vapid_request(self, encoded, content_encoding):
-        if content_encoding != "aes128gcm":
-            raw_dh = base64.urlsafe_b64decode(
-                push._repad(encoded['crypto_key']))
-        raw_auth = base64.urlsafe_b64decode(
-            push._repad(subscription_info['keys']['auth']))
-        decoded = http_ece.decrypt(
-            encoded['body'],
-            dh=raw_dh,
-            private_key=recv_key,
-            auth_secret=raw_auth,
-            version=content_encoding
-        )
-        return decoded.decode('utf-8')
-    """
-
-    @patch("requests.post")
-    def test_only_push_if_no_usecases_running(self, mock_post):
-        mock_post.return_value.status_code = 200
-
-        if self.notification_handler.get_subscription() is None:
-            mock_subscription = self.get_random_subscription()
-            self.notification_handler.save_subscription(mock_subscription)
-
-        store = UsecaseStore.instance()
-        usecase = MockUsecase()
-        usecase.advance('foo')
-        self.assertFalse(usecase.is_finished())
-        store.set_running(usecase)
-
-        # interrupted by something
-        notification = Notification("proactive notification")
-        self.notification_handler.push(notification)
-        mock_post.assert_not_called()
-        #self.assertTrue(self.notification_queue.empty())
-
-        usecase.advance('bar')
-        self.assertTrue(usecase.is_finished())
-        store.usecase_finished()
-
-        mock_post.assert_called()
-        payload = mock_post.call_args[1]
-        """
-        data = self.decode_vapid_request(payload['data'],
-            content_encoding=payload['headers']['content-encoding'])
-        self.assertEqual(mock_post.call_args[1], notification)
-        """
-        self.assertIsNotNone(payload['data'])
-        self.assertIsNotNone(payload['headers']['content-encoding'])
