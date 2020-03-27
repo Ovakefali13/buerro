@@ -30,7 +30,7 @@ endif
 
 .PHONY: mock no_mock frontend_test
 mock:
-	$(PYTHON) test_loader.py $(ARGS)
+	$(PYTHON) test.py $(ARGS)
 no_mock: 
 	DONOTMOCK=1 $(PYTHON) test_loader.py $(ARGS)
 frontend_test:
