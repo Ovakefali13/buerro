@@ -74,7 +74,8 @@ class WorkSession(Usecase):
         return self.fsm.currentState
 
     def wake_up(self, reply, next_state):
-        self.expireBy = None
+        self.expire_by = None
+        self.wake_job = None
         self._set_state(next_state)
         self.notification_handler.push(reply.to_notification())
 
@@ -83,7 +84,7 @@ class WorkSession(Usecase):
             raise Exception("Scheduler not set in use case")
 
         self.expire_by = when
-        self.scheduler.add_job(func=self.wake_up,
+        self.wake_job = self.scheduler.add_job(func=self.wake_up,
                                 trigger='date', run_date=when,
                                 args=(reply, next_state))
 
@@ -236,12 +237,23 @@ class WorkSession(Usecase):
                 return "pomodoro", msg
 
         def wait_trans(message):
-            if self.expire_by:
-                period = self.expire_by - dt.now()
-                minutes, seconds = divmod(period.seconds, 60)
-                msg = (  "Timer running. "
-                        f"I will notify you in {minutes}:{seconds}." )
-                return "wait_state", msg
+            if self.expire_by and self.wake_job:
+                if find_whole_word('cancel')(message):
+                    self.wake_job.remove()
+
+                    func = self.wake_job.func
+                    args = self.wake_job.args
+                    kwargs = self.wake_job.kwargs
+                    func(*args, **kwargs)
+                    return "wait_state", "Cancelled interval."
+
+                else:
+                    period = self.expire_by - dt.now()
+                    minutes, seconds = divmod(period.seconds, 60)
+                    msg = (  "Timer running. "
+                            f"I will notify you in {minutes}:{seconds}. "
+                             "Enter <i>cancel</i> to skip forward.")
+                    return "wait_state", msg
             else:
                 raise Exception("in wait_state even though timer expired")
 
