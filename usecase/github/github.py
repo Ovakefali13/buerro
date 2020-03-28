@@ -59,7 +59,7 @@ class Github(Usecase):
                 if "no" in message:
                     self.state = 0
                     issue = False
-                    return Reply({'message': "Okay I maybe you want to look for a time yourself :)"})
+                    return Reply({'message': "Okay maybe you want to look for a time yourself :)"})
         else:
             pass
     
@@ -96,8 +96,8 @@ class Github(Usecase):
     
     def dispatch_proactive_notification_message(self,notification):
         notification = Notification('New Github Issue!')
-        notification.add_message('What should I do about this new Github Issue? Open Buerro PDA and tell me!')
-        notification.set_body('What should I do about this new Github Issue? Open Buerro PDA and tell me!')
+        notification.add_message('What should I do about this new Github Issue?')
+        notification.set_body('What should I do about this new Github Issue?')
         try:
             notification_handler = NotificationHandler.instance()
             notification_handler.push(notification)
