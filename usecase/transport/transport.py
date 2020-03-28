@@ -8,6 +8,7 @@ from handler import LocationHandler
 from multiprocessing import Process
 from datetime import datetime, timedelta
 import re
+import time
 
 class Transport(Usecase): 
     req_info = {
@@ -26,7 +27,7 @@ class Transport(Usecase):
     transport_recommendation = {
         'Favorite': None,
         'Fastest': None,
-        'Viable': ['cycling','car','walking','VVS']
+        'Viable': []
     }
     finished = False
     
@@ -63,7 +64,7 @@ class Transport(Usecase):
             self.req_info = dict.fromkeys(self.req_info, None)
             self.transport_info = dict.fromkeys(self.transport_info, None)
             self.transport_recommendation = dict.fromkeys(self.transport_recommendation, None)
-            self.transport_recommendation['Viable'] = ['cycling','car','walking','VVS']
+            self.transport_recommendation['Viable'] = []
             self.finished = False
 
         if not self.wea_service:
@@ -181,22 +182,16 @@ class Transport(Usecase):
             self.transport_info['WeatherBad'] = self.wea_service.is_bad_weather()
 
 
-        def map_service(self):
-            args = {
-                'Car': 'driving-car',
-                'Cycling': 'cycling-regular',
-                'Walking': 'foot-walking'
-                }
-            for name, mode in args.items():
-                self.transport_info[name] = self.map_service.get_route_summary(start_coords, dest_coords, mode)
+        def map_service(self, name, mode):
+            self.transport_info[name] = self.map_service.get_route_summary(start_coords, dest_coords, mode)
 
 
         def vvs_service(self):
             start = self.geo_service.get_address_from_coords(start_coords)
             dest = self.geo_service.get_address_from_coords(dest_coords)
             arr_dep = self.req_info.get('ArrDep')
-            time = self.req_info.get('Time')            
-            journeys = self.vvs_service.get_journeys(start, dest, arr_dep, time)
+            time_ = self.req_info.get('Time')     
+            journeys = self.vvs_service.get_journeys(start, dest, arr_dep, time_)
             self.transport_info['VVS'] = sorted(journeys, key=lambda x: x.get_duration())[0]
             
 
@@ -207,9 +202,20 @@ class Transport(Usecase):
                 p.start()
                 proc.append(p)
             for p in proc:
-                p.join()            
+                p.join()
 
-        runInParallel(weather_service(self), map_service(self), vvs_service(self))
+        runInParallel(
+            weather_service(self),
+            map_service(self, 'Car', 'driving-car'),
+            vvs_service(self))
+
+        # Only request walking and cycling if distance is under a certain level
+        # Would be better to use the euclidean distance, but that would need a new API -> expensive
+        distance = self.transport_info['Car']['distance']
+        if distance <= 30000:            
+            map_service(self, 'Cycling', 'cycling-regular')
+        if distance <= 5000:            
+            map_service(self, 'Walking', 'foot-walking')
         
 
     def compare_transport_options(self):
@@ -220,14 +226,16 @@ class Transport(Usecase):
             else:
                 return self.map_service.get_route_link(self.req_info.get('Start'), self.req_info.get('Dest'), mode)
 
-        def print_duration(minutes:int):
-            s = timedelta(minutes=minutes).total_seconds()
-            hours, remainder = divmod(s, 3600)
+        def print_duration(seconds:int):            
+            hours, remainder = divmod(seconds, 3600)
             minutes, seconds = divmod(remainder, 60)
             string = ''
             if hours > 0:
-                string = f'{int(hours)} hours and ' 
-            string = string + f'{int(minutes):02} minutes'
+                string = f'{int(hours)} hours and {int(minutes):02} minutes and {int(seconds):02} seconds'
+            elif minutes > 0:
+                string = f'{int(minutes)} minutes and {int(seconds):02} seconds'
+            else:
+                string = f'{int(seconds)} seconds'
             return string
 
         viable = self.transport_recommendation.get('Viable')
@@ -235,21 +243,24 @@ class Transport(Usecase):
         walking = self.transport_info.get('Walking')
         vvs = self.transport_info.get('VVS')
         car = self.transport_info.get('Car')
-        cycling_duration = cycling.get('duration')
-        walking_duration = walking.get('duration')
-        car_duration = car.get('duration')
-        vvs_duration = vvs.get_duration() * 60 # to seconds
-        reply_dict = {}
+        vvs_duration = None
+        walking_duration = None
+        cycling_duration = None
+        car_duration = None
 
         # Check if mode of travel exist
-        if vvs is None:
-            viable.remove('VVS')
-        if cycling is None:
-            viable.remove('cycling')
-        if walking is None:
-            viable.remove('walking')
-        if car is None:
-            viable.remove('car')
+        if vvs is not None:
+            viable.append('VVS')
+            vvs_duration = vvs.get_duration() * 60 # to seconds
+        if cycling is not None:
+            viable.append('cycling')            
+            cycling_duration = cycling.get('duration')
+        if walking is not None:
+            viable.append('walking')            
+            walking_duration = walking.get('duration')
+        if car is not None:
+            viable.append('car')
+            car_duration = car.get('duration')
         if not viable:
             return Reply({'message': f'This route is not available.'})
 
@@ -259,18 +270,18 @@ class Transport(Usecase):
                 viable.remove('cycling')
             if 'walking' in viable:            
                 viable.remove('walking') 
-        
-        # Check if there is enough time to get to the destination in time and if the distance is not too long
+
+        # Check if there is enough time to get to the destination in time 
         if self.req_info.get('ArrDep') == 'Arr':
             time_left = (self.req_info.get('Time') - datetime.now()).total_seconds()
 
-            if (cycling_duration > time_left or cycling.get('distance') > 30000.0) and 'cycling' in viable:
+            if 'cycling' in viable and cycling_duration > time_left:
                 viable.remove('cycling')
-            if (walking_duration > time_left or walking.get('distance') > 5000.0) and 'walking' in viable:
+            if 'walking' in viable and walking_duration > time_left:
                 viable.remove('walking')
-            if car_duration > time_left and 'car' in viable:
+            if 'car' in viable and car_duration > time_left:
                 viable.remove('car')
-            if vvs_duration > time_left and 'VVS' in viable:
+            if 'VVS' in viable and vvs_duration > time_left:
                 viable.remove('VVS')
 
             if not viable:
@@ -288,8 +299,8 @@ class Transport(Usecase):
 
         # Get fastest mode of travel        
         durations_sorted = {k: v for k, v in sorted({
-            'cycling': cycling_duration,
-            'walking': walking_duration,
+            'cycling': cycling_duration if cycling_duration else 999999999,
+            'walking': walking_duration if walking_duration else 999999999,
             'car': car_duration,
             'VVS': vvs_duration
         }.items(), key=lambda item: item[1])}
@@ -300,17 +311,17 @@ class Transport(Usecase):
         favorite_duration = durations_sorted.get(favorite)
 
         if favorite in viable:            
-            reply_dict = {'message': f'For this trip your prefered mode of transport {favorite} is available. It will take {print_duration(favorite_duration/60)}.', 'link': create_link(favorite)}
+            reply_dict = {'message': f'For this trip your prefered mode of transport {favorite} is available. It will take {print_duration(favorite_duration)}.', 'link': create_link(favorite)}
             duration = favorite_duration
         else:
-            reply_dict = {'message': f'For this trip the mode of transport {fastest} is advised. It will take {print_duration(fastest_duration/60)}.', 'link': create_link(fastest)}
+            reply_dict = {'message': f'For this trip the mode of transport {fastest} is advised. It will take {print_duration(fastest_duration)}.', 'link': create_link(fastest)}
             duration = fastest_duration
         
         if self.req_info.get('ArrDep') is 'Arr':
             dep_time = self.req_info.get("Time") - timedelta(seconds=duration)
-            reply_dict['message'] = reply_dict['message'] + f' You need to leave at {dep_time.strftime("%H:%M")}.'        
+            reply_dict['message'] = reply_dict['message'] + f' You need to leave at {dep_time.strftime("%H:%M")}.'
        
         if favorite and favorite != fastest:
-            reply_dict['message'] = reply_dict['message'] + f' However, the mode {fastest} is faster by {print_duration(favorite_duration-fastest_duration)}.'      
+            reply_dict['message'] = reply_dict['message'] + f' However, the mode {fastest} is faster by {print_duration(favorite_duration - fastest_duration)}.'      
 
         return Reply(reply_dict)
