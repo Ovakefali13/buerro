@@ -2,17 +2,20 @@
     {        
         "sentence": "I want to go from home to the university and arrive at 10 p.m.",
         "req_info": {"Start": [48.77798, 9.18184], "Dest": [48.77363, 9.17096], "ArrDep": "Arr", "Hour": 22, "Day": 26, "Minute": 0},
-        "reply": {"message": "For this trip your prefered mode of transport cycling is available. However, the mode VVS is faster.", "link": "https://routing.openstreetmap.de/?loc=48.77798%2C9.18184&loc=48.77363%2C9.17096&hl=en&srv=1"}
+        "reply": {"message": "For this trip your prefered mode of transport cycling is available. It will take 10 minutes. You need to leave at 21:49. However, the mode car is faster by 4 hours and 42 minutes.", "link": "https://routing.openstreetmap.de/?loc=48.77798%2C9.18184&loc=48.77363%2C9.17096&hl=en&srv=1"}
+
     },
     {
         "sentence": "I want to go from Stuttgart to Frankfurt and arrive at 4 p.m.",
         "req_info": {"Start": [48.7784485, 9.1800132], "Dest": [50.1106444, 8.6820917], "ArrDep": "Arr", "Hour": 16, "Day": 27, "Minute": 0},
-        "reply": {"message": "For this trip your prefered mode of transport car is available. However, the mode VVS is faster.", "link": "https://routing.openstreetmap.de/?loc=48.7784485%2C9.1800132&loc=50.1106444%2C8.6820917&hl=en&srv=0"}
+        "reply": {"message": "For this trip your prefered mode of transport car is available. It will take 5 hours and 39 minutes. You need to leave at 10:20. However, the mode VVS is faster.", "link": "https://routing.openstreetmap.de/?loc=48.7784485%2C9.1800132&loc=50.1106444%2C8.6820917&hl=en&srv=0"}
+
     },
     {
         "sentence": "I want to go from the mainstation to home in 2 hours",
         "req_info": {"Start": [48.782761, 9.18263], "Dest": [48.77798, 9.18184], "ArrDep": "Dep", "Hour": 23, "Day": 26, "Minute": 30},
-        "reply": {"message": "For this trip your prefered mode of transport cycling is available. However, the mode VVS is faster.", "link": "https://routing.openstreetmap.de/?loc=48.782761%2C9.18263&loc=48.77798%2C9.18184&hl=en&srv=1"}
+        "reply": {"message": "For this trip your prefered mode of transport cycling is available. It will take However, the mode VVS is faster.", "link": "https://routing.openstreetmap.de/?loc=48.782761%2C9.18263&loc=48.77798%2C9.18184&hl=en&srv=1"}
+
     },
     {
         "sentence": "I want to go from the mainstation to Heilbronn and arrive at 10 p.m.",

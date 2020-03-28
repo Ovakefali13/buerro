@@ -19,7 +19,7 @@ class MapJSONRemote(MapRemote):
         self.clnt = client.Client(key=prefs['openrouteserviceAPIKey'])
 
         self.request_params = {
-            'coordinates': [[], []],
+            'coordinates': [(), ()],
             'format_out': 'json',
             'profile': 'cycling-regular',
             'preference': 'shortest',
@@ -28,15 +28,15 @@ class MapJSONRemote(MapRemote):
         }
 
 
-    def __set_route__(self, start:list, dest:list):
-        self.request_params['coordinates'] = [[start[1], start[0]], [dest[1],dest[0]]]
+    def __set_route__(self, start:tuple, dest:tuple):
+        self.request_params['coordinates'] = [(start[1], start[0]), (dest[1],dest[0])]
 
 
     def __set_travel_mode__(self, profile:dict):
         self.request_params['profile'] = profile
 
 
-    def get_route_information(self, start:list, dest:list, travel_mode:str=None):
+    def get_route_information(self, start:tuple, dest:tuple, travel_mode:str=None):
         self.__set_route__(start, dest)
         if travel_mode:
             self.__set_travel_mode__(travel_mode)
@@ -54,18 +54,19 @@ class MapService:
         self.remote = remote
 
 
-    def get_route_summary(self, start:list, dest:list, travel_mode:str=None):
+    def get_route_summary(self, start:tuple, dest:tuple, travel_mode:str=None):
         route = self.remote.get_route_information(start, dest, travel_mode)
         if route:
             summary = route['routes'][0]['summary']
             coords = route['metadata']['query']['coordinates']
 
-            return {'start': [coords[0][1], coords[0][0]],
-                    'dest': [coords[1][1], coords[1][0]],
+            return {'start': (coords[0][1], coords[0][0]),
+                    'dest': (coords[1][1], coords[1][0]),
                     'distance': summary['distance'],
                     'duration':  summary['duration']}
 
-    def get_route_link(self, start:list, dest:list, mode:str='cycling'):
+    def get_route_link(self, start:tuple, dest:tuple, mode:str='cycling'):
+
         if mode == 'car':
             mode = 0
         elif mode == 'cycling':
