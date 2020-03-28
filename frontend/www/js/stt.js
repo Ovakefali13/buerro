@@ -10,6 +10,7 @@ if (!('webkitSpeechRecognition' in window)) {
   recognition.interimResults = true;
 
   recognition.onstart = function() {
+    $("#record").css("background-color","Crimson");
     recognizing = true;
   };
 
@@ -81,6 +82,7 @@ function capitalize(s) {
 function record(event) {
   if (recognizing) {
     recognition.stop();
+    $("#record").css("background-color","GoldenRod");    
     return;
   }
   final_transcript = '';

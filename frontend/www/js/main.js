@@ -119,8 +119,12 @@ $(document).ready(function() {
 
     });
     
-    $("#prompt_input").on('change ', function() {
-        $('#submit-btn').prop('disabled', this.value == "" ? true : false);     
+    $("#prompt_input").on('change input', function() {
+        if (!$.trim($("#prompt_input").val())) {
+            $('#submit-btn').prop('disabled', true)
+        } else {
+            $('#submit-btn').prop('disabled', false)
+        }
     })
 
     navigator.serviceWorker.addEventListener('message', event => {
