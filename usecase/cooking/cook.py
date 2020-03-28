@@ -5,7 +5,10 @@ import pytz
 import re
 
 from services.preferences.pref_service import PrefService, PrefRemote, PrefJSONRemote
-from services import SpoonacularService, TodoistService, YelpService, CalService
+from services.todoAPI.todoist_service import TodoistService
+from services.yelp.yelp_service import YelpService
+from services.cal.cal_service import CalService
+from services.spoonacular.spoonacular_service import SpoonacularService
 from services.cal import Event
 from services.yelp import YelpRequest
 
