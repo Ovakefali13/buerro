@@ -33,8 +33,15 @@ class VVSEfaJSONRemote(VVSRemote):
             "name_sf": location
         }
         url = self.base_url + "/XML_STOPFINDER_REQUEST?" + urlencode(params)
-        # TODO error handling
-        return requests.get(url).json().get('locations')
+
+        try:
+            res = requests.get(url)
+        except Exception as err:
+            raise Exception("Error fetching VVS location: ", err)
+        try:
+            return res.json().get('locations')
+        except:
+            raise Exception("Response does not contain locations ", res)
 
     def get_journeys(self, req:JourneyRequest):
 
@@ -43,8 +50,15 @@ class VVSEfaJSONRemote(VVSRemote):
         }
 
         url = self.base_url + "/XML_TRIP_REQUEST2?" + urlencode(params)
-        # TODO error handling
-        return requests.get(url).json().get('journeys')
+
+        try:
+            res = requests.get(url)
+        except Exception as err:
+            raise Exception("Error fetching VVS location: ", err)
+        try:
+            return res.json().get('journeys')
+        except:
+            raise Exception("Response does not contain locations ", res)
 
 
 @Singleton

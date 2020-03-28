@@ -37,7 +37,7 @@ class TestMapService(unittest.TestCase):
 
     def test_get_route_link(self):
         link = self.map_service.get_route_link(self.dhbw, self.mensa)
-        self.assertEqual(link, 'https://routing.openstreetmap.de/?loc=48.773563%2C9.170963&loc=48.780834%2C9.169989&hl=de')
+        self.assertEqual(link, 'https://routing.openstreetmap.de/?loc=48.773563%2C9.170963&loc=48.780834%2C9.169989&hl=en&srv=1')
 
 @Singleton
 class GeocodingMockRemote():
