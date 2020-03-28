@@ -31,10 +31,10 @@ class Transport(Usecase):
     finished = False
     
     def __init__(self):
-        self.set_services()
+        self.set_default_services()
 
 
-    def set_services(self,
+    def set_default_services(self,
                     pref_service:PrefService=PrefService(PrefJSONRemote()),
                     map_service:MapService=MapService.instance(),
                     vvs_service:VVSService=VVSService.instance(VVSEfaJSONRemote.instance()),
@@ -214,11 +214,21 @@ class Transport(Usecase):
 
     def compare_transport_options(self):
 
-        def create_link(mode):
+        def create_link(mode:str):
             if mode == 'VVS':
                 return vvs.to_link()            
             else:
                 return self.map_service.get_route_link(self.req_info.get('Start'), self.req_info.get('Dest'), mode)
+
+        def print_duration(minutes:int):
+            s = timedelta(minutes=minutes).total_seconds()
+            hours, remainder = divmod(s, 3600)
+            minutes, seconds = divmod(remainder, 60)
+            string = ''
+            if hours > 0:
+                string = f'{int(hours)} hours and ' 
+            string = string + f'{int(minutes):02} minutes'
+            return string
 
         viable = self.transport_recommendation.get('Viable')
         cycling = self.transport_info.get('Cycling')
@@ -230,8 +240,6 @@ class Transport(Usecase):
         car_duration = car.get('duration')
         vvs_duration = vvs.get_duration() * 60 # to seconds
         reply_dict = {}
-
-        print(self.transport_info)
 
         # Check if mode of travel exist
         if vvs is None:
@@ -291,11 +299,11 @@ class Transport(Usecase):
         fastest_duration = durations_sorted.get(fastest)
         favorite_duration = durations_sorted.get(favorite)
 
-        if favorite in viable:
-            reply_dict = {'message': f'For this trip your prefered mode of transport {favorite} is available. It will take {timedelta(minutes=favorite_duration/60)} minutes.', 'link': create_link(favorite)}
+        if favorite in viable:            
+            reply_dict = {'message': f'For this trip your prefered mode of transport {favorite} is available. It will take {print_duration(favorite_duration/60)}.', 'link': create_link(favorite)}
             duration = favorite_duration
         else:
-            reply_dict = {'message': f'For this trip the mode of transport {fastest} is advised. It will take {timedelta(minutes=fastest_duration/60)}.', 'link': create_link(fastest)}
+            reply_dict = {'message': f'For this trip the mode of transport {fastest} is advised. It will take {print_duration(fastest_duration/60)}.', 'link': create_link(fastest)}
             duration = fastest_duration
         
         if self.req_info.get('ArrDep') is 'Arr':
@@ -303,7 +311,6 @@ class Transport(Usecase):
             reply_dict['message'] = reply_dict['message'] + f' You need to leave at {dep_time.strftime("%H:%M")}.'        
        
         if favorite and favorite != fastest:
-            reply_dict['message'] = reply_dict['message'] + f' However, the mode {fastest} is faster by {timedelta(minutes=favorite_duration - fastest_duration)}.'      
+            reply_dict['message'] = reply_dict['message'] + f' However, the mode {fastest} is faster by {print_duration(favorite_duration-fastest_duration)}.'      
 
         return Reply(reply_dict)
-

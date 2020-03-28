@@ -40,19 +40,13 @@ class Lunchbreak(Usecase):
         if not hasattr(self, 'weather_adapter'):
             raise Exception("Set Services!")
 
-<<<<<<< HEAD
         coords = self.get_location()
-        if not self.restaurants:
-            restaurants, start, end, duration = self.check_lunch_options(coords)
-=======
-        lat, lon = self.get_location()
         if not hasattr(self, 'restaurants') or not self.restaurants or message == 'proactive':
             if not hasattr(self, 'restaurants') or not self.restaurants:
-                self.check_lunch_options((lat, lon))
+                self.check_lunch_options(coords)
 
             if len(self.restaurants) == 0:
                 return Reply("No restaurants found in your area.")
->>>>>>> dfa40f932732181cfd93ef8add157f4eef4c8ad8
 
             return_message = (f"Your lunch starts at {self.lunch_start}. "
                             f"You have {self.duration} minutes until your next event starts. "
@@ -62,19 +56,13 @@ class Lunchbreak(Usecase):
             return_dict = self.prepare_restaurants_for_transmission(self.restaurants)
             return Reply({'message': return_message, 'dict': return_dict})
         else:
-<<<<<<< HEAD
-            choice = self.evaluate_user_request(message)
-            link = self.open_maps_route(coords, self.restaurants[choice])
-            self.create_cal_event(self.start, self.end, self.restaurants[choice], link)
-=======
             choice = self.evaluate_user_request(message, self.restaurants)
             if choice is None:
                 return Reply(("I could not match your answer to any restaurant. "
                               "Please try again."))
 
-            link = self.open_maps_route((lat, lon), self.restaurants[choice])
+            link = self.open_maps_route(coords, self.restaurants[choice])
             self.create_cal_event(self.lunch_start, self.lunch_end, self.restaurants[choice], link)
->>>>>>> dfa40f932732181cfd93ef8add157f4eef4c8ad8
 
             # Reset
             self.restaurants = self.start = self.end = None

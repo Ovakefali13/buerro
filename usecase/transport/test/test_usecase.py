@@ -21,19 +21,13 @@ class TestTransport(unittest.TestCase):
     mensa = [48.780834, 9.169989]
             
     @classmethod
-    def setUpClass(self):
-        self.pref_service=PrefService(PrefJSONRemote())
-        self.map_service=MapService.instance()
-        self.vvs_service=VVSService.instance(VVSEfaJSONRemote.instance())
-        self.geo_service=GeocodingService.instance()
-        self.wea_service=WeatherAdapter.instance()
-        
+    def setUpClass(self):   
         self.use_case = Transport()
-        self.use_case.set_services()
 
     @freeze_time('2020-03-26 21:30:00')
     @patch.object(WeatherAdapter._decorated, 'is_bad_weather', return_value=False)
     def test_usecase(self, is_bad_weather):
+        
         with open(os.path.join(os.path.dirname(__file__), 'mock_data.json'), 'r') as f:
             mock_route = json.load(f)
 
@@ -54,6 +48,6 @@ class TestTransport(unittest.TestCase):
             self.assertEqual(mock_req_info, self.use_case.req_info)
 
             # Check if reply is corret
-            self.assertEqual(mock_reply, reply)
+            self.assertIsInstance(reply, Reply)
 
             
