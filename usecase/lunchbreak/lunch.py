@@ -16,6 +16,7 @@ class Lunchbreak(Usecase):
     start = None
     end = None
     lunch_set = None
+    max_restaurants = 0
 
     def set_services(self,
                      weather_adapter: WeatherAdapter,
@@ -46,7 +47,8 @@ class Lunchbreak(Usecase):
             if len(self.restaurants) == 0:
                 return Reply("No restaurants found in your area.")
 
-            return_message = (f"Your lunch starts at {self.lunch_start}. "
+            formated_lunch_time = self.lunch_start.strftime("%H:%M")
+            return_message = (f"Your lunch starts at {formated_lunch_time}. "
                             f"You have {self.duration} minutes until your next event starts. "
                             f"I looked up the best five restaurants near you. "
                             "Where would you like to eat for lunch?")
@@ -61,7 +63,8 @@ class Lunchbreak(Usecase):
             if len(self.restaurants) == 0:
                 return Reply("No restaurants found in your area.")
 
-            return_message = (f"Your lunch starts at {self.lunch_start}. "
+            formated_lunch_time = self.lunch_start.strftime("%H:%M")
+            return_message = (f"Your lunch starts at {formated_lunch_time}. "
                             f"You have {self.duration} minutes until your next event starts. "
                             f"I looked up the best five restaurants near you. "
                             "Where would you like to eat for lunch?")
@@ -70,7 +73,9 @@ class Lunchbreak(Usecase):
             return Reply({'message': return_message, 'dict': return_dict})
         else:
             choice = self.evaluate_user_request(message, self.restaurants)
-            if choice is None:
+            if (choice is None) | (choice > self.max_restaurants):
+                print(choice)
+                print(self.max_restaurants)
                 return Reply(("I could not match your answer to any restaurant. "
                               "Please try again."))
 
@@ -78,9 +83,10 @@ class Lunchbreak(Usecase):
             self.create_cal_event(self.start, self.end, self.restaurants[choice], link)
 
             # Reset
+            restaurant_name = self.restaurants[choice]['name']
             self.restaurants = self.start = self.end = None
             self.lunch_set = datetime.now(pytz.utc)
-            return Reply({'message': "With this link you can navigate there: ",
+            return Reply({'message': f"I added your lunch at {restaurant_name} to your calendar. \nWith this link you can navigate there: ",
                         'link': link})
 
     def is_finished(self):
@@ -140,6 +146,7 @@ class Lunchbreak(Usecase):
                 match = re.search(word, message, re.IGNORECASE)
                 if(match):
                     selectedRestaurant = num
+                    return (selectedRestaurant-1)
 
         if selectedRestaurant == -1:
             # Try names
@@ -148,12 +155,8 @@ class Lunchbreak(Usecase):
                 match = re.search(r_name, message, re.IGNORECASE)
                 if (match):
                     selectedRestaurant = num
-                else:
-                    # no restaurant found...
-                    return None
-
-
-        return (selectedRestaurant-1)
+                    return (selectedRestaurant-1)
+        return None
 
     def time_diff_in_hours(self, date1, date2):
         time_until_lunch = date1 - date2
@@ -207,10 +210,11 @@ class Lunchbreak(Usecase):
         return_dict = {}
         length = len(restaurants)
         if(length > 5):
-            length = 5
-        for r in range(1,length):
+            length = 4
+        self.max_restaurants = length
+        for r in range(0,length):
             if r <= len(restaurants):
-                return_dict[r] = restaurants[r]['name']
+                return_dict[r+1] = restaurants[r]['name']
         return return_dict
 
 
