@@ -144,7 +144,7 @@ class Transport(Usecase):
                 self.req_info['Start'] = get_location()
 
         if not self.req_info['Dest']:
-            p = re.compile(r'((?<=to\sthe\s)|(?<=to\s(?!(the|go|arrive|travel))))(\w*|home)|(?<=go\s)home')
+            p = re.compile(r'((?<=to\sthe\s)|(?<=to\s(?!(the|arrive|travel))))(\w*|home)|(?<=travel\s)home')
             dest = p.search(message)
             if dest:
                 dest = dest[0]
