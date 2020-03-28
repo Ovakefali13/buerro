@@ -21,6 +21,7 @@ class GithubRealRemote(GithubRemote):
     g = None
     def connect(self,key):
         self.g = Github(key)
+            
     def get_notifications(self):
         notifications = []
         for n in self.g.get_user().get_notifications(all=True):
@@ -32,7 +33,7 @@ class GithubService:
     remote = None
     pref = None
 
-    def __init__(self, remote:GithubRemote = GithubRealRemote.instance()):
+    def __init__(self, remote:GithubRemote = GithubRealRemote.instance(), fallback:GithubRemote = None):
         self.pref = PrefService().get_preferences('github')
         self.remote = remote
 
@@ -43,4 +44,8 @@ class GithubService:
         return self.remote.get_notifications()
     
     def connect(self):
-        self.remote.connect(self.pref['key'])
+        try:
+            self.remote.connect(self.pref['key'])
+        except:
+            if fallback != None:
+                self.remote = fallback

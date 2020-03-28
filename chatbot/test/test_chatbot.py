@@ -1,31 +1,21 @@
 import unittest
 from .. import Chatbot, BuerroBot
 
+from usecase import Lunchbreak
+
 class TestChatbot(unittest.TestCase):
 
     buerro_bot = BuerroBot()
     chatbot = Chatbot(buerro_bot)
 
     def test_chatbot_handles_empty_string(self):
-        response = self.chatbot.get_context("")
-        self.assertEquals(response, "$$undefined_behaviour")
+        response = self.chatbot.get_usecase("")
+        self.assertEquals(response, None)
 
     def test_chatbot_handles_none(self):
-        response = self.chatbot.get_context(None)
-        self.assertEquals(response, "$$undefined_behaviour")
+        response = self.chatbot.get_usecase(None)
+        self.assertEquals(response, None)
 
     def test_chatbot_recognizes_keyword(self):
-        response = self.chatbot.get_context("bla bla kalender bla bla")
-        self.assertEquals(response, "$$next_calendar_event")
-    
-    def test_chatbot_recognizes_complex_keyword(self):
-        response = self.chatbot.get_context("bla bla bla bahn bla universität")
-        self.assertEquals(response, "$$next_train_to_university")
-    
-    def test_chatbot_undefined_behaviour(self):
-        response = self.chatbot.get_context("bla bla bla bahn bla")
-        self.assertEquals(response, "$$undefined_behaviour")
-
-    def text_chatbot_clear_context(self):
-        self.chatbot.behaviour.clear_context()
-        self.assertEquals(self.chatbot.behaviour.context, None)
+        response = self.chatbot.get_usecase("bla bla lunch bla bla")
+        self.assertEquals(response, Lunchbreak)
