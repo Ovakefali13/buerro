@@ -119,14 +119,14 @@ class Transport(Usecase):
 
 
         """ Regex tested with
-        I want to go from Stuttgart to Frankfurt and arrive at 4 p.m.
-        Now I want to go to Frankfurt
-        I want to go from home to the university and arrive at 10 p.m.
-        I want to go from the mainstation to home in 2 hours
-        I want to go home now
-        I want to go home at 6 p.m. 
-        I want to go to Stuttgart and depart at 7 a.m.
-        I want to go from the mainstation to home
+        I want to travel from Stuttgart to Frankfurt and arrive at 4 p.m.
+        Now I want to travel to Frankfurt
+        I want to travel from home to the university and arrive at 10 p.m.
+        I want to travel from the mainstation to home in 2 hours
+        I want to travel home now
+        I want to travel home at 6 p.m. 
+        I want to travel to Stuttgart and depart at 7 a.m.
+        I want to travel from the mainstation to home
         """
 
         if not self.req_info['Start']:      
@@ -144,7 +144,7 @@ class Transport(Usecase):
                 self.req_info['Start'] = get_location()
 
         if not self.req_info['Dest']:
-            p = re.compile(r'((?<=to\sthe\s)|(?<=to\s(?!(the|go|arrive))))(\w*|home)|(?<=go\s)home')
+            p = re.compile(r'((?<=to\sthe\s)|(?<=to\s(?!(the|go|arrive|travel))))(\w*|home)|(?<=go\s)home')
             dest = p.search(message)
             if dest:
                 dest = dest[0]
@@ -239,11 +239,10 @@ class Transport(Usecase):
             minutes, seconds = divmod(remainder, 60)
             string = ''
             if hours > 0:
-                string = f'{int(hours)} hours and {int(minutes):02} minutes and {int(seconds):02} seconds'
-            elif minutes > 0:
-                string = f'{int(minutes)} minutes and {int(seconds):02} seconds'
-            else:
-                string = f'{int(seconds)} seconds'
+                string = f'{int(hours)} hours '
+            if minutes > 0:
+                string = string + f'{int(minutes)} minutes and '            
+            string = string + f'{int(seconds)} seconds'
             return string
 
 
