@@ -2,7 +2,7 @@
 import unittest
 import os
 from datetime import datetime
-
+from unittest.mock import patch
 from usecase.lunchbreak import Lunchbreak
 
 from services.weatherAPI.weather_service import WeatherAdapter
@@ -15,7 +15,7 @@ from services.maps import GeocodingService, GeocodingJSONRemote, \
 from services.maps.test.test_service import GeocodingMockRemote, MapMockRemote
 from services.cal.cal_service import CalService, iCloudCaldavRemote, Event
 from services.cal.test.test_service import CalMockRemote
-
+from handler import LocationHandler, NotificationHandler
 
 class TestLunchbreak(unittest.TestCase):
 
@@ -58,34 +58,35 @@ class TestLunchbreak(unittest.TestCase):
             calendar_service=self.calendar_service
         )
 
-    def test_check_lunch_options(self):
-        nearby_restaurants, start, end, duration = self.lb.check_lunch_options(self.dhbw)
-        self.assertIsInstance(nearby_restaurants, list)
+    @patch.object(LocationHandler.instance(), 'get')
+    def test_advance(self, location_mock):
+        location_mock.return_value = (48.76533759999999, 9.161932799999999)
+        message = self.lb.advance("Where can I eat for lunch?")
+        self.assertIsInstance(message, dict)
+        self.assertIsInstance(message['dict'], dict)
+        self.assertFalse(self.lb.is_finished())
+        message = self.lb.advance("I would like to eat at restaurant number one")
+        self.assertIsInstance(message, dict)
+        self.assertIsInstance(message['message'], str)
+        self.assertTrue(self.lb.is_finished())
 
-    def test_time_diff_in_hours(self):
-        start = '2020-05-05T12:00:00'
-        start_iso = datetime.fromisoformat(start)
+    @patch.object(LocationHandler.instance(), 'get')
+    def test_notify(self, location_mock):
+        location_mock.return_value = (48.76533759999999, 9.161932799999999)
+        is_active = self.lb.hours_until_lunch()
+        self.assertIsInstance(is_active, bool)
 
-        end = '2020-05-06T12:00:00'
-        end_iso = datetime.fromisoformat(end)
 
-        diff_hours = self.lb.time_diff_in_hours(end_iso, start_iso)
-        self.assertEqual(diff_hours, 24)
+    @patch.object(NotificationHandler.instance(), 'push')
+    @patch.object(LocationHandler.instance(), 'get')
+    def test_trigger_proactive_usecase(self, location_mock, mock_push):
+        location_mock.return_value = 48.76533759999999, 9.161932799999999
+        is_triggered = self.lb.trigger_proactive_usecase()
+        self.assertIsInstance(is_triggered, bool)
+        if (is_triggered):
+            message = self.lb.advance("I would like to eat at restaurant number one")
+            self.assertIsInstance(message, dict)
+            self.assertIsInstance(message['message'], str)
+            self.assertTrue(self.lb.is_finished())
+            mock_push.assert_called_once()
 
-    def test_open_maps_route(self):
-        nearby_restaurants, start, end, duration = self.lb.check_lunch_options(self.dhbw)
-        google_link = self.lb.open_maps_route(self.dhbw, nearby_restaurants[1])
-        self.assertIsInstance(google_link, str)
-
-    def test_create_cal_event(self):
-        nearby_restaurants, start, end, duration = self.lb.check_lunch_options(self.dhbw)
-        google_link = self.lb.open_maps_route(self.dhbw, nearby_restaurants[1])
-        ret = self.lb.create_cal_event(start,end, nearby_restaurants[1], google_link)
-        self.assertIsInstance(ret, Event)
-
-    def test_wait_for_user_input(self):
-        nearby_restaurants, start, end, duration = self.lb.check_lunch_options(self.dhbw)
-        ret = self.lb.evaluate_user_request("Four", nearby_restaurants)
-        self.assertEqual(ret, 3)
-        ret = self.lb.evaluate_user_request("four", nearby_restaurants)
-        self.assertEqual(ret, 3)
