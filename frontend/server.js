@@ -18,11 +18,7 @@ if(process.env.BACKEND_PORT) {
 }
 const backend = backend_api + ':' + backend_port;
 
-app.use(express.static('www'));
-
-app.get("/", (req, res) => {
-   res.sendFile(__dirname + '/index.html');
-});
+app.use("/", express.static('www'));
 
 // proxy middleware options
 const options = {
