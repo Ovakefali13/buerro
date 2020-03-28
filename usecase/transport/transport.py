@@ -8,7 +8,7 @@ from handler import LocationHandler
 from multiprocessing import Process
 from datetime import datetime, timedelta
 import re
-import time
+
 
 class Transport(Usecase): 
     req_info = {
@@ -23,6 +23,7 @@ class Transport(Usecase):
         'Walking': None,
         'VVS': None,
         'WeatherBad': None,
+
         }
     transport_recommendation = {
         'Favorite': None,
@@ -50,7 +51,9 @@ class Transport(Usecase):
         self.pref = pref_service.get_preferences('transport')
 
 
+
     def get_transport_mode(self, start:tuple, dest:tuple, arr_dep:str='Dep', time:datetime=datetime.now()):
+
         self.req_info['Start'] = start
         self.req_info['Dest'] = dest
         self.req_info['ArrDep'] = arr_dep
@@ -65,6 +68,7 @@ class Transport(Usecase):
             self.transport_info = dict.fromkeys(self.transport_info, None)
             self.transport_recommendation = dict.fromkeys(self.transport_recommendation, None)
             self.transport_recommendation['Viable'] = []
+
             self.finished = False
 
         if not self.wea_service:
@@ -90,6 +94,7 @@ class Transport(Usecase):
         def get_special_location(location:str):
             return tuple(self.pref.get(location + '_coords'))
 
+
         def get_datetime(time:str):
             strings = time.split()
             hours = int(strings[0])
@@ -111,6 +116,7 @@ class Transport(Usecase):
         def get_location():
             lh = LocationHandler.instance()     
             return lh.get()
+
 
         """ Regex tested with
         I want to go from Stuttgart to Frankfurt and arrive at 4 p.m.
@@ -186,12 +192,14 @@ class Transport(Usecase):
             self.transport_info[name] = self.map_service.get_route_summary(start_coords, dest_coords, mode)
 
 
+
         def vvs_service(self):
             start = self.geo_service.get_address_from_coords(start_coords)
             dest = self.geo_service.get_address_from_coords(dest_coords)
             arr_dep = self.req_info.get('ArrDep')
             time_ = self.req_info.get('Time')     
             journeys = self.vvs_service.get_journeys(start, dest, arr_dep, time_)
+
             self.transport_info['VVS'] = sorted(journeys, key=lambda x: x.get_duration())[0]
             
 
@@ -238,6 +246,7 @@ class Transport(Usecase):
                 string = f'{int(seconds)} seconds'
             return string
 
+
         viable = self.transport_recommendation.get('Viable')
         cycling = self.transport_info.get('Cycling')
         walking = self.transport_info.get('Walking')
@@ -266,6 +275,7 @@ class Transport(Usecase):
 
         # Check if weather is good
         if self.transport_info.get('WeatherBad'):    
+
             if 'cycling' in viable:
                 viable.remove('cycling')
             if 'walking' in viable:            
@@ -282,15 +292,17 @@ class Transport(Usecase):
             if 'car' in viable and car_duration > time_left:
                 viable.remove('car')
             if 'VVS' in viable and vvs_duration > time_left:
+
                 viable.remove('VVS')
 
             if not viable:
                 # TODO provide alternatives 
                 return Reply({'message': f'There is not enough time to get to this destination.'})
-        
+
         # Get prefered modes of travel
         walk_or_bike = self.pref.get('walk_or_bike')
         vvs_or_car = self.pref.get('vvs_or_car')      
+
         if vvs_or_car in viable:                   
             self.transport_recommendation['Favorite'] = vvs_or_car
         # Set walk or bike first because it is healthy ;)
@@ -325,3 +337,4 @@ class Transport(Usecase):
             reply_dict['message'] = reply_dict['message'] + f' However, the mode {fastest} is faster by {print_duration(favorite_duration - fastest_duration)}.'      
 
         return Reply(reply_dict)
+

@@ -66,6 +66,7 @@ class MapService:
                     'duration':  summary['duration']}
 
     def get_route_link(self, start:tuple, dest:tuple, mode:str='cycling'):
+
         if mode == 'car':
             mode = 0
         elif mode == 'cycling':

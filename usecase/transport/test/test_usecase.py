@@ -1,4 +1,3 @@
-
 import unittest
 from datetime import datetime, timedelta
 from freezegun import freeze_time
@@ -50,4 +49,3 @@ class TestTransport(unittest.TestCase):
             # Check if reply is corret
             self.assertIsInstance(reply, Reply)
 
-            
