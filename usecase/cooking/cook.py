@@ -40,7 +40,7 @@ class Cook(Usecase):
         self.spoonacle_service = spoonacle_service
 
     def set_default_services(self):
-        self.todoist_service = TodoistSerivce.instance()
+        self.todoist_service = TodoistService.instance()
         self.calendar_service = CalService.instance()
         self.yelp_service = YelpService.instance()
         self.spoonacle_service = SpoonacularService.instance()
