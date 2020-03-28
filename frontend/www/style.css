@@ -8,7 +8,7 @@
     border-radius: 20px;
     color:white;
     box-shadow: 5px 5px 5px rgb(0,0,0,0.1);
-    font-size:22px;
+    font-size:24px;
 }
 
 .bubble-bot {
@@ -24,7 +24,7 @@
 .chatcontainer {
     position:relative;
     width: 100%;
-    max-width:800px;
+    max-width:1024px;
     height:100%;
     background-color:#EEE;
 }
@@ -64,18 +64,55 @@ body {
 
 .chat-input {
     height:8%;
-    font-size:18px;
+    width:100%;
+    font-size:24px;
 }
 
 .chat-input-field {
+    width: 80% !important;
     height:100%;
-    font-size:18px;
+    font-size:24px;
 }
 
 .chat-send-button {
     height:100%;
+    width:20%;
+    float: right;
     border: solid transparent;
     border-bottom-color: rgb(0, 0, 0, 0.1);
     color:white;font-size:18px;
     background-color:#718FAD;
+}
+
+
+.chat-record-btn{
+	position:absolute;
+	width:90px;
+    height:90px;
+    margin-bottom:10px;
+	bottom:10%;
+	right:10px;
+	background-color:#D1766D;
+	color:#FFF;
+	border-radius:100px;
+	text-align:center;
+	box-shadow: 2px 2px 3px #999;
+}
+
+.chat-say-btn {
+    position:absolute;
+	width:90px;
+	height:90px;
+    bottom:12%;
+    margin-bottom:90px;
+	right:10px;
+	background-color:#719F7D;
+	color:#FFF;
+	border-radius:100px;
+	text-align:center;
+	box-shadow: 2px 2px 3px #999;
+}
+
+.glyphicon {
+    font-size: 2em;
 }

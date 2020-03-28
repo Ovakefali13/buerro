@@ -23,7 +23,6 @@ class TestGithub(unittest.TestCase):
                 TodoistJSONRemote.instance())
             self.calendar_service = CalService.instance(
                 iCloudCaldavRemote.instance())
-            
         else:
             print("Mocking remotes...")
             self.todoist_service = TodoistService.instance(

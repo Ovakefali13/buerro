@@ -19,28 +19,33 @@ class MapJSONRemote(MapRemote):
         self.clnt = client.Client(key=prefs['openrouteserviceAPIKey'])
 
         self.request_params = {
-            'coordinates': [[], []],
+            'coordinates': [(), ()],
             'format_out': 'json',
-            'profile': prefs['profile'],
-            'preference': prefs['preference'],
+            'profile': 'cycling-regular',
+            'preference': 'shortest',
             'instructions': 'false',
             'geometry': 'false',
         }
 
 
-    def __set_route__(self, start:list, dest:list):
-        self.request_params['coordinates'] = [[start[1], start[0]], [dest[1],dest[0]]]
+    def __set_route__(self, start:tuple, dest:tuple):
+        self.request_params['coordinates'] = [(start[1], start[0]), (dest[1],dest[0])]
 
 
     def __set_travel_mode__(self, profile:dict):
         self.request_params['profile'] = profile
 
 
-    def get_route_information(self, start:list, dest:list, travel_mode:str=None):
+    def get_route_information(self, start:tuple, dest:tuple, travel_mode:str=None):
         self.__set_route__(start, dest)
         if travel_mode:
             self.__set_travel_mode__(travel_mode)
-        return self.clnt.directions(**self.request_params)
+        try:
+            return self.clnt.directions(**self.request_params)
+        except:
+            return None
+        
+
 
 @Singleton
 class MapService:
@@ -49,18 +54,24 @@ class MapService:
         self.remote = remote
 
 
-    def get_route_summary(self, start:list, dest:list, travel_mode:str=None):
+    def get_route_summary(self, start:tuple, dest:tuple, travel_mode:str=None):
         route = self.remote.get_route_information(start, dest, travel_mode)
+        if route:
+            summary = route['routes'][0]['summary']
+            coords = route['metadata']['query']['coordinates']
 
-        summary = route['routes'][0]['summary']
-        coords = route['metadata']['query']['coordinates']
+            return {'start': (coords[0][1], coords[0][0]),
+                    'dest': (coords[1][1], coords[1][0]),
+                    'distance': summary['distance'],
+                    'duration':  summary['duration']}
 
-        return {'start': [coords[0][1], coords[0][0]],
-                'dest': [coords[1][1], coords[1][0]],
-                'distance': summary['distance'],
-                'duration':  summary['duration']}
+    def get_route_link(self, start:tuple, dest:tuple, mode:str='cycling'):
 
-
-    def get_route_link(self, start:list, dest:list):
-        return f'https://routing.openstreetmap.de/?loc={start[0]}%2C{start[1]}&loc={dest[0]}%2C{dest[1]}&hl=de'
+        if mode == 'car':
+            mode = 0
+        elif mode == 'cycling':
+            mode = 1
+        elif mode == 'walking':
+            mode = 2
+        return f'https://routing.openstreetmap.de/?loc={start[0]}%2C{start[1]}&loc={dest[0]}%2C{dest[1]}&hl=en&srv={mode}'
         

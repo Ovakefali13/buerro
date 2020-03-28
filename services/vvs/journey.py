@@ -85,8 +85,8 @@ class Journey:
             }""".split())
         link = link.replace("DATE", self.dep_time.strftime("%d.%m.%Y"))
         link = link.replace("TIME", self.dep_time.strftime("%H:%M"))
-        link = link.replace("ORIGIN", self.origin)
-        link = link.replace("DEST", self.dest)
+        link = link.replace("ORIGIN", self.origin_id)
+        link = link.replace("DEST", self.dest_id)
         return link
 
     def from_vvs(self, vvs_journey:dict):
@@ -102,8 +102,12 @@ class Journey:
         legs = vvs_journey.get('legs', [])
         origin = legs[0].get('origin')
         dest = legs[-1].get('destination')
+
         self.origin = origin.get('name')
         self.dest = dest.get('name')
+        self.origin_id = origin.get('id')
+        self.dest_id = dest.get('id')
+
         self.transportation = list(map(lambda l:
             l.get('transportation').get('name', 'foot'), legs))
         self.dep_time = parse_vvs_time(origin.get('departureTimePlanned'))
