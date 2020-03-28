@@ -8,7 +8,7 @@ from .. import GithubService, GithubRemote, GithubRealRemote
 @Singleton
 class GithubMockRemote(GithubRemote):
     def get_notifications(self):
-        return [{'type': "Notification type", 'title': "Notification Title"}]
+        return [{'type': "Issue", 'title': "This is an issue"}]
 
     def connect(self, key):
         pass

@@ -2,9 +2,26 @@
 
 This is a super cool PDA from super cool people.
 
-required:
+Best deployed using the [Docker buerro *wrap*per](https://github.com/mariushegele/buerro_docker).
 
-- Python 3.7
+## Install
+
+```
+make install
+```
+
+## Test
+
+```
+make test
+```
+
+## Deploy
+
+```
+make frontend &
+make backend
+```
 
 ## Git Workflow
 
@@ -70,5 +87,5 @@ Use the target `make test` to discover tests within a module tracking coverage. 
 Insert this line anywhere in your code: this will add a breakpoint during unittest execution.
 
 ```py
-from nose.tools import set_trace; set_trace()
+breakpoint()
 ```
