@@ -1,13 +1,6 @@
 
 swRegistration = null;
 
-navigator.serviceWorker.addEventListener('message', event => {
-    if(event.data.options.data) {
-        if(event.data.options.data.message) {
-            putBotMessage(event.data.options.data.message);
-        }
-    }
-});
 
 /**
  * urlBase64ToUint8Array
@@ -42,6 +35,14 @@ function subscribeUser() {
 }
 
 if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.addEventListener('message', event => {
+        if(event.data.options.data) {
+            if(event.data.options.data.message) {
+                putBotMessage(event.data.options.data.message);
+            }
+        }
+    });
+
     window.addEventListener('load', function() {
 
         navigator.serviceWorker.register('/js/service-worker.js')
