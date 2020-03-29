@@ -111,11 +111,15 @@ $(document).ready(function() {
 
     $("#prompt_input").keypress(function(e) {
         if(e.which == 13) {
-            processUserPrompt($("#prompt_input").val());
-            $("#prompt_input").val("");
-            $('#loader').show(100);
-            $('#submit-btn').val('Loading');
-            $('#submit-btn').prop('disabled',true);
+            e.preventDefault();
+
+            if(!$('#submit-btn').prop('disabled')) {
+                processUserPrompt($("#prompt_input").val());
+                $('#loader').show(100);
+                $('#submit-btn').val('Loading');
+                $('#submit-btn').prop('disabled',true);
+                $("#prompt_input").val("");
+            }
         }
     });
 
@@ -136,6 +140,8 @@ $(document).ready(function() {
             $('#submit-btn').prop('disabled', false)
         }
     })
+
+    $("#prompt_input").focus()
 
     navigator.serviceWorker.addEventListener('message', event => {
     if(event.data.options.data) {
