@@ -74,7 +74,10 @@ class Cook(Usecase):
             '''
             p = re.compile('([\n\r]*with\s*([^\s\r]*)|[\n\r]*have\s(?!time|some)\s*([^\s\r]*))')
             list = p.findall(message)
-            self.ingredient = list[0][1]
+            if list[0][1] == '':
+                self.ingredient = list[0][2]
+            else:
+                self.ingredient = list[0][1]
             self.not_time = self.trigger_use_case()
             if self.not_time: 
                 self.finished = False
