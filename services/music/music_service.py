@@ -163,8 +163,7 @@ class SpotifyRemote(MusicRemote):
             if not playlist:
                 raise Exception("Couldn't find any matching playlist")
 
-            breakpoint()
-            return playlist['external_urls']['spotify']
+            return playlist['external_urls']['spotify'], playlist['name']
 
 @Singleton
 class MusicService:
