@@ -58,7 +58,8 @@ class VVSEfaJSONRemote(VVSRemote):
         try:
             return res.json().get('journeys')
         except:
-            raise Exception("Response does not contain locations ", res)
+            breakpoint()
+            raise Exception("Response does not contain journeys ", res)
 
 
 @Singleton
@@ -71,9 +72,15 @@ class VVSService:
         self.remote = remote
 
     def get_location_id(self, location:str):
-        best_match = list(filter(lambda l: l.get('isBest'),
-            self.remote.get_locations(location)))[0]
-        return best_match.get('id')
+        if not location:
+            raise Exception("Passed an empty string as location")
+        locations = self.remote.get_locations(location)
+        if locations:
+            best_match = list(filter(lambda l: l.get('isBest'),
+                locations))[0]
+            return best_match.get('id')
+        else:
+            raise Exception(f"Could not find a VVS stop matching {location}")
 
     def get_journeys(self, origin:str, dest:str,
         arr_dep:str, time:dt=dt.now(pytz.utc)):
@@ -116,7 +123,7 @@ class VVSService:
                 key=lambda journey : journey.get_arr_time())
 
         recommended_journey = sorted_by_arrival[0]
-        that_much_faster = 5
+        that_much_faster = timedelta(minutes=5)
         for journey in sorted_by_arrival:
             if(recommended_journey.get_duration() >= that_much_faster + journey.get_duration()):
                 recommended_journey = journey
