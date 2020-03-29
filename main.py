@@ -58,7 +58,7 @@ class Main:
 
         except (KeyboardInterrupt, SystemExit):
             self.scheduler.shutdown()
-            httpd.shutdown()
+            self.httpd.shutdown()
 
 if __name__ == '__main__':
     main = Main()

@@ -167,8 +167,7 @@ class WorkSession(Usecase):
                     msg += table_to_html(journey.to_table())
                     msg += '<br>Would you like to listen to music?'
 
-                    return "music", {'message': msg,
-                                     'table': journey.to_table()}
+                    return "music", msg
 
             msg = 'You have no upcoming events.'
             msg += '<br>Would you like to listen to music?'
@@ -180,7 +179,7 @@ class WorkSession(Usecase):
             if find_whole_word('yes')(message):
                 link = self.music_service.get_playlist_for_mood('focus')
                 msg += "How about this Spotify playlist?"
-                reply = {**reply, 'link': link}
+                msg += "<br>" + link_to_html(link) + "<br>"
 
             msg += "<br>Which project do you want to work on?<br>"
             self.projects = self.todo_service.get_project_names()
@@ -199,13 +198,12 @@ class WorkSession(Usecase):
 
             todos = self.todo_service.get_project_items(self.chosen_project)
             if todos:
-                reply = {'list': todos}
-                msg = f"Here are your Todo's for {self.chosen_project}."
+                msg = f"Here are your Todo's for {self.chosen_project}: <br>"
+                msg += list_to_html(todos) + "<br>"
             else:
-                reply = {}
                 msg = f"There are no Todo's for {self.chosen_project}."
             msg += "<br>Do you want to start a pomodoro session?"
-            return "pomodoro", {**reply, 'message': msg}
+            return "pomodoro", msg
 
         def pomodoro_trans(message):
             if message is None: message = ""
@@ -219,8 +217,8 @@ class WorkSession(Usecase):
                     msg =   ("Can't start another pomodoro. "
                              "You should get going on your journey. <br>"
                             )
-                    msg += str(self.journey)
-                    return "end_state", msg
+                    return "end_state", {'message': msg,
+                                         'table': self.journey.to_html() }
 
 
                 self.wait_until(when=dt.now(pytz.utc) + delta,
@@ -248,8 +246,8 @@ class WorkSession(Usecase):
                     msg =   ("Can't start another break. "
                              "You should get going on your journey. <br>"
                             )
-                    msg += str(self.journey)
-                    return "end_state", msg
+                    return "end_state", {'message': msg,
+                                         'table': self.journey.to_html() }
 
                 self.wait_until(when=dt.now(pytz.utc) + delta,
                     next_state="pomodoro",
