@@ -153,7 +153,7 @@ class Cook(Usecase):
         search_params.set_time(cooking_timestamp)
         search_params.search_params['radius'] = 10000
         return_json = self.yelp_service.get_next_business(search_params)
-        self.response_message = "A restaurant nearby is " + return_json['name'] + "and you can reach them at " + return_json['address'] + " (Phone: " + return_json['phone'] + ")"
+        self.response_message = "A restaurant nearby is " + return_json['name'] + " and you can reach them at " + return_json['address'] + " (Phone: " + return_json['phone'] + ")"
 
     def get_response(self):
         return self.response_message
