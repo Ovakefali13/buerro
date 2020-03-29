@@ -1,6 +1,7 @@
 from datetime import datetime as dt, timedelta
 import pytz
 import re
+from util import link_to_html, list_to_html, dict_to_html, table_to_html
 
 
 from services import TodoistService, VVSService, CalService, PrefService, MusicService
@@ -134,18 +135,22 @@ class WorkSession(Usecase):
                     origin = "Rotebühlplatz" # TODO determine current location
                     dest = next_event['location']
 
-                    origin_id = self.vvs_service.get_location_id(origin)
-                    dest_id = self.vvs_service.get_location_id(dest)
-                    if not origin_id or not dest_id:
+                    journey = None
+                    try:
+                        origin_id = self.vvs_service.get_location_id(origin)
+                        dest_id = self.vvs_service.get_location_id(dest)
+
+                        min_early = self.pref['be_minutes_early']
+                        arrive_by = next_event['dtstart'].dt - timedelta(minutes=min_early)
+
+                        journeys = self.vvs_service.get_journeys_for_id(
+                            origin_id, dest_id, "arr", arrive_by)
+                        journey = self.vvs_service.recommend_journey_to_arrive_by(journeys,
+                            next_event.get_start())
+                    except:
+                        # could not determine next location
                         return _event_possibly_too_close(next_event)
 
-                    min_early = self.pref['be_minutes_early']
-                    arrive_by = next_event['dtstart'].dt - timedelta(minutes=min_early)
-
-                    journeys = self.vvs_service.get_journeys_for_id(
-                        origin_id, dest_id, "arr", arrive_by)
-                    journey = self.vvs_service.recommend_journey_to_arrive_by(journeys,
-                        next_event.get_start())
 
                     now = dt.now(pytz.utc)
                     minutes_until = (journey.dep_time - now).seconds / 60
@@ -159,10 +164,11 @@ class WorkSession(Usecase):
                     msg = "I created a reminder for when you have to get going to reach:<br>"
                     msg += next_event.summarize()
                     msg += "<br> using this VVS journey:<br>"
-                    msg += str(journey)
+                    msg += table_to_html(journey.to_table())
                     msg += '<br>Would you like to listen to music?'
 
-                    return "music", msg
+                    return "music", {'message': msg,
+                                     'table': journey.to_table()}
 
             msg = 'You have no upcoming events.'
             msg += '<br>Would you like to listen to music?'

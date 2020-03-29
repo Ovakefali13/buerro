@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
-from dominate import tags
-
+from util import link_to_html, list_to_html, dict_to_html, table_to_html
 
 class FinishedException(Exception):
     pass
@@ -76,49 +75,17 @@ class Reply(CaselessDict):
                     html += value
 
                 if key == 'link':
-                    html += '\n<br>\n'+ str(tags.a(value, href=value))
+                    html += '\n<br>\n'+ link_to_html(value)
 
                 if key == 'list':
-                    if not isinstance(value, list):
-                        raise Exception("Passed non-list as a list to reply")
-                    l = tags.ul()
-                    for el in value:
-                        l += tags.li(el)
-                    html += '\n<br>\n'+ str(l)
+                    html += '\n<br>\n'+ list_to_html(value)
 
                 if key == 'dict':
-                    if not isinstance(value, dict):
-                        raise Exception("Passed non-dict as dict to reply")
-
-                    with tags.table() as table:
-                        with tags.tbody() as tbody:
-                            for k, v in value.items():
-                                with tags.tr() as row:
-                                    tags.td(k)
-                                    tags.td(v)
-
-                    html += '\n<br>\n'+ str(table)
+                    html += '\n<br>\n'+ dict_to_html(value)
 
                 if key == 'table':
-                    if not isinstance(value, dict):
-                        raise Exception("Passed non-dict as dict to reply")
-                    if not all(len(listA) == len(listB)
-                        for listA in value.values() for listB in value.values()):
-                        raise Exception("Provided lists do not have the same length")
+                    html += '\n<br>\n' + table_to_html(value)
 
-                    columns = value.keys()
-                    with tags.table() as table:
-                        with tags.thead() as head:
-                            for col in columns:
-                                tags.th(col)
-                        with tags.tbody() as body:
-                            tuples = zip(*value.values())
-                            for row in tuples:
-                                with tags.tr() as html_row:
-                                    for val in row:
-                                        tags.td(val)
-
-                    html += '\n<br>\n' + str(table)
         return html
 
     def to_notification(self):
@@ -128,3 +95,4 @@ class Reply(CaselessDict):
         notification = Notification(self.message)
         notification.add_message(self.message)
         return notification
+

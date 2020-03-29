@@ -18,6 +18,7 @@ class BuerroBot(ChatbotBehavior):
     usecase_by_keyword = {
         "travel": Transport,
         "work session": WorkSession,
+        "working": WorkSession,
         "lunch": Lunchbreak,
         #"github": Github,
         "cook": Cook
