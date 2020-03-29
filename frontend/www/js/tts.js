@@ -4,10 +4,7 @@ var synth = window.speechSynthesis;
 
 function toggle_speech() {
     if(enabled) {
-        if(running) {
-            synth.cancel()
-            running = false
-        }
+        synth.cancel()
         enabled = false;
         $("#speak").css("background-color","Gray");
     } else {
@@ -22,15 +19,6 @@ function speak() {
         const utterance = new SpeechSynthesisUtterance(div.textContent.trim());        
         utterance.lang = 'en-US';    
 
-        if(running) {
-            synth.cancel()
-            running = false
-        } else {
-            running = true;                
-            synth.speak(utterance);
-            utterance.onend = function(event) {
-                running = false;
-            }
-        }
+        synth.speak(utterance);
     }
 }
