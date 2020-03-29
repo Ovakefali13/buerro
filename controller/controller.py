@@ -81,7 +81,7 @@ def ControllerFromArgs(scheduler:BaseScheduler, chatbot:Chatbot):
 
             if self.path == "/message":
 
-                if 'location' in body and len(body['location']) == 2:
+                if body.get('location') and len(body['location']) == 2:
                     lat, lon = tuple(body['location'])
                     self.location_handler.set(lat, lon)
 
