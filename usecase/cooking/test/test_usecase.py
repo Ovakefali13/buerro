@@ -13,12 +13,9 @@ from services.yelp import YelpService, YelpServiceRemote
 from services.yelp.test.test_service import YelpMock
 from services.spoonacular import SpoonacularService, SpoonacularJSONRemote
 from services.spoonacular.test.test_service import SpoonacularMOCKRemote
-from handler import Notification, NotificationHandler, LocationHandler, \
-    UsecaseStore
+from handler import LocationHandler
 
 class TestCooking(unittest.TestCase):
-    MOCK_LOCATION = (48.784611, 9.174310)
-
     @classmethod
     def setUpClass(self):
         if 'DONOTMOCK' in os.environ:
@@ -51,7 +48,7 @@ class TestCooking(unittest.TestCase):
 
     @patch.object(LocationHandler.instance(), 'get')
     def test_usecase(self, location_mock):
-        location_mock.return_value = self.MOCK_LOCATION
+        location_mock.return_value = (48.784611, 9.174310)
         reply = self.use_case.advance('I like to cook with PORK')
         response_message = self.use_case.get_response()
         self.assertIsInstance(reply, Reply)
