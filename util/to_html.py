@@ -43,5 +43,7 @@ def table_to_html(value):
             for row in tuples:
                 with tags.tr() as html_row:
                     for val in row:
+                        if val is None:
+                            val = "None"
                         tags.td(val)
     return str(table)

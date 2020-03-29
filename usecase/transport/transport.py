@@ -261,7 +261,7 @@ class Transport(Usecase):
         # Check if mode of travel exist
         if vvs is not None:
             viable.append('VVS')
-            vvs_duration = vvs.get_duration() * 60 # to seconds
+            vvs_duration = vvs.get_duration().total_seconds()
         if cycling is not None:
             viable.append('cycling')            
             cycling_duration = cycling.get('duration')

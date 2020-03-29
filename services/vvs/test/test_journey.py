@@ -39,9 +39,9 @@ class TestJourney(unittest.TestCase):
         journey.set_legs([leg1, leg2])
 
         expected = str(
-            "A at 08:00 to B by ['U1', 'U2'] until 08:15 takes 15.0\n"
-        +   "A at 08:00 to C by U1 until 08:05 takes 5.0\n"
-        +   "C at 08:05 to B by U2 until 08:15 takes 10.0"
+            "A at 08:00 to B by ['U1', 'U2'] until 08:15 takes 0:15:00\n"
+        +   "A at 08:00 to C by U1 until 08:05 takes 0:05:00\n"
+        +   "C at 08:05 to B by U2 until 08:15 takes 0:10:00"
         )
 
         self.assertEqual(expected, str(journey))

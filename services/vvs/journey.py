@@ -56,7 +56,7 @@ class Journey:
                 + ' takes ' + str(self.get_duration()))
 
         for leg in self.legs:
-            description += "<br>" + str(leg)
+            description += "\n" + str(leg)
 
         return description
 

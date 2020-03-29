@@ -218,7 +218,7 @@ class WorkSession(Usecase):
                              "You should get going on your journey. <br>"
                             )
                     return "end_state", {'message': msg,
-                                         'table': self.journey.to_html() }
+                                         'table': self.journey.to_table() }
 
 
                 self.wait_until(when=dt.now(pytz.utc) + delta,
@@ -247,7 +247,7 @@ class WorkSession(Usecase):
                              "You should get going on your journey. <br>"
                             )
                     return "end_state", {'message': msg,
-                                         'table': self.journey.to_html() }
+                                         'table': self.journey.to_table() }
 
                 self.wait_until(when=dt.now(pytz.utc) + delta,
                     next_state="pomodoro",
