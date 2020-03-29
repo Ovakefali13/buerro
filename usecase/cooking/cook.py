@@ -63,7 +63,7 @@ class Cook(Usecase):
             else:
                 self.no_time = False
                 self.finished = True
-                return Reply({'message': 'Ok'})
+                return Reply({'message': 'Ok, dann nicht'})
         else:
             '''
             Tested with
@@ -78,6 +78,8 @@ class Cook(Usecase):
             '''
             p = re.compile(r'([\n\r]*with\s*([^\s\r]*)|[\n\r]*have\s(?!time|some)\s*([^\s\r]*))')
             list = p.findall(message)
+            if not list:
+                return Reply({'message': 'Please specify a ingredient like this "I like to cook with pork"' })
             if list[0][1] == '':
                 self.ingredient = list[0][2]
             else:
