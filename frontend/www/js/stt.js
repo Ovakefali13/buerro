@@ -43,6 +43,7 @@ if (!('webkitSpeechRecognition' in window)) {
       var range = document.createRange();
       range.selectNode(document.getElementById('prompt_input'));
       window.getSelection().addRange(range);
+      $("#prompt_input").val("");
     }    
   };
 
@@ -77,6 +78,11 @@ function linebreak(s) {
 var first_char = /\S/;
 function capitalize(s) {
   return s.replace(first_char, function(m) { return m.toUpperCase(); });
+}
+
+function stop_record() {
+  recognition.stop();
+  $("#record").css("background-color","GoldenRod");  
 }
 
 function record(event) {
