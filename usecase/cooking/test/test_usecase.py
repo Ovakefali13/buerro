@@ -4,6 +4,7 @@ import os
 
 from usecase.cooking import Cook
 from usecase.usecase import Reply
+from unittest.mock import patch
 from services.todoAPI.todoist_service import TodoistJSONRemote, TodoistService
 from services.todoAPI.test.test_service import TodoistMockRemote
 from services.cal.cal_service import CalService, iCloudCaldavRemote
@@ -12,6 +13,8 @@ from services.yelp import YelpService, YelpServiceRemote
 from services.yelp.test.test_service import YelpMock
 from services.spoonacular import SpoonacularService, SpoonacularJSONRemote
 from services.spoonacular.test.test_service import SpoonacularMOCKRemote
+from handler import Notification, NotificationHandler, LocationHandler, \
+    UsecaseStore
 
 class TestCooking(unittest.TestCase):
     MOCK_LOCATION = (48.784611, 9.174310)
