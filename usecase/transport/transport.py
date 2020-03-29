@@ -75,7 +75,9 @@ class Transport(Usecase):
             raise Exception("Set Services!")
 
         if None in self.req_info.values():
-            self.set_transport_parameters(message)           
+            self.set_transport_parameters(message)
+        if None in self.req_info.values():
+            return Reply({'message': 'Please specify at least where you want to go. Example: I want to travel from home to the university and arrive at 10 p.m..'})
 
         if None in self.transport_info.values():
             self.get_transport_information()
@@ -336,4 +338,3 @@ class Transport(Usecase):
             reply_dict['message'] = reply_dict['message'] + f' However, the mode {fastest} is faster by {print_duration(favorite_duration - fastest_duration)}.'      
 
         return Reply(reply_dict)
-
