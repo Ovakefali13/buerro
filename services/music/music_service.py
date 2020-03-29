@@ -163,6 +163,7 @@ class SpotifyRemote(MusicRemote):
             if not playlist:
                 raise Exception("Couldn't find any matching playlist")
 
+            breakpoint()
             return playlist['external_urls']['spotify']
 
 @Singleton
@@ -175,3 +176,4 @@ class MusicService:
 
     def get_playlist_for_mood(self, mood:str):
         return self.remote.get_playlist_for_mood(mood)
+
