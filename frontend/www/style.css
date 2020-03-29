@@ -44,7 +44,7 @@ body {
 }
 
 .bubblecontainer {
-    height:90%;
+    height:86.5%;
     overflow: scroll;
 }
 
@@ -94,6 +94,7 @@ body {
 
 
 .chat-record-btn{
+    max-width: ;
     position:fixed;
 	min-width:120px;
     height:120px;

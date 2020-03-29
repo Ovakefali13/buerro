@@ -115,7 +115,7 @@ class CalService:
 
     def get_events_between(self, start:dt, end:dt=None):
         events = self.remote.date_search(start, end)
-        return sorted(events, key=lambda e: e['dtstart'].dt)
+        return sorted(events, key=lambda e: e.get_start())
 
     def get_all_events(self):
         return self.remote.events()
