@@ -11,6 +11,7 @@ from services.cal.cal_service import CalService
 from services.spoonacular.spoonacular_service import SpoonacularService
 from services.cal import Event
 from services.yelp import YelpRequest
+from handler import LocationHandler
 
 class Cook(Usecase):
     ingredient = 'pork'
@@ -50,9 +51,12 @@ class Cook(Usecase):
             raise Exception("Set services!")
         message = message.lower()
         if self.no_time:
-            p = re.compile('^([\w\-]..)')
+            p = re.compile(r'^([\w\-]..)')
+            message = message + "fill"
             item = p.match(message)
-            if item[0] == 'yes':
+            print(item)
+            print(item[0])
+            if str(item[0]) == 'yes':
                 self.not_time_to_cook()
                 self.no_time = False
                 self.finished = True
@@ -74,7 +78,7 @@ class Cook(Usecase):
             - I like to cook with pork and some false information
             - I have chicken and want to cook
             '''
-            p = re.compile('([\n\r]*with\s*([^\s\r]*)|[\n\r]*have\s(?!time|some)\s*([^\s\r]*))')
+            p = re.compile(r'([\n\r]*with\s*([^\s\r]*)|[\n\r]*have\s(?!time|some)\s*([^\s\r]*))')
             list = p.findall(message)
             if list[0][1] == '':
                 self.ingredient = list[0][2]
@@ -139,13 +143,15 @@ class Cook(Usecase):
         return self.calendar_service.add_event(self.cooking_event)
 
     def not_time_to_cook(self):
+        coords = self.get_location()
+        print(coords)
         cooking_time = datetime.fromisoformat(str(datetime.utcnow().date()))
         cooking_timestamp = datetime.timestamp(cooking_time)
 
         search_params = YelpRequest()
-        search_params.set_location('Jägerstraße 56, 70174 Stuttgart')
+        search_params.set_coordinates(coords)
         search_params.set_time(cooking_timestamp)
-        search_params.search_params['radius'] = 1000
+        search_params.search_params['radius'] = 10000
         return_json = self.yelp_service.get_next_business(search_params)
         self.response_message = "A restaurant nearby is " + return_json['name'] + "and you can reach them at " + return_json['address'] + " (Phone: " + return_json['phone'] + ")"
 
@@ -158,3 +164,7 @@ class Cook(Usecase):
     def get_cooking_event(self):
         return self.cooking_event
 
+    def get_location(self):
+        lh = LocationHandler.instance()
+        lat, lon = lh.get()
+        return lat, lon
