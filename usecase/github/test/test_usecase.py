@@ -11,6 +11,8 @@ from services.cal.cal_service import CalService, iCloudCaldavRemote
 from services.cal.test.test_service import CalMockRemote
 from services.github.github_service import GithubService, GithubRealRemote
 from services.github.test.test_service import GithubMockRemote
+from unittest.mock import patch
+from handler import NotificationHandler;
 
 class TestGithub(unittest.TestCase):
 
@@ -21,16 +23,17 @@ class TestGithub(unittest.TestCase):
                 TodoistJSONRemote.instance())
             self.calendar_service = CalService.instance(
                 iCloudCaldavRemote.instance())
-            self.github_service = GithubService.instance(fallback=GithubMockRemote.instance())
-            
         else:
             print("Mocking remotes...")
             self.todoist_service = TodoistService.instance(
                 TodoistMockRemote.instance())
             self.calendar_service = CalService.instance(
                 CalMockRemote.instance())
-            self.github_service = GithubService.instance(remote=GithubMockRemote.instance())
-
+        if 'DONOTMOCK_GITHUB' in os.environ:
+            self.github_service = GithubService.instance(GithubRealRemote.instance())
+        else:
+            print("Mocking remotes...")
+            self.github_service = GithubService.instance(GithubMockRemote.instance())
         self.use_case = Github()
         self.use_case.set_services(
             todoist_service=self.todoist_service,
@@ -41,37 +44,26 @@ class TestGithub(unittest.TestCase):
     def test_usecase_should_start_unfinished(self):
         self.assertFalse(self.use_case.finished)
     
-    def test_usecase_handles_mock_notification(self):
-        if 'DONOTMOCK' not in os.environ:
-            self.use_case.trigger_proactive_usecase()
-            self.assertTrue(self.use_case.issue)
-        else:
-            self.assertTrue(True)
+    @patch.object(NotificationHandler.instance(), 'push')
+    def test_proactivity(self, mock_notification):
+        self.use_case.trigger_proactive_usecase()
+        mock_notification.assert_called_once()
     
     def test_usecase_handles_ignore_issue(self):
-        if 'DONOTMOCK' not in os.environ:
-            self.use_case.trigger_proactive_usecase()
-            reply = self.use_case.advance("Ignore the issue.")
-            self.assertEqual(reply, {'message': "Okay I will ignore the issue."})
-        else:
-            self.assertTrue(True)
+        self.use_case.trigger_proactive_usecase()
+        reply = self.use_case.advance("Ignore the issue.")
+        self.assertEqual(reply, {'message': "Okay I will ignore the issue."})
     
     def test_usecase_handles_todo_and_calendar_entry(self):
-        if 'DONOTMOCK' not in os.environ:
-            self.use_case.trigger_proactive_usecase()
-            reply = self.use_case.advance("Put the issue on my todo list.")
-            self.assertEqual(reply, {'message': "I will add the issue to your todos."})
-            reply = self.use_case.advance("Find space in my calendar for it.")
-            self.assertEqual(reply, {'message': "Let me find a free time slot in your calendar."})
-        else:
-            self.assertTrue(True)
+        self.use_case.trigger_proactive_usecase()
+        reply = self.use_case.advance("Put the issue on my todo list.")
+        self.assertEqual(reply, {'message': "I will add the issue to your todos."})
+        reply = self.use_case.advance("Find space in my calendar for it.")
+        self.assertTrue("calendar" in reply['message'])
     
     def test_usecase_finds_free_time_slot(self):
-        if 'DONOTMOCK' not in os.environ:
-            time_slot = self.use_case.find_available_time_slot()
-            self.assertTrue(time_slot)
-        else:
-            self.assertTrue(True)
+        time_slot = self.use_case.find_available_time_slot()
+        self.assertTrue(time_slot)
     
     def test_usecase_can_create_event(self):
         event = self.use_case.create_cal_event(datetime.now(pytz.utc), datetime.now(pytz.utc) + timedelta(minutes=60),"<Issue Name>")
