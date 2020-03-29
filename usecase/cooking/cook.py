@@ -54,13 +54,15 @@ class Cook(Usecase):
             item = p.match(message)
             if item[0] == 'yes':
                 self.not_time_to_cook()
-                self.not_time = False
+                self.no_time = False
                 self.finished = True
                 return Reply({'message': self.response_message})
             else:
+                self.no_time = False
                 self.finished = True
                 return Reply({'message': 'Ok'})
         else:
+            print("Are you ready")
             '''
             Tested with
             - I like to cook with pork
@@ -78,8 +80,8 @@ class Cook(Usecase):
                 self.ingredient = list[0][2]
             else:
                 self.ingredient = list[0][1]
-            self.not_time = self.trigger_use_case()
-            if self.not_time: 
+            self.no_time = self.trigger_use_case()
+            if self.no_time:
                 self.finished = False
                 return Reply({'message': 'No time to cook. Would you like to get a restaurant in your area? (Yes/No)'})
             else:
@@ -145,7 +147,7 @@ class Cook(Usecase):
         search_params.set_time(cooking_timestamp)
         search_params.search_params['radius'] = 1000
         return_json = self.yelp_service.get_next_business(search_params)
-        self.response_message = "A restaurant nearby is " + return_json['name'] + "and you can reach them at " + return_json['address'] + "(" + return_json['phone'] + ")"
+        self.response_message = "A restaurant nearby is " + return_json['name'] + "and you can reach them at " + return_json['address'] + " (Phone: " + return_json['phone'] + ")"
 
     def get_response(self):
         return self.response_message
