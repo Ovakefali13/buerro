@@ -74,7 +74,7 @@ class Lunchbreak(Usecase):
             return Reply({'message': return_message, 'dict': return_dict})
         else:
             choice = self.evaluate_user_request(message, self.restaurants)
-            if (choice is None) | (choice > self.max_restaurants):
+            if (choice is None) or (choice > self.max_restaurants):
                 print(choice)
                 print(self.max_restaurants)
                 return Reply(("I could not match your answer to any restaurant. "
@@ -159,7 +159,7 @@ class Lunchbreak(Usecase):
                 if (match):
                     selectedRestaurant = num
                     return (selectedRestaurant-1)
-        return None
+        return 100
 
     def time_diff_in_hours(self, date1, date2):
         time_until_lunch = date1 - date2
