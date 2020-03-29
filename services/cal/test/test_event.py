@@ -95,5 +95,6 @@ class TestEvent(unittest.TestCase):
         event.add("dtend", datetime(2020, 2, 26, 19, 00))
         event.add("location", "Test Location")
 
-        expected = "Test Event from 18:00 until 19:00 at Test Location"
-        self.assertEqual(expected, event.summarize())
+        time_regex = "[0-9]{1,2}:[0-9]{1,2}"
+        regex = f"Test Event from {time_regex} until {time_regex} at Test Location"
+        self.assertRegex(event.summarize(), regex)
