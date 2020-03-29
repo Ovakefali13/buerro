@@ -54,8 +54,6 @@ class Cook(Usecase):
             p = re.compile(r'^([\w\-]..)')
             message = message + "fill"
             item = p.match(message)
-            print(item)
-            print(item[0])
             if str(item[0]) == 'yes':
                 self.not_time_to_cook()
                 self.no_time = False
@@ -66,7 +64,6 @@ class Cook(Usecase):
                 self.finished = True
                 return Reply({'message': 'Ok'})
         else:
-            print("Are you ready")
             '''
             Tested with
             - I like to cook with pork
@@ -104,6 +101,7 @@ class Cook(Usecase):
             return False
         else:
             return True
+            
     def check_for_time(self):
         now = datetime.now(pytz.utc)
         end_of_day = datetime.now(pytz.utc).replace(hour=23, minute=59, second=59)
@@ -131,7 +129,6 @@ class Cook(Usecase):
 
     def set_calender(self):
         cooking_time = self.spoonacle_service.get_cookingTime()
-
         self.cooking_event = Event()
         self.cooking_event.set_title('Cooking')
         self.cooking_event.set_location('Home')
@@ -144,7 +141,6 @@ class Cook(Usecase):
 
     def not_time_to_cook(self):
         coords = self.get_location()
-        print(coords)
         cooking_time = datetime.fromisoformat(str(datetime.utcnow().date()))
         cooking_timestamp = datetime.timestamp(cooking_time)
 
