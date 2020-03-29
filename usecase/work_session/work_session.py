@@ -1,6 +1,7 @@
 from datetime import datetime as dt, timedelta
 import pytz
 import re
+from util import link_to_html, list_to_html, dict_to_html, table_to_html
 
 
 from services import TodoistService, VVSService, CalService, PrefService, MusicService
@@ -134,18 +135,22 @@ class WorkSession(Usecase):
                     origin = "Rotebühlplatz" # TODO determine current location
                     dest = next_event['location']
 
-                    origin_id = self.vvs_service.get_location_id(origin)
-                    dest_id = self.vvs_service.get_location_id(dest)
-                    if not origin_id or not dest_id:
+                    journey = None
+                    try:
+                        origin_id = self.vvs_service.get_location_id(origin)
+                        dest_id = self.vvs_service.get_location_id(dest)
+
+                        min_early = self.pref['be_minutes_early']
+                        arrive_by = next_event['dtstart'].dt - timedelta(minutes=min_early)
+
+                        journeys = self.vvs_service.get_journeys_for_id(
+                            origin_id, dest_id, "arr", arrive_by)
+                        journey = self.vvs_service.recommend_journey_to_arrive_by(journeys,
+                            next_event.get_start())
+                    except:
+                        # could not determine next location
                         return _event_possibly_too_close(next_event)
 
-                    min_early = self.pref['be_minutes_early']
-                    arrive_by = next_event['dtstart'].dt - timedelta(minutes=min_early)
-
-                    journeys = self.vvs_service.get_journeys_for_id(
-                        origin_id, dest_id, "arr", arrive_by)
-                    journey = self.vvs_service.recommend_journey_to_arrive_by(journeys,
-                        next_event.get_start())
 
                     now = dt.now(pytz.utc)
                     minutes_until = (journey.dep_time - now).seconds / 60
@@ -159,7 +164,7 @@ class WorkSession(Usecase):
                     msg = "I created a reminder for when you have to get going to reach:<br>"
                     msg += next_event.summarize()
                     msg += "<br> using this VVS journey:<br>"
-                    msg += str(journey)
+                    msg += table_to_html(journey.to_table())
                     msg += '<br>Would you like to listen to music?'
 
                     return "music", msg
@@ -174,7 +179,7 @@ class WorkSession(Usecase):
             if find_whole_word('yes')(message):
                 link = self.music_service.get_playlist_for_mood('focus')
                 msg += "How about this Spotify playlist?"
-                reply = {**reply, 'link': link}
+                msg += "<br>" + link_to_html(link) + "<br>"
 
             msg += "<br>Which project do you want to work on?<br>"
             self.projects = self.todo_service.get_project_names()
@@ -193,13 +198,12 @@ class WorkSession(Usecase):
 
             todos = self.todo_service.get_project_items(self.chosen_project)
             if todos:
-                reply = {'list': todos}
-                msg = f"Here are your Todo's for {self.chosen_project}."
+                msg = f"Here are your Todo's for {self.chosen_project}: <br>"
+                msg += list_to_html(todos) + "<br>"
             else:
-                reply = {}
                 msg = f"There are no Todo's for {self.chosen_project}."
             msg += "<br>Do you want to start a pomodoro session?"
-            return "pomodoro", {**reply, 'message': msg}
+            return "pomodoro", msg
 
         def pomodoro_trans(message):
             if message is None: message = ""
@@ -213,8 +217,8 @@ class WorkSession(Usecase):
                     msg =   ("Can't start another pomodoro. "
                              "You should get going on your journey. <br>"
                             )
-                    msg += str(self.journey)
-                    return "end_state", msg
+                    return "end_state", {'message': msg,
+                                         'table': self.journey.to_table() }
 
 
                 self.wait_until(when=dt.now(pytz.utc) + delta,
@@ -242,8 +246,8 @@ class WorkSession(Usecase):
                     msg =   ("Can't start another break. "
                              "You should get going on your journey. <br>"
                             )
-                    msg += str(self.journey)
-                    return "end_state", msg
+                    return "end_state", {'message': msg,
+                                         'table': self.journey.to_table() }
 
                 self.wait_until(when=dt.now(pytz.utc) + delta,
                     next_state="pomodoro",

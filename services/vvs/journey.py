@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 from copy import copy
+import pytz
 
 from services.cal import Event
 
@@ -20,7 +21,7 @@ class Journey:
         self.dep_time = dep_time
         self.arr_time = arr_time
         if arr_time is not None and dep_time is not None:
-            self.duration = divmod((arr_time - dep_time).total_seconds(), 60)[0]
+            self.duration = arr_time - dep_time
 
         self.legs = []
         self.transportation = None
@@ -38,7 +39,7 @@ class Journey:
         if self.duration:
             return self.duration
         if self.arr_time and self.dep_time:
-            self.duration = divmod((self.arr_time - self.dep_time).total_seconds(), 60)[0]
+            self.duration = self.arr_time - self.dep_time
             return self.duration
 
         raise Error("duration can not be calculated")
@@ -58,6 +59,28 @@ class Journey:
             description += "\n" + str(leg)
 
         return description
+
+    def get_user_tz(self):
+        return pytz.timezone("Europe/Berlin")
+
+    def to_table(self):
+        dep_time = self.dep_time.astimezone(self.get_user_tz()).strftime("%H:%M")
+        arr_time = self.arr_time.astimezone(self.get_user_tz()).strftime("%H:%M")
+        table = {
+            'Origin': [self.origin],
+            'Destination': [self.dest],
+            'Departure': [dep_time],
+            'Arrival': [arr_time],
+            'Means': [self.transportation],
+            'Duration (mins)': [self.get_duration().total_seconds() / 60]
+        }
+
+        for leg in self.legs:
+            leg_table = leg.to_table()
+            for k, l in leg_table.items():
+                table[k] + l
+
+        return table
 
     def to_event(self):
         event = Event()
@@ -90,14 +113,12 @@ class Journey:
         return link
 
     def from_vvs(self, vvs_journey:dict):
-        def from_utc_to_local(utc_dt):
-            return utc_dt.replace(tzinfo=timezone.utc).astimezone()
 
         def parse_vvs_time(datestr:str):
             datestr = datestr.replace("Z", "+00:00")
             vvs_time = datetime.fromisoformat(datestr)
             #vvs_time = datetime.strptime(datestr, "%Y-%m-%dT%H:%M:%SZ")
-            return from_utc_to_local(vvs_time)
+            return vvs_time.astimezone(pytz.utc)
 
         legs = vvs_journey.get('legs', [])
         origin = legs[0].get('origin')

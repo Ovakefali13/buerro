@@ -159,13 +159,6 @@ class TestWorkSession(unittest.TestCase):
         self.cal_service.purge()
         self.usecase.reset()
 
-    def uri_valid(self, x):
-        try:
-            result = urlparse(x)
-            return all([result.scheme, result.netloc, result.path])
-        except:
-            return False
-
     def test_starting_not_worth_it(self):
         event_in_mins = 30
         self.usecase.pref['min_work_period_minutes'] = event_in_mins
@@ -222,8 +215,8 @@ class TestWorkSession(unittest.TestCase):
         expected = "I created a reminder for when you have to get going to reach:"
         self.assertIn(expected, reply.message)
         self.assertIn('upcoming event', reply.message)
-        self.assertIn('until', reply.message)
-        self.assertIn('takes', reply.message)
+        self.assertIn('<table>', reply.message)
+        self.assertIn('Origin', reply.message)
 
         events = self.cal_service.get_all_events()
         events = list(filter(lambda e: 'Hauptbahnhof' in e.get_title(), events))
@@ -239,8 +232,7 @@ class TestWorkSession(unittest.TestCase):
 
         reply = uc.advance('yes')
         self.assertIn(self.states['music_rec'], reply.message)
-        self.assertIsNotNone(reply.link)
-        self.assertTrue(self.uri_valid(reply.link))
+        self.assertIn("spotify.com", reply.message)
         self.assertIn(self.states['project'], reply.message)
 
         reply = uc.advance('Software Engineering')
