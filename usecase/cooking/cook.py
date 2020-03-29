@@ -63,7 +63,7 @@ class Cook(Usecase):
             else:
                 self.no_time = False
                 self.finished = True
-                return Reply({'message': 'Ok, dann nicht'})
+                return Reply({'message': 'Ok, so you don\'t like'})
         else:
             '''
             Tested with
