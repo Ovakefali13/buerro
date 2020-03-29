@@ -44,11 +44,8 @@ body {
 }
 
 .bubblecontainer {
-    height:86.5%;
+    height:90%;
     overflow: scroll;
-}
-
-.bubblecontainer {
     border-collapse: collapse;
 }
 
@@ -94,7 +91,6 @@ body {
 
 
 .chat-record-btn{
-    max-width: ;
     position:fixed;
 	min-width:120px;
     height:120px;
@@ -105,7 +101,6 @@ body {
 	border-radius:100px;
 	text-align:center;
     box-shadow: 2px 2px 3px #999;
-    visibility: 0.5;
     margin-bottom: 350px;
     margin-right: 10px;
 }
@@ -120,8 +115,7 @@ body {
 	color:#FFF;
 	border-radius:100px;
 	text-align:center;
-    box-shadow: 2px 2px 3px #999;    
-    visibility: 0.5;
+    box-shadow: 2px 2px 3px #999; 
     margin-bottom: 200px;
     margin-right: 10px;
 }
