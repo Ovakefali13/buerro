@@ -14,7 +14,7 @@ from services.spoonacular import SpoonacularService, SpoonacularJSONRemote
 from services.spoonacular.test.test_service import SpoonacularMOCKRemote
 
 class TestCooking(unittest.TestCase):
-    MOCK_LOCATION = 'Jägerstraße 56, 70174 Stuttgart'
+    MOCK_LOCATION = 48.784611, 9.174310
 
     @classmethod
     def setUpClass(self):
@@ -47,6 +47,7 @@ class TestCooking(unittest.TestCase):
         )
 
     def test_usecase(self):
+        self.use_case.location = self.MOCK_LOCATION
         reply = self.use_case.advance('I like to cook with PORK')
         response_message = self.use_case.get_response()
         self.assertIsInstance(reply, Reply)

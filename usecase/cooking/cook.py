@@ -11,7 +11,8 @@ from services.cal.cal_service import CalService
 from services.spoonacular.spoonacular_service import SpoonacularService
 from services.cal import Event
 from services.yelp import YelpRequest
-from handler import LocationHandler
+from handler import Notification, NotificationHandler, LocationHandler, \
+    UsecaseStore
 
 class Cook(Usecase):
     ingredient = 'pork'
@@ -26,9 +27,11 @@ class Cook(Usecase):
     cooking_event = None
     no_time = False
     finished = False
+    location = None
 
     def __init__(self):
         self.pref_service = PrefService(PrefJSONRemote())
+        self.set_location()
 
     def set_services(self,
                     todoist_service:TodoistService,
@@ -101,7 +104,7 @@ class Cook(Usecase):
             return False
         else:
             return True
-            
+
     def check_for_time(self):
         now = datetime.now(pytz.utc)
         end_of_day = datetime.now(pytz.utc).replace(hour=23, minute=59, second=59)
@@ -140,12 +143,11 @@ class Cook(Usecase):
         return self.calendar_service.add_event(self.cooking_event)
 
     def not_time_to_cook(self):
-        coords = self.get_location()
         cooking_time = datetime.fromisoformat(str(datetime.utcnow().date()))
         cooking_timestamp = datetime.timestamp(cooking_time)
 
         search_params = YelpRequest()
-        search_params.set_coordinates(coords)
+        search_params.set_coordinates(self.location)
         search_params.set_time(cooking_timestamp)
         search_params.search_params['radius'] = 10000
         return_json = self.yelp_service.get_next_business(search_params)
@@ -160,7 +162,7 @@ class Cook(Usecase):
     def get_cooking_event(self):
         return self.cooking_event
 
-    def get_location(self):
+    def set_location(self):
         lh = LocationHandler.instance()
         lat, lon = lh.get()
-        return lat, lon
+        self.location = lat, lon
