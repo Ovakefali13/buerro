@@ -46,7 +46,7 @@ class TestCooking(unittest.TestCase):
             spoonacle_service=self.spoonacle_service
         )
 
-    @patch.object(LocationHandler._decorated, 'get')
+    @patch.object(LocationHandler.instance(), 'get')
     def test_usecase(self, location_mock):
         location_mock.return_value = (48.784611, 9.174310)
         reply = self.use_case.advance('I like to cook with PORK')
@@ -62,7 +62,9 @@ class TestCooking(unittest.TestCase):
         event = self.use_case.get_cooking_event()
         #event.delete()
 
-    def test_not_time_to_cook(self):
+    @patch.object(LocationHandler.instance(), 'get')
+    def test_not_time_to_cook(self, location_mock):
+        location_mock.return_value = (48.784611, 9.174310)
         self.use_case.not_time_to_cook()
 
         response_message = self.use_case.get_response()
