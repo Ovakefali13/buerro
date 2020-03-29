@@ -109,17 +109,23 @@ $(document).ready(function() {
 
     putBotMessage("Hello, it's me, the PDA for your buerro. Ask me anything.")
 
-    $("#prompt_input").keypress(function(e) {
-        if(e.which == 13) {
-            processUserPrompt($("#prompt_input").val());
-            $("#prompt_input").val("");
-        }
-    });
-
+    $('#submit-btn').prop('disabled',true);
     $("#submit-btn").click(function () {
         processUserPrompt($("#prompt_input").val());
         $("#prompt_input").val("");
+        $('#loader').show(100);
+        $('#submit-btn').val('Loading');
+        $('#submit-btn').prop('disabled',true);
+
     });
+    
+    $("#prompt_input").on('change input', function() {
+        if (!$.trim($("#prompt_input").val())) {
+            $('#submit-btn').prop('disabled', true)
+        } else {
+            $('#submit-btn').prop('disabled', false)
+        }
+    })
 
     navigator.serviceWorker.addEventListener('message', event => {
     if(event.data.options.data) {
@@ -139,6 +145,8 @@ function putUserMessage(message) {
 
 function putBotMessage(message) {
     var container = $(".bubblecontainer")
+    $('#submit-btn').val('Send');
+    $('#loader').hide(100);
     container.append(generateChatBubble(true, message));
 
     container[0].scrollTop = container[0].scrollHeight
