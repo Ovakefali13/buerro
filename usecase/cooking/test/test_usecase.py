@@ -4,6 +4,7 @@ import os
 
 from usecase.cooking import Cook
 from usecase.usecase import Reply
+from unittest.mock import patch
 from services.todoAPI.todoist_service import TodoistJSONRemote, TodoistService
 from services.todoAPI.test.test_service import TodoistMockRemote
 from services.cal.cal_service import CalService, iCloudCaldavRemote
@@ -12,10 +13,9 @@ from services.yelp import YelpService, YelpServiceRemote
 from services.yelp.test.test_service import YelpMock
 from services.spoonacular import SpoonacularService, SpoonacularJSONRemote
 from services.spoonacular.test.test_service import SpoonacularMOCKRemote
+from handler import LocationHandler
 
 class TestCooking(unittest.TestCase):
-    MOCK_LOCATION = 'Jägerstraße 56, 70174 Stuttgart'
-
     @classmethod
     def setUpClass(self):
         if 'DONOTMOCK' in os.environ:
@@ -46,7 +46,9 @@ class TestCooking(unittest.TestCase):
             spoonacle_service=self.spoonacle_service
         )
 
-    def test_usecase(self):
+    @patch.object(LocationHandler.instance(), 'get')
+    def test_usecase(self, location_mock):
+        location_mock.return_value = (48.784611, 9.174310)
         reply = self.use_case.advance('I like to cook with PORK')
         response_message = self.use_case.get_response()
         self.assertIsInstance(reply, Reply)
@@ -60,7 +62,9 @@ class TestCooking(unittest.TestCase):
         event = self.use_case.get_cooking_event()
         #event.delete()
 
-    def test_not_time_to_cook(self):
+    @patch.object(LocationHandler.instance(), 'get')
+    def test_not_time_to_cook(self, location_mock):
+        location_mock.return_value = (48.784611, 9.174310)
         self.use_case.not_time_to_cook()
 
         response_message = self.use_case.get_response()
