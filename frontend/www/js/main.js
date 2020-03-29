@@ -110,13 +110,14 @@ $(document).ready(function() {
     putBotMessage("Hello, it's me, the PDA for your buerro. Ask me anything.")
 
     $('#submit-btn').prop('disabled',true);
-    $("#submit-btn").click(function () {
-        processUserPrompt($("#prompt_input").val());
-        $("#prompt_input").val("");
+    $("#submit-btn").click(function () {        
+        stop_record()        
+        processUserPrompt($("#prompt_input").val());        
         $('#loader').show(100);
         $('#submit-btn').val('Loading');
         $('#submit-btn').prop('disabled',true);
-
+        $("#prompt_input").val("");
+        //$("#prompt_input").focus()
     });
     
     $("#prompt_input").on('change input', function() {
@@ -148,7 +149,7 @@ function putBotMessage(message) {
     $('#submit-btn').val('Send');
     $('#loader').hide(100);
     container.append(generateChatBubble(true, message));
-
+    speak();
     container[0].scrollTop = container[0].scrollHeight
 }
 
