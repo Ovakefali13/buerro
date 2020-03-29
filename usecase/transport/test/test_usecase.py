@@ -2,6 +2,7 @@ import unittest
 from datetime import datetime, timedelta
 from freezegun import freeze_time
 from unittest.mock import patch
+from unittest import skipIf
 import os
 import json
 
@@ -19,35 +20,28 @@ class TestTransport(unittest.TestCase):
     def setUpClass(self):
         self.use_case = Transport()
 
+    @skipIf('DONOTMOCK' not in os.environ, reason = 'Mocking does not make sense since a vast amount of APIs is required with each of them depending on each other.')
     @freeze_time('2020-03-26 21:30:00')
     @patch.object(WeatherAdapter._decorated, 'is_bad_weather', return_value=False)
     def test_usecase(self, is_bad_weather):
+        with open(os.path.join(os.path.dirname(__file__), 'mock_data.json'), 'r') as f:
+            mock_route = json.load(f)
 
-        if 'DONOTMOCK' in os.environ:
-            with open(os.path.join(os.path.dirname(__file__), 'mock_data.json'), 'r') as f:
-                mock_route = json.load(f)
-
-            for route in mock_route:
-                temp = route['req_info']
-                mock_req_info = {                
-                    'Start': tuple(temp['Start']),
-                    'Dest': tuple(temp['Dest']),
-                    'ArrDep': temp['ArrDep'],
-                    'Time': datetime(2020, 3, temp['Day'], temp['Hour'], temp['Minute'])
-                }       
-                mock_reply = route['reply']
-                mock_sentence = route['sentence']
-                
-                reply = self.use_case.advance(mock_sentence)
-
-                # Check if the request information is correct
-                self.assertEqual(mock_req_info, self.use_case.req_info)
-
-                # Check if reply is corret
-                self.assertIsInstance(reply, Reply)
-        else:
-            self.assertIsInstance(self.use_case, Transport)
+        for route in mock_route:
+            temp = route['req_info']
+            mock_req_info = {                
+                'Start': tuple(temp['Start']),
+                'Dest': tuple(temp['Dest']),
+                'ArrDep': temp['ArrDep'],
+                'Time': datetime(2020, 3, temp['Day'], temp['Hour'], temp['Minute'])
+            }       
+            mock_reply = route['reply']
+            mock_sentence = route['sentence']
             
-                 
-        
+            reply = self.use_case.advance(mock_sentence)
 
+            # Check if the request information is correct
+            self.assertEqual(mock_req_info, self.use_case.req_info)
+
+            # Check if reply is corret
+            self.assertIsInstance(reply, Reply)
