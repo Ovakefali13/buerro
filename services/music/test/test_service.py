@@ -8,8 +8,8 @@ from .. import MusicRemote, SpotifyRemote, MusicService
 @Singleton
 class MusicMockRemote(MusicRemote):
     def get_playlist_for_mood(self, mood:str):
-        return "https://open.spotify.com/playlist/37i9dQZF1DX576ecqLnVqL?si=xij5j2DsQwClphFotqa3dQ"
-
+        uri = "https://open.spotify.com/playlist/37i9dQZF1DX576ecqLnVqL?si=xij5j2DsQwClphFotqa3dQ"
+        return uri, "Test Playlist"
 
 class TestMusicService(unittest.TestCase):
 
@@ -27,5 +27,6 @@ class TestMusicService(unittest.TestCase):
                 return all([result.scheme, result.netloc, result.path])
             except:
                 return False
-        uri = self.music_service.get_playlist_for_mood("focus")
+        uri, name = self.music_service.get_playlist_for_mood("focus")
         self.assertTrue(uri_valid(uri))
+        self.assertIsInstance(name, str)

@@ -1,9 +1,9 @@
 from dominate import tags
 
-def link_to_html(value):
+def link_to_html(value, altname="Link"):
     if not isinstance(value, str):
         raise Exception("Passed non string as link")
-    return str(tags.a(value, href=value, target="_blank"))
+    return str(tags.a(altname, href=value, target="_blank"))
 
 def list_to_html(value):
     if not isinstance(value, list):
