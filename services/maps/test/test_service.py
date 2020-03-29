@@ -26,8 +26,8 @@ class TestMapService(unittest.TestCase):
         map_service = MapService.instance(MapMockRemote.instance())
 
 
-    dhbw = [48.773563, 9.170963]
-    mensa = [48.780834, 9.169989]
+    dhbw = (48.773563, 9.170963)
+    mensa = (48.780834, 9.169989)
 
 
     def test_get_summary(self):
@@ -37,7 +37,7 @@ class TestMapService(unittest.TestCase):
 
     def test_get_route_link(self):
         link = self.map_service.get_route_link(self.dhbw, self.mensa)
-        self.assertEqual(link, 'https://routing.openstreetmap.de/?loc=48.773563%2C9.170963&loc=48.780834%2C9.169989&hl=de')
+        self.assertEqual(link, 'https://routing.openstreetmap.de/?loc=48.773563%2C9.170963&loc=48.780834%2C9.169989&hl=en&srv=1')
 
 @Singleton
 class GeocodingMockRemote():
@@ -50,7 +50,7 @@ class GeocodingMockRemote():
         return mock_from_address
 
 
-    def get_information_from_coords(self, coords:list):
+    def get_information_from_coords(self, coords:tuple):
         dirname = os.path.dirname(__file__)
         with open(os.path.join(dirname, 'mock_from_coords.json'), 'r') as f:
             mock_from_coords = json.load(f)
@@ -65,7 +65,7 @@ class TestGeocodingService(unittest.TestCase):
         geocoding_service = GeocodingService.instance(
             GeocodingMockRemote.instance())
 
-    dhbw = ['Rotebühlplatz 41 70178 Stuttgart', [48.7735115, 9.1710448]]
+    dhbw = ['Rotebühlplatz 41 70178 Stuttgart', (48.7735115, 9.1710448)]
 
     def test_get_coords_from_adress(self):
         coords = self.geocoding_service.get_coords_from_address(self.dhbw[0])

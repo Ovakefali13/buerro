@@ -8,7 +8,8 @@
     border-radius: 20px;
     color:white;
     box-shadow: 5px 5px 5px rgb(0,0,0,0.1);
-    font-size:16px;
+    font-size:32px;
+    word-wrap: break-word;
 }
 
 .bubble-bot {
@@ -24,7 +25,6 @@
 .chatcontainer {
     position:relative;
     width: 100%;
-    max-width:800px;
     height:100%;
     background-color:#EEE;
 }
@@ -41,7 +41,8 @@ body {
 .stay-bottom {
     position: absolute;
     left: 0px;
-    bottom:30px;
+    bottom: 0px;
+    right: 0px;    
 }
 
 .bubblecontainer {
@@ -65,48 +66,84 @@ body {
 .chat-input {
     height:8%;
     width:100%;
-    font-size:18px;
+    font-size:32px;
 }
 
 .chat-input-field {
     width: 80% !important;
     height:100%;
-    font-size:18px;
+    font-size:32px;
+    word-wrap: break-word;
 }
 
 .chat-send-button {
     height:100%;
-    width:20%;
+    width:20% !important;
     float: right;
     border: solid transparent;
     border-bottom-color: rgb(0, 0, 0, 0.1);
-    color:white;font-size:18px;
+    color:white;
+    font-size:38px;
     background-color:#718FAD;
+    display: table;
 }
 
 
 .chat-record-btn{
-	position:absolute;
-	width:60px;
-	height:60px;
-	bottom:80px;
-	right:10px;
-	background-color:#D1766D;
+    position:fixed;
+	min-width:120px;
+    height:120px;
+    right: 0px;
+    bottom: 0px;
+	background-color:rgb(219, 150, 47);
 	color:#FFF;
-	border-radius:50px;
+	border-radius:100px;
 	text-align:center;
-	box-shadow: 2px 2px 3px #999;
+    box-shadow: 2px 2px 3px #999;
+    visibility: 0.5;
+    margin-bottom: 400px;
+    margin-right: 10px;
 }
 
 .chat-say-btn {
-    position:absolute;
-	width:60px;
-	height:60px;
-	bottom:160px;
-	right:10px;
+    position:fixed;
+	min-width:120px;
+    height:120px;
+    right: 0px;
+    bottom: 0px;
 	background-color:#719F7D;
 	color:#FFF;
-	border-radius:50px;
+	border-radius:100px;
 	text-align:center;
-	box-shadow: 2px 2px 3px #999;
+    box-shadow: 2px 2px 3px #999;    
+    visibility: 0.5;
+    margin-bottom: 260px;
+    margin-right: 10px;
+}
+
+.loader {
+    position: fixed;
+    height: 120px;
+    width: 120px;
+    border: 10px solid #f3f3f3; /* Light grey */
+    border-top: 10px solid #3498db; /* Blue */
+    border-radius: 50%;
+    animation: spin 2s linear infinite;
+    display: inline-block;
+    margin:auto;
+    left:0;
+    right:0;
+    top:0;
+    bottom:0;
+    position:fixed;
+    display: none;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.glyphicon {
+    font-size: 40px;
 }

@@ -28,7 +28,7 @@ class GeocodingJSONRemote(GeocodingRemote):
             print(ex)
 
 
-    def get_information_from_coords(self, coords:list):
+    def get_information_from_coords(self, coords:tuple):
         try:
             return self.geocoder.reverse_geocode(coords[0], coords[1], language='de', no_annotations='1')
         except RateLimitExceededError as ex:
@@ -47,10 +47,10 @@ class GeocodingService:
             latitude  = results.get('lat')
             longitude = results.get('lng')
 
-            return [latitude, longitude]
+            return latitude, longitude
 
 
-    def get_address_from_coords(self, coords:list):
+    def get_address_from_coords(self, coords:tuple):
         results = self.remote.get_information_from_coords(coords)[0]['components']        
         street = results.get('road') or results.get('pedestrian')
         house_number = results.get('house_number')
@@ -60,7 +60,7 @@ class GeocodingService:
         return ' '.join(filter(None, (street, house_number, postcode, town)))
 
 
-    def get_city_from_coords(self, coords:list):
+    def get_city_from_coords(self, coords:tuple):
         results = self.remote.get_information_from_coords(coords)[0]['components']
 
         return results.get('city') or results.get('village')

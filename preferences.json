@@ -37,8 +37,8 @@
 	"transport": {
 		"minTemp": 10,
 		"maxWind": 20,
-		"profile": "cycling-regular",
-		"preference": "shortest"
+		"walk_or_bike": "cycling",
+		"vvs_or_car": "car"
 	},
 	"weather": {
 		"min_temp": 10,

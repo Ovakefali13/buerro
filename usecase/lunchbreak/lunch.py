@@ -41,9 +41,10 @@ class Lunchbreak(Usecase):
         if not hasattr(self, 'weather_adapter'):
             raise Exception("Set Services!")
 
-        lat, lon = self.get_location()
+
+        coords = self.get_location()
         if not self.restaurants:
-            restaurants, self.start, self.end, duration = self.check_lunch_options((lat, lon))
+            restaurants, self.start, self.end, duration = self.check_lunch_options(coords)
             if len(self.restaurants) == 0:
                 return Reply("No restaurants found in your area.")
 
@@ -58,7 +59,7 @@ class Lunchbreak(Usecase):
 
         if not hasattr(self, 'restaurants') or not self.restaurants or message == 'proactive':
             if not hasattr(self, 'restaurants') or not self.restaurants:
-                self.check_lunch_options((lat, lon))
+                self.check_lunch_options(coords)
 
             if len(self.restaurants) == 0:
                 return Reply("No restaurants found in your area.")
@@ -79,8 +80,10 @@ class Lunchbreak(Usecase):
                 return Reply(("I could not match your answer to any restaurant. "
                               "Please try again."))
 
-            link = self.open_maps_route((lat, lon), self.restaurants[choice])
-            self.create_cal_event(self.start, self.end, self.restaurants[choice], link)
+
+            link = self.open_maps_route(coords, self.restaurants[choice])
+            self.create_cal_event(self.lunch_start, self.lunch_end, self.restaurants[choice], link)
+
 
             # Reset
             restaurant_name = self.restaurants[choice]['name']
@@ -120,7 +123,7 @@ class Lunchbreak(Usecase):
 
     def open_maps_route(self, location, restaurant):
         coords_dest = restaurant['coordinates']
-        link = self.map_service.get_route_link(location, coords_dest)
+        link = self.map_service.get_route_link(location, tuple(coords_dest))
         return link
 
     def create_cal_event(self, start, end, restaurant, link):
