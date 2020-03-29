@@ -3,8 +3,8 @@ self.addEventListener('push', async function(event) {
     console.log(`[Service Worker] Push had this data: "${event.data.text()}"`);
 
     var options = {
-        icon: 'ico/android-chrome-192x192.png',
-        badge: 'ico/favicon-32x32.png'
+        icon:  '/ico/android-chrome-192x192.png',
+        badge: '/ico/favicon-32x32.png'
     };
 
     try {
@@ -12,7 +12,6 @@ self.addEventListener('push', async function(event) {
         console.log(data);
         title = data.title;
 
-        console.log(options);
         options = Object.assign({}, data.options, options);
         console.log(options);
     } catch(e) {
