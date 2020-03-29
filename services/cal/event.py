@@ -15,7 +15,7 @@ class Event(iCalEvent):
                 self.add(key, ical_ev[key])
         else:
             super().__init__()
-            now = dt.now().astimezone()
+            now = dt.now(pytz.utc)
             self.add('dtstamp', now)
             random_id = ''.join(random.choices(string.ascii_uppercase + string.digits,k=12))
             self.add('uid', vDatetime(now).to_ical().decode('utf-8')+random_id+'@buerro.com')

@@ -53,7 +53,7 @@ class TestCalService(unittest.TestCase):
         self.cal_service.purge()
 
     def now(self):
-        return pytz.utc.localize(dt.now())
+        return dt.now(pytz.utc)
 
     def test_cant_add_with_too_few_params(self):
         summary = ''.join(random.choices(string.ascii_uppercase + string.digits,k=6))
