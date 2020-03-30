@@ -177,9 +177,9 @@ class WorkSession(Usecase):
             msg =""
             reply = {}
             if find_whole_word('yes')(message):
-                link = self.music_service.get_playlist_for_mood('focus')
+                link, name = self.music_service.get_playlist_for_mood('focus')
                 msg += "How about this Spotify playlist?"
-                msg += "<br>" + link_to_html(link) + "<br>"
+                msg += "<br>" + link_to_html(link, altname=name) + "<br>"
 
             msg += "<br>Which project do you want to work on?<br>"
             self.projects = self.todo_service.get_project_names()

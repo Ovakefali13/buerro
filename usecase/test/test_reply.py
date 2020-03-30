@@ -19,7 +19,7 @@ class TestReply(unittest.TestCase):
         reply = Reply({'message': message, 'link': 'http://google.com'})
         self.assertHtmlEqual(('a simple <i>message</i>'
                         '<br>'
-                        '<a href="http://google.com" target="_blank">http://google.com</a>'),
+                        '<a href="http://google.com" target="_blank">Link</a>'),
                         reply.to_html())
 
     def test_can_convert_list_into_html(self):

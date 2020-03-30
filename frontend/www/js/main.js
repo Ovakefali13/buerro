@@ -45,10 +45,8 @@ if ('serviceWorker' in navigator) {
         })
         .then((pushSubscription) => {
             if(pushSubscription !== null) {
-                console.log('User is subscribed.');
                 sendSubscriptionToBackEnd(pushSubscription)
                 .then(() => { 
-                    console.log('Successfully sent pushSubscription to backend');
                     isSubscribed = true
                 })
                 .catch((err) => {
@@ -57,7 +55,6 @@ if ('serviceWorker' in navigator) {
                     isSubscribed = false;
                 });
             } else {
-                console.log('User is not subscribed.');
                 subscribeUser()
                 .then((pushSubscription) => sendSubscriptionToBackEnd(pushSubscription))
                 .then(() => { 
@@ -112,8 +109,8 @@ $(document).ready(function() {
     $("#prompt_input").keypress(function(e) {
         if(e.which == 13) {
             e.preventDefault();
-
             if(!$('#submit-btn').prop('disabled')) {
+                stop_record()    
                 processUserPrompt($("#prompt_input").val());
                 $('#loader').show(100);
                 $('#submit-btn').val('Loading');
@@ -131,7 +128,6 @@ $(document).ready(function() {
         $('#submit-btn').val('Loading');
         $('#submit-btn').prop('disabled',true);
         $("#prompt_input").val("");
-        //$("#prompt_input").focus()
     });
     
     $("#prompt_input").on('change input', function() {
@@ -142,15 +138,15 @@ $(document).ready(function() {
         }
     })
 
-    $("#prompt_input").focus()
+    $('#prompt_input').focus();
 
     navigator.serviceWorker.addEventListener('message', event => {
-    if(event.data.options.data) {
-        if(event.data.options.data.message) {
-            putBotMessage(event.data.options.data.message);
+        if(event.data.options.data) {
+            if(event.data.options.data.message) {
+                putBotMessage(event.data.options.data.message);
+            }
         }
-    }
-});
+    });
 })
 
 function putUserMessage(message) {
@@ -167,6 +163,7 @@ function putBotMessage(message) {
     container.append(generateChatBubble(true, message));
     speak();
     container[0].scrollTop = container[0].scrollHeight
+    $('#prompt_input').focus();
 }
 
 
@@ -220,7 +217,6 @@ function getCurrentLocation(callback) {
         if(typeof pos == 'undefined') {
             callback(null, "could not determine geolocation")
         }
-        console.log('succ', pos)
         var lat = pos.coords.latitude;
         var lon = pos.coords.longitude;
         callback( [ lat, lon ], undefined );
@@ -235,7 +231,6 @@ function getCurrentLocation(callback) {
             
 
 function sendCurrentLocation() {
-    console.log('Sending...');
     getCurrentLocation((location, err) => {
         if(err) {
             console.error(err)

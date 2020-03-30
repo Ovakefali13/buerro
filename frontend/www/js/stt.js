@@ -43,7 +43,6 @@ if (!('webkitSpeechRecognition' in window)) {
       var range = document.createRange();
       range.selectNode(document.getElementById('prompt_input'));
       window.getSelection().addRange(range);
-      $("#prompt_input").val("");
     }    
   };
 
@@ -65,7 +64,6 @@ if (!('webkitSpeechRecognition' in window)) {
     final_transcript = capitalize(final_transcript);        
     document.getElementById('prompt_input').value = linebreak(final_transcript);
     if (interim_transcript) document.getElementById('prompt_input').value = linebreak(final_transcript) + linebreak(interim_transcript);
-    if (document.getElementById('prompt_input').value != '' && !$('#loader').is(':visible')) $('#submit-btn').prop('disabled',false);
   };
 }
 
@@ -82,18 +80,19 @@ function capitalize(s) {
 
 function stop_record() {
   recognition.stop();
+  $('#submit-btn').prop('disabled',false);
   $("#record").css("background-color","GoldenRod");  
 }
 
 function record(event) {
   if (recognizing) {
-    recognition.stop();
-    $("#record").css("background-color","GoldenRod");    
+    stop_record()  
     return;
   }
   final_transcript = '';
   recognition.lang = 'en-US'
   recognition.start();
+  $('#submit-btn').prop('disabled',true);
   ignore_onend = false;
   start_timestamp = event.timeStamp;
 }
