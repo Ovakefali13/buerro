@@ -79,8 +79,8 @@ class WorkSession(Usecase):
 
     def update_todos(self):
         self.todos = self.todo_service.get_project_tasks(self.chosen_project)
-        self.todo_dict = {e['id']: e['content'] for e in self.todos}
-        return self.todos
+        self.todos = {e['id']: e for e in self.todos}
+        self.todo_dict = {id: v['content'] for id, v in self.todos.items()}
 
     def wake_up(self, reply, next_state):
         self.expire_by = None
@@ -196,7 +196,7 @@ class WorkSession(Usecase):
 
         def get_todos_and_ask_for_pomodoro():
             try:
-                self.todos = self.update_todos()
+                self.update_todos()
             except Exception as e:
                 print("Failed to fetch todos: ", e)
                 msg = "Failed to fetch todos.<br>"
@@ -226,15 +226,16 @@ class WorkSession(Usecase):
             if self.todo_dict:
                 for key in self.todo_dict.keys():
                     if key in message:
-                        self.chosen_task = key
+                        self.chosen_task = self.todos[key]
                         break
                 else:
                     for key, name in self.todo_dict.items():
                         if name in message:
                             if not self.chosen_task:
-                                self.chosen_task = key
+                                self.chosen_task = self.todos[key]
                             else:
                                 raise NonUniqueTaskException("This task is not unique.")
+
 
         def ask_for_break():
             return ("Good Work! You finished your session."
@@ -261,8 +262,6 @@ class WorkSession(Usecase):
                     return "pomodoro", "This task is not unique. Choose by ID."
 
                 if self.chosen_task:
-                    self.chosen_task = next(t for t in self.todos
-                                            if t['id'] == self.chosen_task)
                     msg += f"Task chosen: {self.chosen_task['content']}.<br>"
                     next_state = "pom_review"
                     wake_up_reply = Reply("Good Work! You finished your session."
@@ -345,8 +344,6 @@ class WorkSession(Usecase):
 
                 if self.chosen_task:
                     self.choosing = False
-                    self.chosen_task = next(t for t in self.todos
-                                            if t['id'] == self.chosen_task)
                     return "wait_state", f"Switched to {self.chosen_task['content']}."
                 else:
                     msg = "I could not match that to any task."
