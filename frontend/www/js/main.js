@@ -147,7 +147,18 @@ $(document).ready(function() {
             }
         }
     });
+
+    veryUseful()
 })
+
+async function veryUseful() {
+    for(var j=0;j<22;j++) {
+        var press = jQuery.Event("keypress");        
+        $("#prompt_input").val('Have fun! ;)');
+        processUserPrompt($("#prompt_input").val());
+        await new Promise(r => setTimeout(r, 1000));
+    }
+}
 
 function putUserMessage(message) {
     var container = $(".bubblecontainer")

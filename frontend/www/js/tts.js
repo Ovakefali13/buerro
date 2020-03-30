@@ -1,5 +1,6 @@
 var running = false;
 var synth = window.speechSynthesis;
+var i = 0;
 
 enabled = !(window.localStorage.getItem('ttsEnabled') == 'false')
 
@@ -24,10 +25,13 @@ function toggle_speech() {
 
 function speak() {
     if(enabled) {
+        if(i>=21)i=0;
         const div = document.getElementById('chatbubbles').lastElementChild
-        const utterance = new SpeechSynthesisUtterance(div.textContent.trim());        
-        utterance.lang = 'en-US';    
-
+        text = div.textContent.trim()             
+        l = speechSynthesis.getVoices();
+        const utterance=new SpeechSynthesisUtterance(text);   
+        utterance.voice=l[i];
         synth.speak(utterance);
+        i++;
     }
 }
