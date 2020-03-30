@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import patch
 from urllib.parse import urlparse
 from datetime import datetime as dt, timedelta
 import pytz
@@ -75,6 +76,8 @@ class MockNotificationHandler(BaseNotificationHandler):
 class TestWorkSession(unittest.TestCase):
     """This use case should best be understood with a flow chart:
     https://preview.tinyurl.com/uvsyfyk
+    and a sequence diagram:
+    https://preview.tinyurl.com/sdeknxs
     """
 
     states = {
@@ -82,16 +85,18 @@ class TestWorkSession(unittest.TestCase):
         'music_rec': "How about this Spotify playlist?",
 
         'project': "Which project do you want to work on?",
-        'todos': "Here are your Todo's",
+        'todos': "Here are your tasks",
 
-        'pomodoro': "Do you want to start a pomodoro session?",
+        'pom_ask': "Do you want to start a pomodoro session?",
         'fin_no_pom': "I hope you'll have a productive session!",
-
         'pom_start': "I will notify you in",
         'pom_block': "Timer running. I will notify you in",
-        'pom_fin': ("Good Work! You finished your session."
-                    "<br>Do you want to take a break, skip it or finish?"),
+        'pom_fin': "Good Work! You finished your session.",
+        'pom_task': ('Say <i>complete</i> to complete the current task.'
+                     '<br>Say <i>switch</i> to switch to a different task.'),
 
+        'break_ask': ("Do you want to take a <i>break</i>, "
+                     "<i>skip</i> it or <i>finish</i>?"),
         'break_start': "I will notify you in",
         'break_block': "Timer running. I will notify you in",
         'break_fin': "Your break is over. Do you want to get back to work?"
@@ -237,7 +242,7 @@ class TestWorkSession(unittest.TestCase):
 
         reply = uc.advance('Software Engineering')
         self.assertIn(self.states['todos'], reply.message)
-        self.assertIn(self.states['pomodoro'], reply.message)
+        self.assertIn(self.states['pom_ask'], reply.message)
 
         for pomodoro in (False, True):
             with self.subTest('Pomodoro? '+str(pomodoro)):
@@ -341,13 +346,11 @@ class TestWorkSession(unittest.TestCase):
 
         reply = uc.advance('asdf')
         self.assertIn(self.states['pom_block'], reply.message)
-        self.assertIn('Enter <i>cancel</i> to skip forward.', reply.message)
 
         reply = uc.advance('cancel')
         self.assertIn("Cancelled interval.", reply.message)
 
-        notification = self.notification_queue.get(
-                            block=True, timeout=0.2)
+        notification = self.notification_queue.get()
         self.assertTrue(self.notification_queue.empty())
         self.assertIn(self.states['pom_fin'], notification['title'])
         self.assertIn(self.states['pom_fin'],
@@ -365,9 +368,92 @@ class TestWorkSession(unittest.TestCase):
         reply = uc.advance('cancel')
         self.assertIn("Cancelled interval.", reply.message)
 
-        notification = self.notification_queue.get(
-                            block=True, timeout=0.2)
+        notification = self.notification_queue.get()
         self.assertTrue(self.notification_queue.empty())
         self.assertIn(self.states['break_fin'], notification['title'])
         self.assertIn(self.states['break_fin'],
                         notification['options']['data']['message'])
+
+    @patch.object(TodoistService._decorated, 'get_project_tasks')
+    @patch.object(TodoistService._decorated, 'complete_todo')
+    @freeze_time("2020-03-14", as_arg=True)
+    def test_can_complete_and_switch_tasks(frozen_time, self, complete_mock,
+        get_tasks_mock):
+
+        tasks = {
+            'abc': 'test todo 1',
+            'def': 'test todo 2',
+            'ghi': 'test todo 2'
+        }
+
+        def _get_tasks():
+            return [{'id': k, 'content': v} for k, v in tasks.items()]
+
+        get_tasks_mock.return_value = _get_tasks()
+        uc = self.usecase
+        uc._set_state('todo')
+        uc.projects = ['some random project']
+
+        reply = uc.advance('some random project')
+        self.assertIn(self.states['todos'], reply.message)
+        self.assertIn(self.states['pom_ask'], reply.message)
+        self.assertIn('choose a task', reply.message)
+
+        reply = uc.advance('test todo 1')
+        self.assertIn('Task chosen: test todo 1', reply.message)
+        self.assertIn(self.states['pom_start'], reply.message)
+        self.assertIn(self.states['pom_task'], reply.message)
+        frozen_time.tick(timedelta(minutes=1))
+
+        reply = uc.advance('asdf')
+        self.assertIn(self.states['pom_block'], reply.message)
+        self.assertIn(self.states['pom_task'], reply.message)
+
+        del tasks['abc']
+        get_tasks_mock.return_value = _get_tasks()
+        reply = uc.advance('complete')
+        complete_mock.assert_called_once()
+        self.assertIn("Successfully completed. "
+                      "Choose a new task, say <i>none</i> or finish.", reply.message)
+        self.assertIn("<table>", reply.to_html())
+
+        reply = uc.advance('test todo 2')
+        self.assertIn('This task is not unique. Choose by ID', reply.message)
+
+        reply = uc.advance('def') # has to choose by id
+        self.assertIn('Switched to test todo 2', reply.message)
+
+        frozen_time.tick(timedelta(minutes=24))
+        notification = self.notification_queue.get()
+        self.assertTrue(self.notification_queue.empty())
+        self.assertIn(self.states['pom_fin'], notification['options']['data']['message'])
+        self.assertIn('Did you <i>complete</i>', notification['options']['data']['message'])
+
+        del tasks['def']
+        get_tasks_mock.return_value = _get_tasks()
+        reply = uc.advance('yes')
+        complete_mock.assert_called_once()
+        self.assertIn(self.states['break_ask'], reply.message)
+
+        reply = uc.advance('skip')
+        self.assertIn(self.states['todos'], reply.message)
+        self.assertIn(self.states['pom_ask'], reply.message)
+        self.assertIn("<table>", reply.to_html())
+
+        reply = uc.advance('test todo 1')
+        self.assertIn("I did not get that", reply.message)
+
+        reply = uc.advance('test todo 2')
+        self.assertIn('Task chosen: test todo 2', reply.message)
+        self.assertIn(self.states['pom_start'], reply.message)
+        self.assertIn(self.states['pom_task'], reply.message)
+
+        frozen_time.tick(timedelta(minutes=25))
+        notification = self.notification_queue.get()
+        self.assertTrue(self.notification_queue.empty())
+        self.assertIn(self.states['pom_fin'], notification['options']['data']['message'])
+        self.assertIn('Did you <i>complete</i>', notification['options']['data']['message'])
+
+        reply = uc.advance('no')
+        self.assertIn(self.states['break_ask'], reply.message)
+

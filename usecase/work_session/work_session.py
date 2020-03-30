@@ -9,6 +9,9 @@ from usecase import Usecase, Reply, StateMachine, FinishedException
 #from usecase import TransportUsecase
 from handler import NotificationHandler
 
+class NonUniqueTaskException(Exception):
+    pass
+
 class WorkSession(Usecase):
     """This use case should best be understood with a flow chart:
     https://preview.tinyurl.com/uvsyfyk
@@ -73,6 +76,11 @@ class WorkSession(Usecase):
         self.fsm._set_state(state)
     def get_state(self):
         return self.fsm.currentState
+
+    def update_todos(self):
+        self.todos = self.todo_service.get_project_tasks(self.chosen_project)
+        self.todo_dict = {e['id']: e['content'] for e in self.todos}
+        return self.todos
 
     def wake_up(self, reply, next_state):
         self.expire_by = None
@@ -186,6 +194,22 @@ class WorkSession(Usecase):
             reply = {**reply, 'message': msg, 'list': self.projects}
             return "todo", reply
 
+        def get_todos_and_ask_for_pomodoro():
+            try:
+                self.todos = self.update_todos()
+            except Exception as e:
+                print("Failed to fetch todos: ", e)
+                msg = "Failed to fetch todos.<br>"
+            if self.todo_dict:
+                msg = f"Here are your tasks for {self.chosen_project}: <br>"
+                msg += dict_to_html(self.todo_dict) + "<br>"
+            else:
+                msg = f"There are no Todo's for {self.chosen_project}.<br>"
+
+            msg += "<br>Do you want to start a pomodoro session?"
+            msg += "<br>Then say <i>yes</i> or choose a task."
+            return "pomodoro", msg
+
         def todo_trans(message):
             for project in self.projects:
                 if project.lower() in message.lower():
@@ -196,46 +220,96 @@ class WorkSession(Usecase):
                         "Would you repeat that, please?")
                 return "todo", msg
 
-            todos = self.todo_service.get_project_items(self.chosen_project)
-            if todos:
-                msg = f"Here are your Todo's for {self.chosen_project}: <br>"
-                msg += list_to_html(todos) + "<br>"
-            else:
-                msg = f"There are no Todo's for {self.chosen_project}."
-            msg += "<br>Do you want to start a pomodoro session?"
-            return "pomodoro", msg
+            return get_todos_and_ask_for_pomodoro()
+
+        def set_chosen_task(message):
+            if self.todo_dict:
+                for key in self.todo_dict.keys():
+                    if key in message:
+                        self.chosen_task = key
+                        break
+                else:
+                    for key, name in self.todo_dict.items():
+                        if name in message:
+                            if not self.chosen_task:
+                                self.chosen_task = key
+                            else:
+                                raise NonUniqueTaskException("This task is not unique.")
+
+        def ask_for_break():
+            return ("Good Work! You finished your session."
+                    "<br>Do you want to take a <i>break</i>, "
+                    "<i>skip</i> it or <i>finish</i>?")
+
+        def ask_for_task_state():
+            return ('Say <i>complete</i> to complete the current task.<br>'
+                    'Say <i>switch</i> to switch to a different task.')
 
         def pomodoro_trans(message):
+            self.chosen_task = None
+            msg = ""
             if message is None: message = ""
             if find_whole_word('no')(message):
                 return "end_state", "I hope you'll have a productive session!"
             elif find_whole_word('yes')(message):
-                minutes = self.pref['pomodoro_minutes']
-                delta = timedelta(minutes=minutes)
-
-                if not self.enough_time_for(delta):
-                    msg =   ("Can't start another pomodoro. "
-                             "You should get going on your journey. <br>"
-                            )
-                    return "end_state", {'message': msg,
-                                         'table': self.journey.to_table() }
-
-
-                self.wait_until(when=dt.now(pytz.utc) + delta,
-                    next_state="break",
-                    reply=Reply(("Good Work! You finished your session."
-                            "<br>Do you want to take a break, skip it or finish?"))
-                )
-                return "wait_state", f"I will notify you in {minutes} minutes."
+                next_state = 'break'
+                wake_up_reply = Reply(ask_for_break())
             else:
-                msg = ( "I did not get that. "
-                        "Please answer with yes or no.")
-                return "pomodoro", msg
+                try:
+                    set_chosen_task(message)
+                except NonUniqueTaskException:
+                    return "pomodoro", "This task is not unique. Choose by ID."
+
+                if self.chosen_task:
+                    self.chosen_task = next(t for t in self.todos
+                                            if t['id'] == self.chosen_task)
+                    msg += f"Task chosen: {self.chosen_task['content']}.<br>"
+                    next_state = "pom_review"
+                    wake_up_reply = Reply("Good Work! You finished your session."
+                                    "<br>Did you <i>complete</i> your task?")
+                else:
+                    msg = ( "I did not get that. "
+                            "Please answer with yes, no, a task name or a task id.")
+                    return "pomodoro", msg
+
+            minutes = self.pref['pomodoro_minutes']
+            delta = timedelta(minutes=minutes)
+
+            if not self.enough_time_for(delta):
+                msg =   ("Can't start another pomodoro. "
+                         "You should get going on your journey. <br>")
+                return "end_state", {'message': msg,
+                                     'table': self.journey.to_table() }
+
+            self.wait_until(when=dt.now(pytz.utc) + delta,
+                next_state=next_state,
+                reply=wake_up_reply
+            )
+
+            msg += f"I will notify you in {minutes} minutes.<br>"
+            if self.chosen_task:
+                msg += ask_for_task_state()
+
+            return "wait_state", msg
+
+        def pom_review_trans(message):
+            msg = ""
+            if find_whole_word('complete')(message):
+                try:
+                    self.todo_service.complete_todo(self.chosen_task)
+                    msg += "Successfully completed. "
+                    self.update_todos()
+                except Exception as e:
+                    print("Could not complete the task: ", e)
+                    msg += "Failed to commit the complete. "
+            else:
+                msg += ask_for_break()
+                return "break", msg
 
         def break_trans(message):
             if message is None: message = ""
             if find_whole_word('skip')(message):
-                return "pomodoro", f"Do you want to start another pomodoro?"
+                return get_todos_and_ask_for_pomodoro()
             elif find_whole_word('finish')(message):
                 return "end_state", "Okay let's finish up. See you."
             elif find_whole_word('break')(message):
@@ -243,9 +317,8 @@ class WorkSession(Usecase):
                 delta = timedelta(minutes=minutes)
 
                 if not self.enough_time_for(delta):
-                    msg =   ("Can't start another break. "
-                             "You should get going on your journey. <br>"
-                            )
+                    msg =   ("Can't start another break."
+                             "You should get going on your journey. <br>")
                     return "end_state", {'message': msg,
                                          'table': self.journey.to_table() }
 
@@ -260,26 +333,61 @@ class WorkSession(Usecase):
                         "Please answer with (break, skip or finish).")
                 return "pomodoro", msg
 
-        def wait_trans(message):
-            if self.expire_by and self.wake_job:
-                if find_whole_word('cancel')(message):
-                    self.wake_job.remove()
-
-                    func = self.wake_job.func
-                    args = self.wake_job.args
-                    kwargs = self.wake_job.kwargs
-                    func(*args, **kwargs)
-                    return "wait_state", "Cancelled interval."
-
-                else:
-                    period = self.expire_by - dt.now(pytz.utc)
-                    minutes, seconds = divmod(period.seconds, 60)
-                    msg = (  "Timer running. "
-                            f"I will notify you in {minutes}:{seconds}. "
-                             "Enter <i>cancel</i> to skip forward.")
-                    return "wait_state", msg
+        def choosing_todo_trans(message):
+            self.chosen_task = None
+            if 'none' == message.lower():
+                return "wait_state", "No task chosen."
             else:
+                try:
+                    set_chosen_task(message)
+                except NonUniqueTaskException:
+                    return "choosing_todo", "This task is not unique. Choose by ID."
+
+                if self.chosen_task:
+                    self.choosing = False
+                    self.chosen_task = next(t for t in self.todos
+                                            if t['id'] == self.chosen_task)
+                    return "wait_state", f"Switched to {self.chosen_task['content']}."
+                else:
+                    msg = "I could not match that to any task."
+                    return "wait_state", msg
+
+        def wait_trans(message):
+            if not self.expire_by and self.wake_job:
                 raise Exception("in wait_state even though timer expired")
+
+            msg = ""
+            if find_whole_word('cancel')(message):
+                self.wake_job.remove()
+
+                func = self.wake_job.func
+                args = self.wake_job.args
+                kwargs = self.wake_job.kwargs
+                func(*args, **kwargs)
+                return "wait_state", "Cancelled interval."
+
+            elif self.chosen_task and find_whole_word('complete')(message):
+                try:
+                    self.todo_service.complete_todo(self.chosen_task)
+                    msg += "Successfully completed. "
+                    self.update_todos()
+                except Exception as e:
+                    print("Could not complete the task: ", e)
+                    msg += "Failed to commit the complete. "
+
+                if self.todo_dict:
+                    msg += "Choose a new task, say <i>none</i> or finish."
+                return "choosing_todo", {'message': msg, 'dict': self.todo_dict}
+
+            else:
+                period = self.expire_by - dt.now(pytz.utc)
+                minutes, seconds = divmod(period.seconds, 60)
+                msg = (  "Timer running. "
+                        f"I will notify you in {minutes}:{seconds}. "
+                         "Enter <i>cancel</i> to skip forward.")
+                if self.chosen_task:
+                    msg += ask_for_task_state()
+                return "wait_state", msg
 
         m = self.fsm
         m.add_state("start", start_trans)
@@ -287,7 +395,9 @@ class WorkSession(Usecase):
         m.add_state("music", music_trans)
         m.add_state("todo", todo_trans)
         m.add_state("pomodoro", pomodoro_trans)
+        m.add_state("pom_review", pom_review_trans)
         m.add_state("break", break_trans)
         m.add_state("wait_state", wait_trans)
+        m.add_state("choosing_todo", choosing_todo_trans)
         m.add_state("error_state", None, end_state=True)
         m.add_state("end_state", None, end_state=True)

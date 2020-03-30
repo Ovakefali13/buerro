@@ -36,7 +36,8 @@ class StateMachine:
             try:
                 handler = self.handlers[self.currentState]
             except:
-                raise Exception("new state has not been added")
+                raise Exception("new state has not been added",
+                    self.currentState)
 
         ret = handler(data)
         if not isinstance(ret, tuple):
