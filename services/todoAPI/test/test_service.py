@@ -48,13 +48,13 @@ class TestTodoistService(unittest.TestCase):
         id = self.todoist_service.get_project_id("Shopping List")
         self.assertEqual(id, 2230670456)
 
-    def test_get_project_items(self):
+    def test_get_project_task_names(self):
         test_string = 'nutella'
         project_name = "Shopping List"
 
         self.todoist_service.set_project_todo([test_string], project_name)
         response = False
-        text = str(self.todoist_service.get_project_items(project_name))
+        text = str(self.todoist_service.get_project_task_names(project_name))
         if text.find(test_string) >= 0:
             response = True
         self.assertIs(response, True)
