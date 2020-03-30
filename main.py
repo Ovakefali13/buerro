@@ -8,6 +8,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from pytz import utc
 
 from usecase import Lunchbreak
+from usecase import Github
 from handler import UsecaseStore
 
 HOST_NAME = "localhost"
@@ -43,6 +44,13 @@ class Main:
         lunchbreak.set_default_services()
         self.scheduler.add_job(func=self.block_trigger,
                           args=(lunchbreak, lunchbreak.trigger_proactive_usecase,),
+                          kwargs={},
+                          trigger='interval',
+                          hours=1)
+        github = self.store.get(Github)
+        github.set_default_services()
+        self.scheduler.add_job(func=self.block_trigger,
+                          args=(github, github.trigger_proactive_usecase,),
                           kwargs={},
                           trigger='interval',
                           hours=1)
