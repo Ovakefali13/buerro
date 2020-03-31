@@ -1,5 +1,7 @@
 swRegistration = null;
 
+var converter = new showdown.Converter();
+
 /**
  * urlBase64ToUint8Array
  *
@@ -104,7 +106,7 @@ $(document).ready(function() {
         sendCurrentLocation();
     }, 1000 * 60 * minutes)  
 
-    putBotMessage("Hello, it's me, the PDA for your buerro. Ask me anything.")
+    putBotMessage("Hello, it's me, the PDA for your buerro. Ask me _anything_.")
 
     $("#prompt_input").keypress(function(e) {
         if(e.which == 13) {
@@ -158,10 +160,14 @@ function putUserMessage(message) {
 
 function putBotMessage(message) {
     if (message != "") {
-        var container = $(".bubblecontainer")
+        html = converter.makeHtml(message);
+
         $('#submit-btn').val('Send');
         $('#loader').hide(100);
-        container.append(generateChatBubble(true, message));
+
+        var container = $(".bubblecontainer")
+        container.append(generateChatBubble(true, html));
+
         speak();
         container[0].scrollTop = container[0].scrollHeight
         $('#prompt_input').focus();

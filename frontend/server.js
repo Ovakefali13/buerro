@@ -5,6 +5,7 @@ const app = express();
 const https = require('https');
 const fs = require('fs');
 const { createProxyMiddleware } = require('http-proxy-middleware');
+const path = require('path');
 
 var port = 4000;
 if(process.env.FRONTEND_PORT) {
@@ -19,6 +20,10 @@ if(process.env.BACKEND_PORT) {
 const backend = backend_api + ':' + backend_port;
 
 app.use("/", express.static('www'));
+
+app.use('/scripts', express.static(path.join(__dirname, '/node_modules/bootstrap/dist/')));
+app.use('/scripts', express.static(path.join(__dirname, '/node_modules/jquery/dist/')));
+app.use('/scripts', express.static(path.join(__dirname, '/node_modules/showdown/dist/')));
 
 // proxy middleware options
 const options = {
