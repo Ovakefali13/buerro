@@ -3,11 +3,11 @@ import pytz
 import re
 from util import link_to_html, list_to_html, dict_to_html, table_to_html
 
-
-from services import TodoistService, VVSService, CalService, PrefService, MusicService
+from services import TodoistService, VVSService, GeocodingService, \
+    CalService, PrefService, MusicService
 from usecase import Usecase, Reply, StateMachine, FinishedException
 #from usecase import TransportUsecase
-from handler import NotificationHandler
+from handler import NotificationHandler, LocationHandler
 
 class NonUniqueTaskException(Exception):
     pass
@@ -29,6 +29,7 @@ class WorkSession(Usecase):
                     pref_service:PrefService,
                     cal_service:CalService,
                     vvs_service:VVSService,
+                    geo_service:GeocodingService,
                     todo_service:TodoistService,
                     music_service:MusicService):
         # TODO self.transport_usecase = None
@@ -37,6 +38,7 @@ class WorkSession(Usecase):
         self.pref = self.pref_service.get_preferences('work_session')
         self.cal_service = cal_service
         self.vvs_service = vvs_service
+        self.geo_service = geo_service
         self.todo_service = todo_service
         self.music_service = music_service
 
@@ -45,6 +47,7 @@ class WorkSession(Usecase):
         self.pref = self.pref_service.get_preferences('work_session')
         self.cal_service = CalService.instance()
         self.vvs_service = VVSService.instance()
+        self.geo_service = GeocodingService.instance()
         self.todo_service = TodoistService.instance()
         self.music_service = MusicService.instance()
 
@@ -120,11 +123,16 @@ class WorkSession(Usecase):
                 next_state = "end_state"
                 return next_state, msg
 
-            def _event_possibly_too_close(event):
-                msg = "Your next appointment might be too close to start working:<br>"
+            def _no_journey(event):
+                if not 'location' in event:
+                    msg = "Your next event does not have a location property:<br>"
+                else:
+                    msg = ("I could not determine a journey "
+                            "to get to your next event:<br>")
+
                 msg += event.summarize()
                 msg += "<br>Do you still want to start working?"
-                return "end_state", msg
+                return "no_journey", msg
 
             next_events = self.cal_service.get_next_events()
             if next_events:
@@ -136,10 +144,11 @@ class WorkSession(Usecase):
                     return _event_too_close(next_event)
 
                 if not 'location' in next_event:
-                    if minutes_until < 120:
-                        return _event_possibly_too_close(next_event)
+                    return _no_journey(next_event)
                 else:
-                    origin = "Rotebühlplatz" # TODO determine current location
+                    location = LocationHandler.instance().get()
+                    origin = self.geo_service.get_address_from_coords(location)
+
                     dest = next_event['location']
 
                     journey = None
@@ -155,9 +164,7 @@ class WorkSession(Usecase):
                         journey = self.vvs_service.recommend_journey_to_arrive_by(journeys,
                             next_event.get_start())
                     except:
-                        # could not determine next location
-                        return _event_possibly_too_close(next_event)
-
+                        return _no_journey(next_event)
 
                     now = dt.now(pytz.utc)
                     minutes_until = (journey.dep_time - now).seconds / 60
@@ -179,6 +186,15 @@ class WorkSession(Usecase):
             msg = 'You have no upcoming events.'
             msg += '<br>Would you like to listen to music?'
             return "music", msg
+
+        def no_journey_trans(message):
+            if find_whole_word('yes')(message):
+                return "music", 'Would you like to listen to music?'
+            elif find_whole_word('no')(message):
+                return "end_state", "Alright. See you soon!"
+            else:
+                return "no_journey", ("I did not get that, "
+                                      "please answer with yes or no")
 
         def music_trans(message):
             msg =""
@@ -398,6 +414,7 @@ class WorkSession(Usecase):
         m = self.fsm
         m.add_state("start", start_trans)
         m.set_start("start")
+        m.add_state("no_journey", no_journey_trans)
         m.add_state("music", music_trans)
         m.add_state("todo", todo_trans)
         m.add_state("pomodoro", pomodoro_trans)

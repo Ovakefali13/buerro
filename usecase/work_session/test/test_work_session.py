@@ -1,5 +1,6 @@
 import unittest
 from unittest.mock import patch
+
 from urllib.parse import urlparse
 from datetime import datetime as dt, timedelta
 import pytz
@@ -10,7 +11,7 @@ from freezegun import freeze_time
 
 from .. import WorkSession
 from usecase import Usecase, Reply, FinishedException
-from handler import BaseNotificationHandler, Notification
+from handler import BaseNotificationHandler, Notification, LocationHandler
 from util import Singleton
 from services.todoAPI import TodoistService, TodoistJSONRemote
 from services.todoAPI.test import TodoistMockRemote
@@ -20,6 +21,7 @@ from services.cal import CalService, Event, iCloudCaldavRemote
 from services.cal.test import CalMockRemote
 from services.vvs import VVSService, VVSEfaJSONRemote, Journey
 from services.vvs.test import VVSMockRemote
+from services.maps import GeocodingService, GeocodingJSONRemote
 from services.preferences import PrefService, PrefRemote
 
 class MockPrefRemote(PrefRemote):
@@ -36,6 +38,11 @@ class MockPrefRemote(PrefRemote):
         }
     def merge_json_files(self, dict1, dict2):
         return {**dict1, **dict2}
+
+@Singleton
+class MockGeocodingService:
+    def get_address_from_coords(self, coords:tuple):
+        return "Rotebühlplatz 41, 70178 Stuttgart"
 
 @Singleton
 class MockVVSService:
@@ -128,6 +135,8 @@ class TestWorkSession(unittest.TestCase):
                 iCloudCaldavRemote.instance())
             vvs_service = VVSService.instance(
                 VVSEfaJSONRemote.instance())
+            geo_service = GeocodingService.instance(
+                GeocodingJSONRemote.instance())
             todo_service = TodoistService.instance(
                 TodoistJSONRemote.instance())
             music_service = MusicService.instance(
@@ -136,6 +145,7 @@ class TestWorkSession(unittest.TestCase):
             self.cal_service = CalService.instance(
                 CalMockRemote.instance())
             vvs_service = MockVVSService.instance()
+            geo_service = MockGeocodingService.instance()
             #vvs_service = VVSService.instance(
             #    VVSMockRemote.instance())
             todo_service = TodoistService.instance(
@@ -150,6 +160,7 @@ class TestWorkSession(unittest.TestCase):
             pref_service=pref_service,
             cal_service=self.cal_service,
             vvs_service=vvs_service,
+            geo_service=geo_service,
             todo_service=todo_service,
             music_service=music_service
         )
@@ -177,10 +188,12 @@ class TestWorkSession(unittest.TestCase):
         reply = self.usecase.advance(None)
         expected = "Your next appointment is too close to start working:"
         self.assertIn(expected, reply.message)
-        self.assertIn('too soon event', reply.message) # also displays event
+        self.assertIn('too soon event', reply.message)
         self.assertTrue(self.usecase.is_finished())
 
-    def test_ask_wether_we_can_make_it_there(self):
+    @patch.object(LocationHandler._decorated, 'get')
+    def test_ask_wether_we_can_make_it_there(self, mock_location):
+        mock_location.return_value = (48.773466, 9.170824)
         event_in_mins = 30
         self.usecase.pref['min_work_period_minutes'] = event_in_mins
 
@@ -192,10 +205,14 @@ class TestWorkSession(unittest.TestCase):
         self.cal_service.add_event(event)
 
         reply = self.usecase.advance(None)
-        expected = "Your next appointment might be too close to start working:"
+        expected = "Your next event does not have a location property"
+
         self.assertIn(expected, reply.message)
-        self.assertIn('possibly too soon event', reply.message) # also displays event
+        self.assertIn('possibly too soon event', reply.message)
         self.assertIn('Do you still want to start working?', reply.message)
+
+        reply = self.usecase.advance('yes')
+        self.assertIn(self.states['music'], reply.message)
 
     def test_no_upcoming_events(self):
         reply = self.usecase.advance(None)
@@ -205,7 +222,11 @@ class TestWorkSession(unittest.TestCase):
     @freeze_time("2020-03-14", as_arg=True)
     @unittest.skipIf('TRAVIS' in os.environ and 'DONOTMOCK' in os.environ,
                     "travis IP might be blocked on iCloud")
-    def test_creates_reminder_for_upcoming_and_advances(frozen_time, self):
+    @patch.object(LocationHandler._decorated, 'get')
+    def test_creates_reminder_for_upcoming_and_advances(frozen_time, self,
+        mock_location):
+
+        mock_location.return_value = (48.773466, 9.170824)
 
         uc = self.usecase
 
@@ -254,7 +275,7 @@ class TestWorkSession(unittest.TestCase):
                     self.assertTrue(uc.is_finished())
                     # does not need to be reset 
                     reply = uc.advance(None)
-                    self.assertIn(self.states['music'], reply.message)
+                    self.assertFalse(uc.is_finished())
                 else:
                     uc._set_state('pomodoro')
                     for pomodoro_i in range(100):
@@ -327,6 +348,7 @@ class TestWorkSession(unittest.TestCase):
                     # does not need to be reset 
                     reply = uc.advance(None)
                     self.assertIn("too close to start working", reply.message)
+                    self.assertTrue(uc.is_finished())
 
     @patch.object(TodoistService._decorated, 'get_project_tasks')
     def test_can_cancel_timer(self, get_tasks_mock):
