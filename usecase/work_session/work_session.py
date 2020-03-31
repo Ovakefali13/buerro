@@ -186,14 +186,14 @@ class WorkSession(Usecase):
             if find_whole_word('yes')(message):
                 link, name = self.music_service.get_playlist_for_mood('focus')
                 msg += "How about this Spotify playlist?"
-                msg += "<br>" + link_to_html(link, altname=name) + "<br>"
+                msg += "<br>" + link_to_html(link, altname=name) + "<br><br>"
 
-            msg += "<br>Which project do you want to work on?<br>"
+            msg += "Which project do you want to work on?<br>"
             self.projects = self.todo_service.get_project_names()
             reply = {**reply, 'message': msg, 'list': self.projects}
             return "todo", reply
 
-        def get_todos_and_ask_for_pomodoro():
+        def get_ask_for_pomodoro_msg():
             self.update_todos()
             if self.todo_dict:
                 msg = f"Here are your tasks for {self.chosen_project}: <br>"
@@ -202,8 +202,9 @@ class WorkSession(Usecase):
                 msg = f"There are no Todo's for {self.chosen_project}.<br>"
 
             msg += "<br>Do you want to start a pomodoro session?"
-            msg += "<br>Then say <i>yes</i> or choose a task."
-            return "pomodoro", msg
+            if self.todo_dict:
+                msg += "<br>Then say <i>yes</i> or choose a task."
+            return msg
 
         def todo_trans(message):
             for project in self.projects:
@@ -215,7 +216,7 @@ class WorkSession(Usecase):
                         "Would you repeat that, please?")
                 return "todo", msg
 
-            return get_todos_and_ask_for_pomodoro()
+            return "pomodoro", get_ask_for_pomodoro_msg()
 
         def set_chosen_task(message):
             if self.todo_dict:
@@ -230,8 +231,7 @@ class WorkSession(Usecase):
                                 raise NonUniqueTaskException("This task is not unique.")
 
         def ask_for_break():
-            return ("Good Work! You finished your session."
-                    "<br>Do you want to take a <i>break</i>, "
+            return ("Do you want to take a <i>break</i>, "
                     "<i>skip</i> it or <i>finish</i>?")
 
         def ask_for_task_state():
@@ -246,7 +246,9 @@ class WorkSession(Usecase):
                 return "end_state", "I hope you'll have a productive session!"
             elif find_whole_word('yes')(message):
                 next_state = 'break'
-                wake_up_reply = Reply(ask_for_break())
+                wake_up_reply = "Good Work! You finished your session.<br>"
+                wake_up_reply += ask_for_break()
+                wake_up_reply = Reply(wake_up_reply)
             else:
                 try:
                     set_chosen_task(message)
@@ -287,7 +289,7 @@ class WorkSession(Usecase):
             msg = ""
             if find_whole_word('yes')(message):
                 self.todo_service.complete_todo(self.chosen_task)
-                msg += "Successfully completed. "
+                msg += "Successfully completed. <br>"
                 self.update_todos()
 
             msg += ask_for_break()
@@ -296,7 +298,7 @@ class WorkSession(Usecase):
         def break_trans(message):
             if message is None: message = ""
             if find_whole_word('skip')(message):
-                return get_todos_and_ask_for_pomodoro()
+                return "pomodoro", get_ask_for_pomodoro_msg()
             elif find_whole_word('finish')(message):
                 return "end_state", "Okay let's finish up. See you."
             elif find_whole_word('break')(message):
@@ -309,16 +311,18 @@ class WorkSession(Usecase):
                     return "end_state", {'message': msg,
                                          'table': self.journey.to_table() }
 
+                msg = "Your break is over. Let's get back to work.<br>"
+                msg += get_ask_for_pomodoro_msg()
+
                 self.wait_until(when=dt.now(pytz.utc) + delta,
                     next_state="pomodoro",
-                    reply=Reply(("Your break is over."
-                                " Do you want to get back to work?"))
+                    reply=Reply(msg)
                 )
                 return "wait_state", f"I will notify you in {minutes} minutes."
             else:
                 msg = ("I did not get that. "
                         "Please answer with (break, skip or finish).")
-                return "pomodoro", msg
+                return "break", msg
 
         def cancel_interval():
             if self.wake_job.next_run_time < dt.now(pytz.utc):
@@ -339,7 +343,7 @@ class WorkSession(Usecase):
                 return "wait_state", "No task chosen."
             if 'finish' == message.lower():
                 cancel_interval()
-                return None, "Cancelled interval."
+                return None, ""
             else:
                 try:
                     set_chosen_task(message)
@@ -360,7 +364,7 @@ class WorkSession(Usecase):
             msg = ""
             if find_whole_word('cancel')(message):
                 cancel_interval()
-                return None, "Cancelled interval."
+                return None, ""
 
             elif (self.chosen_task and
                     (find_whole_word('complete')(message)

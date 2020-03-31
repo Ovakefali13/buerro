@@ -99,7 +99,7 @@ class TestWorkSession(unittest.TestCase):
                      "<i>skip</i> it or <i>finish</i>?"),
         'break_start': "I will notify you in",
         'break_block': "Timer running. I will notify you in",
-        'break_fin': "Your break is over. Do you want to get back to work?"
+        'break_fin': "Your break is over. Let's get back to work."
     }
 
     @classmethod
@@ -314,6 +314,8 @@ class TestWorkSession(unittest.TestCase):
                                     self.assertIn(self.states['break_fin'], notification['title'])
                                     self.assertIn(self.states['break_fin'],
                                                     notification['options']['data']['message'])
+                                    self.assertIn(self.states['pom_ask'],
+                                                    notification['options']['data']['message'])
                                 else:
                                     uc._set_state('break')
                                     reply = uc.advance('skip')
@@ -337,9 +339,12 @@ class TestWorkSession(unittest.TestCase):
                     reply = uc.advance(None)
                     self.assertIn("too close to start working", reply.message)
 
-    def test_can_cancel_timer(self):
+    @patch.object(TodoistService._decorated, 'get_project_tasks')
+    def test_can_cancel_timer(self, get_tasks_mock):
         uc = self.usecase
         uc._set_state('pomodoro')
+        uc.chosen_project = "some random project"
+        get_tasks_mock.return_value = []
 
         reply = uc.advance('yes')
         self.assertIn(self.states['pom_start'], reply.message)
@@ -348,7 +353,7 @@ class TestWorkSession(unittest.TestCase):
         self.assertIn(self.states['pom_block'], reply.message)
 
         reply = uc.advance('cancel')
-        self.assertIn("Cancelled interval.", reply.message)
+        self.assertEqual("", reply.message)
 
         notification = self.notification_queue.get()
         self.assertTrue(self.notification_queue.empty())
@@ -366,12 +371,14 @@ class TestWorkSession(unittest.TestCase):
         self.assertIn('Enter <i>cancel</i> to skip forward.', reply.message)
 
         reply = uc.advance('cancel')
-        self.assertIn("Cancelled interval.", reply.message)
+        self.assertIn("", reply.message)
 
         notification = self.notification_queue.get()
         self.assertTrue(self.notification_queue.empty())
         self.assertIn(self.states['break_fin'], notification['title'])
         self.assertIn(self.states['break_fin'],
+                        notification['options']['data']['message'])
+        self.assertIn(self.states['pom_ask'],
                         notification['options']['data']['message'])
 
     @patch.object(TodoistService._decorated, 'get_project_tasks')

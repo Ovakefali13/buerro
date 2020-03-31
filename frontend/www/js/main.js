@@ -157,13 +157,15 @@ function putUserMessage(message) {
 }
 
 function putBotMessage(message) {
-    var container = $(".bubblecontainer")
-    $('#submit-btn').val('Send');
-    $('#loader').hide(100);
-    container.append(generateChatBubble(true, message));
-    speak();
-    container[0].scrollTop = container[0].scrollHeight
-    $('#prompt_input').focus();
+    if (message != "") {
+        var container = $(".bubblecontainer")
+        $('#submit-btn').val('Send');
+        $('#loader').hide(100);
+        container.append(generateChatBubble(true, message));
+        speak();
+        container[0].scrollTop = container[0].scrollHeight
+        $('#prompt_input').focus();
+    }
 }
 
 
