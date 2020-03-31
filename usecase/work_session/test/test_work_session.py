@@ -240,7 +240,7 @@ class TestWorkSession(unittest.TestCase):
         self.assertIn("spotify.com", reply.message)
         self.assertIn(self.states['project'], reply.message)
 
-        reply = uc.advance('Software Engineering')
+        reply = uc.advance('buerro')
         self.assertIn(self.states['todos'], reply.message)
         self.assertIn(self.states['pom_ask'], reply.message)
 
@@ -321,17 +321,6 @@ class TestWorkSession(unittest.TestCase):
                                     reply = uc.advance('skip')
 
                         self.assertEqual(uc.get_state().lower(), "pomodoro")
-
-                        """
-                        #TODO should also ask for which project to work on
-                        #reply = reply || notification
-                        #self.assertIn(self.states['which_project'], notification.message)
-                        self.assertIn(self.states['project'], reply.message)
-                        self.assertIsNotNone(reply.list) # list of projects
-
-                        reply = uc.advance('Software Engineering')
-                        self.assertIn(self.states['pomodoro'], reply.message)
-                        """
 
                     # starts over...
                     self.assertTrue(uc.is_finished())
