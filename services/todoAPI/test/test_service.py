@@ -23,7 +23,7 @@ class TodoistMockRemote(TodoistRemote):
         if project_id == 2230670456:
             response_json = json.load(open(dirname + '/mock_shopping_list.json'))
         elif project_id == 2230686946:
-            response_json = json.load(open(dirname + '/mock_software_engineering.json'))
+            response_json = json.load(open(dirname + '/mock_buerro.json'))
         elif project_id == 2230686957:
             response_json = json.load(open(dirname + '/mock_data_science.json'))
         return response_json
@@ -42,7 +42,7 @@ class TestTodoistService(unittest.TestCase):
 
     def test_get_project_names(self):
         projects = self.todoist_service.get_project_names()
-        self.assertEqual(projects, ['Inbox', 'Shopping List', 'Data Science', 'Software Engineering'])
+        self.assertEqual(projects, ['Inbox', 'Shopping List', 'Data Science','buerro'])
 
     def test_get_project_id(self):
         id = self.todoist_service.get_project_id("Shopping List")
