@@ -146,3 +146,8 @@ body {
 .glyphicon {
     font-size: 40px;
 }
+
+code {
+    color: #ffffff;
+    background-color: #ffffff2e;
+}
