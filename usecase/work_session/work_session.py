@@ -79,14 +79,13 @@ class WorkSession(Usecase):
 
     def update_todos(self):
         self.todos = self.todo_service.get_project_tasks(self.chosen_project)
-        self.todos = {e['id']: e for e in self.todos}
-        self.todo_dict = {id: v['content'] for id, v in self.todos.items()}
+        self.todos = {str(i): e for i, e in enumerate(self.todos)}
+        self.todo_dict = {k: v['content'] for k, v in self.todos.items()}
 
     def wake_up(self, reply, next_state):
-        self.expire_by = None
-        self.wake_job = None
-        self._set_state(next_state)
         self.notification_handler.push(reply.to_notification())
+        self.expire_by = None
+        self._set_state(next_state)
 
     def wait_until(self, when:dt, reply, next_state):
         if not self.scheduler:
@@ -195,11 +194,7 @@ class WorkSession(Usecase):
             return "todo", reply
 
         def get_todos_and_ask_for_pomodoro():
-            try:
-                self.update_todos()
-            except Exception as e:
-                print("Failed to fetch todos: ", e)
-                msg = "Failed to fetch todos.<br>"
+            self.update_todos()
             if self.todo_dict:
                 msg = f"Here are your tasks for {self.chosen_project}: <br>"
                 msg += dict_to_html(self.todo_dict) + "<br>"
@@ -224,10 +219,8 @@ class WorkSession(Usecase):
 
         def set_chosen_task(message):
             if self.todo_dict:
-                for key in self.todo_dict.keys():
-                    if key in message:
-                        self.chosen_task = self.todos[key]
-                        break
+                if message in self.todo_dict:
+                    self.chosen_task = self.todos[message]
                 else:
                     for key, name in self.todo_dict.items():
                         if name in message:
@@ -235,7 +228,6 @@ class WorkSession(Usecase):
                                 self.chosen_task = self.todos[key]
                             else:
                                 raise NonUniqueTaskException("This task is not unique.")
-
 
         def ask_for_break():
             return ("Good Work! You finished your session."
@@ -285,25 +277,21 @@ class WorkSession(Usecase):
                 reply=wake_up_reply
             )
 
-            msg += f"I will notify you in {minutes} minutes.<br>"
+            msg += f"I will notify you in {minutes} minutes."
             if self.chosen_task:
-                msg += ask_for_task_state()
+                msg += "<br>" + ask_for_task_state()
 
             return "wait_state", msg
 
         def pom_review_trans(message):
             msg = ""
-            if find_whole_word('complete')(message):
-                try:
-                    self.todo_service.complete_todo(self.chosen_task)
-                    msg += "Successfully completed. "
-                    self.update_todos()
-                except Exception as e:
-                    print("Could not complete the task: ", e)
-                    msg += "Failed to commit the complete. "
-            else:
-                msg += ask_for_break()
-                return "break", msg
+            if find_whole_word('yes')(message):
+                self.todo_service.complete_todo(self.chosen_task)
+                msg += "Successfully completed. "
+                self.update_todos()
+
+            msg += ask_for_break()
+            return "break", msg
 
         def break_trans(message):
             if message is None: message = ""
@@ -332,10 +320,26 @@ class WorkSession(Usecase):
                         "Please answer with (break, skip or finish).")
                 return "pomodoro", msg
 
+        def cancel_interval():
+            if self.wake_job.next_run_time < dt.now(pytz.utc):
+                raise Exception("Called cancel in non-waiting state")
+
+
+            func = self.wake_job.func
+            job_args = self.wake_job.args
+            job_kwargs = self.wake_job.kwargs
+
+            func(*job_args, **job_kwargs)
+            self.wake_job.remove()
+            self.wake_job = None
+
         def choosing_todo_trans(message):
             self.chosen_task = None
             if 'none' == message.lower():
                 return "wait_state", "No task chosen."
+            if 'finish' == message.lower():
+                cancel_interval()
+                return None, "Cancelled interval."
             else:
                 try:
                     set_chosen_task(message)
@@ -347,43 +351,44 @@ class WorkSession(Usecase):
                     return "wait_state", f"Switched to {self.chosen_task['content']}."
                 else:
                     msg = "I could not match that to any task."
-                    return "wait_state", msg
+                    return "choosing_todo", msg
 
         def wait_trans(message):
-            if not self.expire_by and self.wake_job:
+            if not (self.expire_by and self.wake_job):
                 raise Exception("in wait_state even though timer expired")
 
             msg = ""
             if find_whole_word('cancel')(message):
-                self.wake_job.remove()
+                cancel_interval()
+                return None, "Cancelled interval."
 
-                func = self.wake_job.func
-                args = self.wake_job.args
-                kwargs = self.wake_job.kwargs
-                func(*args, **kwargs)
-                return "wait_state", "Cancelled interval."
+            elif (self.chosen_task and
+                    (find_whole_word('complete')(message)
+                    or find_whole_word('switch')(message))):
 
-            elif self.chosen_task and find_whole_word('complete')(message):
-                try:
-                    self.todo_service.complete_todo(self.chosen_task)
-                    msg += "Successfully completed. "
-                    self.update_todos()
-                except Exception as e:
-                    print("Could not complete the task: ", e)
-                    msg += "Failed to commit the complete. "
+                if find_whole_word('complete')(message):
+                    try:
+                        self.todo_service.complete_todo(self.chosen_task)
+                        msg += "Successfully completed. "
+                        self.update_todos()
+                    except Exception as e:
+                        print("Could not complete the task: ", e)
+                        msg += "Failed to commit the complete. "
 
                 if self.todo_dict:
-                    msg += "Choose a new task, say <i>none</i> or finish."
+                    msg += ("Choose a new task, "
+                            "say <i>none</i> or "
+                            "<i>finish</i>.")
                 return "choosing_todo", {'message': msg, 'dict': self.todo_dict}
 
             else:
                 period = self.expire_by - dt.now(pytz.utc)
                 minutes, seconds = divmod(period.seconds, 60)
                 msg = (  "Timer running. "
-                        f"I will notify you in {minutes}:{seconds}. "
+                        f"I will notify you in {minutes}:{seconds}.<br>"
                          "Enter <i>cancel</i> to skip forward.")
                 if self.chosen_task:
-                    msg += ask_for_task_state()
+                    msg += "<br>" + ask_for_task_state()
                 return "wait_state", msg
 
         m = self.fsm

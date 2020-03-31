@@ -43,10 +43,15 @@ class StateMachine:
         if not isinstance(ret, tuple):
             raise Exception("return of a transition should be a tuple of "
                 + "(new_state, data)")
-        (new_state, data) = ret
-        new_state = new_state.upper()
 
-        self.currentState = new_state
+        (new_state, data) = ret
+        if new_state is None:
+            pass  # leave current state
+        elif isinstance(new_state, str):
+            new_state = new_state.upper()
+            self.currentState = new_state
+        else:
+            raise Exception("New state should be a string")
 
         return data
 

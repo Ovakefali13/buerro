@@ -45,6 +45,7 @@ class TodoistJSONRemote(TodoistRemote):
         self.api.commit()
 
     def complete_todo(self, task):
+        task = self.api.items.get_by_id(task['id'])
         task.complete()
         self.api.commit()
 

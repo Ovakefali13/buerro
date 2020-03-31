@@ -403,6 +403,7 @@ class TestWorkSession(unittest.TestCase):
         self.assertIn('Task chosen: test todo 1', reply.message)
         self.assertIn(self.states['pom_start'], reply.message)
         self.assertIn(self.states['pom_task'], reply.message)
+
         frozen_time.tick(timedelta(minutes=1))
 
         reply = uc.advance('asdf')
@@ -413,26 +414,41 @@ class TestWorkSession(unittest.TestCase):
         get_tasks_mock.return_value = _get_tasks()
         reply = uc.advance('complete')
         complete_mock.assert_called_once()
+        self.assertEqual(complete_mock.call_args[0][0]['id'], 'abc')
+        complete_mock.reset_mock()
         self.assertIn("Successfully completed. "
-                      "Choose a new task, say <i>none</i> or finish.", reply.message)
+                      "Choose a new task, say <i>none</i> or <i>finish</i>.", reply.message)
         self.assertIn("<table>", reply.to_html())
 
         reply = uc.advance('test todo 2')
         self.assertIn('This task is not unique. Choose by ID', reply.message)
 
-        reply = uc.advance('def') # has to choose by id
+        reply = uc.advance('0') # has to choose by id
         self.assertIn('Switched to test todo 2', reply.message)
 
-        frozen_time.tick(timedelta(minutes=24))
+        frozen_time.tick(timedelta(minutes=1))
+
+        reply = uc.advance('switch')
+        complete_mock.asssert_not_called()
+        self.assertIn("Choose a new task, say <i>none</i> or <i>finish</i>.", reply.message)
+        self.assertIn("<table>", reply.to_html())
+
+        reply = uc.advance('1')
+        self.assertIn('Switched to test todo 2', reply.message)
+
+        frozen_time.tick(timedelta(minutes=23))
         notification = self.notification_queue.get()
         self.assertTrue(self.notification_queue.empty())
         self.assertIn(self.states['pom_fin'], notification['options']['data']['message'])
         self.assertIn('Did you <i>complete</i>', notification['options']['data']['message'])
 
-        del tasks['def']
+        del tasks['ghi']
         get_tasks_mock.return_value = _get_tasks()
         reply = uc.advance('yes')
         complete_mock.assert_called_once()
+        self.assertEqual(complete_mock.call_args[0][0]['id'], 'ghi')
+        complete_mock.reset_mock()
+        self.assertIn("Successfully completed. ", reply.message)
         self.assertIn(self.states['break_ask'], reply.message)
 
         reply = uc.advance('skip')
