@@ -59,3 +59,36 @@ class TestTodoistService(unittest.TestCase):
             response = True
         self.assertIs(response, True)
         self.todoist_service.delete_project_todo(test_string, project_name)
+
+    def test_get_project_items_as_table(self):
+        tasks = [
+            {
+                'content': 'Task1',
+                'due': {
+                    'date': '2016-08-05T07:00:00Z',
+                    'timezone': None,
+                    'is_recurring': False,
+                    'string': 'tomorrow at 10:00',
+                    'lang': 'en'
+                },
+                'id': 102835615,
+                'priority': 3
+            },
+            {
+                'content': 'Task2',
+                'due': None,
+                'id': 102835617,
+                'priority': 1
+            }
+        ]
+
+        table = self.todoist_service.tasks_as_table(tasks)
+
+        expected = {
+            "Description": ["Task1", "Task2"],
+            "Priority": [3, 1],
+            "Due": ["tomorrow at 10:00", None]
+        }
+
+        self.assertEqual(table, expected)
+
