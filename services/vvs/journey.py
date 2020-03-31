@@ -72,13 +72,13 @@ class Journey:
             'Departure': [dep_time],
             'Arrival': [arr_time],
             'Means': [self.transportation],
-            'Duration (mins)': [self.get_duration().total_seconds() / 60]
+            'Duration': [str(self.get_duration())]
         }
 
         for leg in self.legs:
             leg_table = leg.to_table()
             for k, l in leg_table.items():
-                table[k] + l
+                table[k] += l
 
         return table
 
