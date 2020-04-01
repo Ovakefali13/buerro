@@ -81,9 +81,14 @@ class WorkSession(Usecase):
         return self.fsm.currentState
 
     def update_todos(self):
-        self.todos = self.todo_service.get_project_tasks(self.chosen_project)
-        self.todos = {str(i): e for i, e in enumerate(self.todos)}
-        self.todo_dict = {k: v['content'] for k, v in self.todos.items()}
+        todos = self.todo_service.get_project_tasks(self.chosen_project)
+        todo_table = self.todo_service.tasks_as_table(todos)
+
+        self.todos = {str(i): e for i, e in enumerate(todos)}
+        self.todo_table = {
+            'ID': [id for id in self.todos.keys()],
+            **todo_table
+        }
 
     def wake_up(self, reply, next_state):
         self.notification_handler.push(reply.to_notification())
@@ -211,14 +216,14 @@ class WorkSession(Usecase):
 
         def get_ask_for_pomodoro_msg():
             self.update_todos()
-            if self.todo_dict:
+            if self.todo_table:
                 msg = f"Here are your tasks for {self.chosen_project}: <br>"
-                msg += dict_to_html(self.todo_dict) + "<br>"
+                msg += table_to_html(self.todo_table) + "<br>"
             else:
                 msg = f"There are no Todo's for {self.chosen_project}.<br>"
 
             msg += "<br>Do you want to start a pomodoro session?"
-            if self.todo_dict:
+            if self.todo_table:
                 msg += "<br>Then say <i>yes</i> or choose a task."
             return msg
 
@@ -235,14 +240,14 @@ class WorkSession(Usecase):
             return "pomodoro", get_ask_for_pomodoro_msg()
 
         def set_chosen_task(message):
-            if self.todo_dict:
-                if message in self.todo_dict:
+            if self.todo_table:
+                if message in self.todos:
                     self.chosen_task = self.todos[message]
                 else:
-                    for key, name in self.todo_dict.items():
-                        if name in message:
+                    for todo in self.todos.values():
+                        if todo['content'] in message:
                             if not self.chosen_task:
-                                self.chosen_task = self.todos[key]
+                                self.chosen_task = todo
                             else:
                                 raise NonUniqueTaskException("This task is not unique.")
 
@@ -395,11 +400,11 @@ class WorkSession(Usecase):
                         print("Could not complete the task: ", e)
                         msg += "Failed to commit the complete. "
 
-                if self.todo_dict:
+                if self.todo_table:
                     msg += ("Choose a new task, "
                             "say <i>none</i> or "
                             "<i>finish</i>.")
-                return "choosing_todo", {'message': msg, 'dict': self.todo_dict}
+                return "choosing_todo", {'message': msg, 'table': self.todo_table}
 
             else:
                 period = self.expire_by - dt.now(pytz.utc)

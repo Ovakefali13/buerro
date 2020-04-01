@@ -405,7 +405,10 @@ class TestWorkSession(unittest.TestCase):
         }
 
         def _get_tasks():
-            return [{'id': k, 'content': v} for k, v in tasks.items()]
+            return [{'id': k,
+                    'content': v,
+                    'priority': 0,
+                    'due': None} for k, v in tasks.items()]
 
         get_tasks_mock.return_value = _get_tasks()
         uc = self.usecase

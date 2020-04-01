@@ -100,3 +100,17 @@ class TodoistService:
     def delete_project_todo(self, item, project_name):
         project_id = self.get_project_id(project_name)
         self.remote.delete_todo(item, project_id)
+
+    def tasks_as_table(self, tasks:list):
+        if not isinstance(tasks, list):
+            raise Exception("Passed non-list as task list")
+
+        keys = ('content', 'priority', 'due')
+
+        return {
+            'Description': [t['content'] for t in tasks],
+            'Priority': [t['priority'] for t in tasks],
+            'Due': [t['due']['string'] if t['due'] else None for t in tasks]
+        }
+
+
