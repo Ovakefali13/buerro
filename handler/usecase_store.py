@@ -45,7 +45,7 @@ class UsecaseStore:
                 fun(*f_args, **f_kwargs)
                 if self.running:
                     break
-            except e:
+            except Exception as e:
                 print("Registered callback failed: ", e)
 
     def register_fin_callback(self, fun, *args, **kwargs):
