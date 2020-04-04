@@ -58,7 +58,6 @@ class VVSEfaJSONRemote(VVSRemote):
         try:
             return res.json().get('journeys')
         except:
-            breakpoint()
             raise Exception("Response does not contain journeys ", res)
 
 
