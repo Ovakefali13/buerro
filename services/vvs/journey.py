@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from copy import copy
+import copy
 import pytz
 
 from services.cal import Event
@@ -48,14 +48,16 @@ class Journey:
         return self.arr_time
 
     def __str__(self):
-        description = str(self.origin
-                + ' at '    + str(self.dep_time.strftime("%H:%M"))
-                + ' to '    + self.dest
-                + ' by '    + str(self.transportation)
-                + ' until ' + str(self.arr_time.strftime("%H:%M"))
-                + ' takes ' + str(self.get_duration()))
+        journey = self.localize()
 
-        for leg in self.legs:
+        description = (f'{journey.origin}'
+                f' at {journey.dep_time.strftime("%H:%M")}'
+                f' to {journey.dest}'
+                f' by {journey.transportation}'
+                f' until {journey.arr_time.strftime("%H:%M")}'
+                f' takes {journey.get_duration()}')
+
+        for leg in journey.legs:
             description += "\n" + str(leg)
 
         return description
@@ -63,22 +65,36 @@ class Journey:
     def get_user_tz(self):
         return pytz.timezone("Europe/Berlin")
 
+    def localize(self):
+        new = copy.deepcopy(self)
+
+        new.dep_time = self.dep_time.astimezone(self.get_user_tz())
+        new.arr_time = self.arr_time.astimezone(self.get_user_tz())
+
+        for leg in new.legs:
+            leg = leg.localize()
+
+        return new
+
     def to_table(self):
-        dep_time = self.dep_time.astimezone(self.get_user_tz()).strftime("%H:%M")
-        arr_time = self.arr_time.astimezone(self.get_user_tz()).strftime("%H:%M")
+        journey = self.localize()
+
+        dep_time = journey.dep_time.strftime("%H:%M")
+        arr_time = journey.dep_time.strftime("%H:%M")
+
         table = {
             'Origin': [self.origin],
             'Destination': [self.dest],
             'Departure': [dep_time],
             'Arrival': [arr_time],
             'Means': [self.transportation],
-            'Duration (mins)': [self.get_duration().total_seconds() / 60]
+            'Duration': [str(self.get_duration())]
         }
 
         for leg in self.legs:
             leg_table = leg.to_table()
             for k, l in leg_table.items():
-                table[k] + l
+                table[k] += l
 
         return table
 
@@ -135,8 +151,8 @@ class Journey:
         self.arr_time = parse_vvs_time(dest.get('arrivalTimePlanned'))
 
         for leg in vvs_journey.get('legs'):
-            origin = copy(leg.get('origin').get('name'))
-            dest = copy(leg.get('destination').get('name'))
+            origin = copy.copy(leg.get('origin').get('name'))
+            dest = copy.copy(leg.get('destination').get('name'))
             dep_time = parse_vvs_time(leg.get('origin').get('departureTimePlanned'))
             arr_time = parse_vvs_time(leg.get('destination').get('arrivalTimePlanned'))
 
