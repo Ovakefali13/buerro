@@ -32,7 +32,7 @@ class TestMapService(unittest.TestCase):
 
     def test_get_summary(self):
         summary = self.map_service.get_route_summary(self.dhbw, self.mensa, 'driving-car')
-        self.assertEqual(summary, {'start': self.dhbw, 'dest': self.mensa, 'distance': 1295.7, 'duration': 238.0})
+        self.assertEqual(summary, {'start': self.dhbw, 'dest': self.mensa, 'distance': 1369.2, 'duration': 224.5})
 
 
     def test_get_route_link(self):

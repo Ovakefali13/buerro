@@ -3,6 +3,7 @@ from util import Singleton
 from urllib.parse import urlencode
 from services.preferences import PrefService, PrefJSONRemote
 import requests
+import inspect
 
 
 class MapRemote(ABC):
@@ -47,8 +48,6 @@ class MapJSONRemote(MapRemote):
         url = url.replace('%2C', '')
         url = url.replace('+', ',')
 
-        print(url)
-
         try:
             return requests.get(url)
         except Exception as err:
@@ -64,7 +63,11 @@ class MapService:
 
 
     def get_route_summary(self, start:tuple, dest:tuple, travel_mode:str=None):
-        route = self.remote.get_route_information(start, dest, travel_mode).json()
+        route = self.remote.get_route_information(start, dest, travel_mode)
+
+        if not isinstance(route, dict):
+            route = route.json()
+
         if route:
             summary = route['features'][0]['properties']['summary']
             coords = route['metadata']['query']['coordinates']
@@ -83,4 +86,3 @@ class MapService:
         elif mode == 'walking':
             mode = 2
         return f'https://routing.openstreetmap.de/?loc={start[0]}%2C{start[1]}&loc={dest[0]}%2C{dest[1]}&hl=en&srv={mode}'
-        
