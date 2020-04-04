@@ -152,9 +152,7 @@ class Transport(Usecase):
 
             if dest:
                 dest = dest[0]
-
-            print(dest)
-
+                
             if dest:
                 if dest in special_locations:
                     self.req_info['Dest'] = get_special_location(dest)
@@ -196,7 +194,6 @@ class Transport(Usecase):
 
         def map_service(self, name, mode):            
             self.transport_info[name] = self.map_service.get_route_summary(start_coords, dest_coords, mode)
-
 
 
         def vvs_service(self):
