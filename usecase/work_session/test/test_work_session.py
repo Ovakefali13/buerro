@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import patch
 from urllib.parse import urlparse
 from datetime import datetime as dt, timedelta
 import pytz
@@ -82,7 +83,7 @@ class TestWorkSession(unittest.TestCase):
         'music_rec': "How about this Spotify playlist?",
 
         'project': "Which project do you want to work on?",
-        'todos': "Here are your Todo's",
+        'todos': "Todo's",
 
         'pomodoro': "Do you want to start a pomodoro session?",
         'fin_no_pom': "I hope you'll have a productive session!",
@@ -198,9 +199,17 @@ class TestWorkSession(unittest.TestCase):
         self.assertIn(expected, reply.message)
 
     @freeze_time("2020-03-14", as_arg=True)
+    @patch.object(TodoistService._decorated, 'get_project_names')
+    @patch.object(TodoistService._decorated, 'get_project_items')
     @unittest.skipIf('TRAVIS' in os.environ and 'DONOTMOCK' in os.environ,
                     "travis IP might be blocked on iCloud")
-    def test_creates_reminder_for_upcoming_and_advances(frozen_time, self):
+    def test_creates_reminder_for_upcoming_and_advances(frozen_time,
+                                                        self,
+                                                        mock_get_tasks,
+                                                        mock_get_projects):
+
+        mock_get_projects.return_value = ["some project"]
+        mock_get_tasks.return_value = []
 
         uc = self.usecase
 
@@ -234,8 +243,10 @@ class TestWorkSession(unittest.TestCase):
         self.assertIn(self.states['music_rec'], reply.message)
         self.assertIn("spotify.com", reply.message)
         self.assertIn(self.states['project'], reply.message)
+        mock_get_projects.assert_called_once()
 
-        reply = uc.advance('Software Engineering')
+        reply = uc.advance('some project')
+        mock_get_tasks.assert_called_once()
         self.assertIn(self.states['todos'], reply.message)
         self.assertIn(self.states['pomodoro'], reply.message)
 
