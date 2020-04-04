@@ -9,7 +9,7 @@ class TestPrefService(unittest.TestCase):
 
     def test_get_apiKey(self):
         api_Key = self.pref_service.get_preferences("cooking")
-        self.assertEqual(api_Key["spoonacularAPIKey"], "0a3a6b562932438aaab0cb05460096de")
+        self.assertIsInstance(api_Key["diet"], str)
     def test_merge_json_files(self):
         json1 = {
             "general1": "prefGeneral1",
@@ -25,6 +25,8 @@ class TestPrefService(unittest.TestCase):
         }
         mergedJson = self.remote.merge_json_files(json1, json2)
         self.assertEqual(rightJson, mergedJson)
-    
+
     def test_get_specific_pref(self):
-        self.assertEqual(self.pref_service.get_specific_pref("spoonacularAPIKey"), "0a3a6b562932438aaab0cb05460096de")
+        self.assertIsInstance(
+            self.pref_service.get_specific_pref("maxCookingTime"),
+            int)

@@ -1,5 +1,7 @@
 from openrouteservice import client
 from abc import ABC, abstractmethod
+import os
+
 from util import Singleton
 from services.preferences import PrefService, PrefJSONRemote
 
@@ -16,7 +18,7 @@ class MapJSONRemote(MapRemote):
 
         pref_service = PrefService(PrefJSONRemote())
         prefs = pref_service.get_preferences('transport')
-        self.clnt = client.Client(key=prefs['openrouteserviceAPIKey'])
+        self.clnt = client.Client(key=os.environ['OPENROUTESERVICE_API_KEY'])
 
         self.request_params = {
             'coordinates': [(), ()],
