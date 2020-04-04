@@ -22,11 +22,7 @@ class MapJSONRemote(MapRemote):
         self.request_params = {
             'start': None,
             'end': None,
-            'format_out': 'json',
-            'profile': 'cycling-regular',            
-            'preference': 'shortest',
-            'instructions': 'false',
-            'geometry': 'false',
+            'profile': 'cycling-regular',
             'api_key': prefs['openrouteserviceAPIKey']
         }
 
