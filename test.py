@@ -3,6 +3,9 @@ from unittest import defaultTestLoader
 import coverage
 import os
 from argparse import ArgumentParser
+from dotenv import load_dotenv
+
+load_dotenv()
 
 def main(arg_module=None):
     if arg_module:

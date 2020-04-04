@@ -60,7 +60,6 @@ class VVSEfaJSONRemote(VVSRemote):
         except:
             raise Exception("Response does not contain journeys ", res)
 
-
 @Singleton
 class VVSService:
 

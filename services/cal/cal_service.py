@@ -2,8 +2,8 @@ from datetime import datetime as dt, timedelta
 import pytz
 import caldav
 from caldav.elements import dav, cdav
-from dotenv import load_dotenv
 from abc import ABC, abstractmethod
+import os
 
 from services.preferences import PrefService
 from util import Singleton
@@ -33,13 +33,13 @@ class iCloudCaldavRemote(CalRemote):
 
         self.pref = PrefService().get_preferences('cal')
         required_env = (
-                'caldav_url',
-                'username',
-                'password',
-                'calendar'
+                'CALDAV_URL',
+                'CALDAV_USERNAME',
+                'CALDAV_PASSWORD',
+                'CALDAV_CALENDAR'
         )
 
-        if not all([var in self.pref for var in required_env]):
+        if not all([var in os.environ for var in required_env]):
             raise EnvironmentError("Did not set all of these preferences: ", required_env)
 
         def _get_named_calendar(calendars, name):
@@ -51,13 +51,13 @@ class iCloudCaldavRemote(CalRemote):
                     return cal
 
         client = caldav.DAVClient(
-            self.pref['caldav_url'],
-            username=self.pref['username'],
-            password=self.pref['password'])
+            os.environ['CALDAV_URL'],
+            username=os.environ['CALDAV_USERNAME'],
+            password=os.environ['CALDAV_PASSWORD'])
 
         principal = client.principal()
         self.calendar = _get_named_calendar(principal.calendars(),
-            self.pref['calendar'])
+            os.environ['CALDAV_CALENDAR'])
         if self.calendar is None:
             raise EnvironmentError('Provided calendar could not be found')
 

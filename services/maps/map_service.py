@@ -1,4 +1,6 @@
 from abc import ABC, abstractmethod
+import os
+
 from util import Singleton
 from urllib.parse import urlencode
 from services.preferences import PrefService, PrefJSONRemote
@@ -15,16 +17,13 @@ class MapRemote(ABC):
 class MapJSONRemote(MapRemote):
 
     def __init__(self):
-
-        pref_service = PrefService(PrefJSONRemote())
-        prefs = pref_service.get_preferences('transport')
         self.base_url = 'https://api.openrouteservice.org/v2/directions/'
 
         self.request_params = {
             'start': None,
             'end': None,
-            'profile': 'cycling-regular',
-            'api_key': prefs['openrouteserviceAPIKey']
+            'profile': None,
+            'api_key': os.environ['OPENROUTESERVICE_API_KEY']
         }
 
 

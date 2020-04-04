@@ -1,6 +1,7 @@
 import requests
 from abc import ABC, abstractmethod
 import urllib
+import os
 
 from services.ApiError import ApiError
 from util import Singleton
@@ -29,7 +30,7 @@ class WeatherAdapterModule(ABC):
 class WeatherAdapterRemote(WeatherAdapterModule):
 
     def __init__(self):
-        self.API_TOKEN = PrefService().get_specific_pref('openWeatherMapAPIKey')
+        self.API_TOKEN = os.environ['OPENWEATHERMAP_API_KEY']
         self.base_url = 'https://api.openweathermap.org/data/2.5'
         self.base_params = {
             'units': 'metric',
