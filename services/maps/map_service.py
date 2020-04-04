@@ -40,14 +40,14 @@ class MapJSONRemote(MapRemote):
         self.__set_route__(start, dest)
         if travel_mode:
             self.__set_travel_mode__(travel_mode)
-
-        self.base_url = self.base_url + f'{self.request_params.get("profile")}?'
        
-        url = self.base_url + urlencode(self.request_params)
+        url = self.base_url + f'{self.request_params.get("profile")}?' + urlencode(self.request_params)
         url = url.replace('%28', '')
         url = url.replace('%29', '')
         url = url.replace('%2C', '')
         url = url.replace('+', ',')
+
+        print(url)
 
         try:
             return requests.get(url)
