@@ -62,5 +62,4 @@ class GeocodingService:
 
     def get_city_from_coords(self, coords:tuple):
         results = self.remote.get_information_from_coords(coords)[0]['components']
-
-        return results.get('city') or results.get('village')
+        return results.get('village') or results.get('town') or results.get('city')
