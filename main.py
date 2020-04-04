@@ -1,3 +1,6 @@
+from dotenv import load_dotenv
+load_dotenv()
+
 from controller import ControllerFromArgs
 from chatbot import Chatbot, BuerroBot
 from http.server import HTTPServer
@@ -6,16 +9,12 @@ import time
 import os
 from apscheduler.schedulers.background import BackgroundScheduler
 from pytz import utc
-from dotenv import load_dotenv
-
 from usecase import Lunchbreak
 from usecase import Github
 from handler import UsecaseStore
 
 HOST_NAME = "localhost"
 SERVER_PORT = 9150
-
-load_dotenv()
 
 if 'BACKEND_PORT' in os.environ:
     SERVER_PORT = int(os.environ['BACKEND_PORT'])
