@@ -4,6 +4,7 @@ from services.maps import GeocodingService, MapService
 from services.vvs import VVSService, VVSEfaJSONRemote
 from usecase import Usecase, Reply
 from handler import LocationHandler
+from util import link_to_html
 
 from multiprocessing import Process
 from datetime import datetime, timedelta
@@ -148,8 +149,11 @@ class Transport(Usecase):
         if not self.req_info['Dest']:
             p = re.compile(r'((?<=to\sthe\s)|(?<=to\s(?!(the|arrive|travel))))(\w*|home)|(?<=travel\s)home')
             dest = p.search(message)
+
             if dest:
                 dest = dest[0]
+
+            print(dest)
 
             if dest:
                 if dest in special_locations:
@@ -190,7 +194,7 @@ class Transport(Usecase):
             self.transport_info['WeatherBad'] = self.wea_service.is_bad_weather()
 
 
-        def map_service(self, name, mode):
+        def map_service(self, name, mode):            
             self.transport_info[name] = self.map_service.get_route_summary(start_coords, dest_coords, mode)
 
 
@@ -324,10 +328,10 @@ class Transport(Usecase):
         favorite_duration = durations_sorted.get(favorite)
 
         if favorite in viable:            
-            reply_dict = {'message': f'For this trip your prefered mode of transport {favorite} is available. It will take {print_duration(favorite_duration)}.', 'link': create_link(favorite)}
+            reply_dict = {'message': f'For this trip your prefered mode of transport {favorite} is available. It will take {print_duration(favorite_duration)}. {link_to_html(create_link(favorite), "Route Link")}'}
             duration = favorite_duration
         else:
-            reply_dict = {'message': f'For this trip the mode of transport {fastest} is advised. It will take {print_duration(fastest_duration)}.', 'link': create_link(fastest)}
+            reply_dict = {'message': f'For this trip the mode of transport {fastest} is advised. It will take {print_duration(fastest_duration)}. {link_to_html(create_link(fastest), "Route Link")}'}
             duration = fastest_duration
         
         if self.req_info.get('ArrDep') is 'Arr':
@@ -335,6 +339,6 @@ class Transport(Usecase):
             reply_dict['message'] = reply_dict['message'] + f' You need to leave at {dep_time.strftime("%H:%M")}.'
        
         if favorite and favorite != fastest:
-            reply_dict['message'] = reply_dict['message'] + f' However, the mode {fastest} is faster by {print_duration(favorite_duration - fastest_duration)}.'      
+            reply_dict['message'] = reply_dict['message'] + f' However, the mode {fastest} is faster by {print_duration(favorite_duration - fastest_duration)}. {link_to_html(create_link(fastest), "Faster Route Link")}'  
 
         return Reply(reply_dict)
