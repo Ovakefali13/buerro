@@ -1,7 +1,8 @@
-from openrouteservice import client
 from abc import ABC, abstractmethod
 from util import Singleton
+from urllib.parse import urlencode
 from services.preferences import PrefService, PrefJSONRemote
+import requests
 
 
 class MapRemote(ABC):
@@ -16,20 +17,23 @@ class MapJSONRemote(MapRemote):
 
         pref_service = PrefService(PrefJSONRemote())
         prefs = pref_service.get_preferences('transport')
-        self.clnt = client.Client(key=prefs['openrouteserviceAPIKey'])
+        self.base_url = 'https://api.openrouteservice.org/v2/directions/'
 
         self.request_params = {
-            'coordinates': [(), ()],
+            'start': None,
+            'end': None,
             'format_out': 'json',
-            'profile': 'cycling-regular',
+            'profile': 'cycling-regular',            
             'preference': 'shortest',
             'instructions': 'false',
             'geometry': 'false',
+            'api_key': prefs['openrouteserviceAPIKey']
         }
 
 
     def __set_route__(self, start:tuple, dest:tuple):
-        self.request_params['coordinates'] = [(start[1], start[0]), (dest[1],dest[0])]
+        self.request_params['start'] = start[1], start[0]
+        self.request_params['end'] = dest[1], dest[0]
 
 
     def __set_travel_mode__(self, profile:dict):
@@ -40,10 +44,19 @@ class MapJSONRemote(MapRemote):
         self.__set_route__(start, dest)
         if travel_mode:
             self.__set_travel_mode__(travel_mode)
+
+        self.base_url = self.base_url + f'{self.request_params.get("profile")}?'
+       
+        url = self.base_url + urlencode(self.request_params)
+        url = url.replace('%28', '')
+        url = url.replace('%29', '')
+        url = url.replace('%2C', '')
+        url = url.replace('+', ',')
+
         try:
-            return self.clnt.directions(**self.request_params)
-        except:
-            return None
+            return requests.get(url)
+        except Exception as err:
+            raise Exception("Error fetching route information: ", err)
         
 
 
@@ -55,9 +68,9 @@ class MapService:
 
 
     def get_route_summary(self, start:tuple, dest:tuple, travel_mode:str=None):
-        route = self.remote.get_route_information(start, dest, travel_mode)
+        route = self.remote.get_route_information(start, dest, travel_mode).json()
         if route:
-            summary = route['routes'][0]['summary']
+            summary = route['features'][0]['properties']['summary']
             coords = route['metadata']['query']['coordinates']
 
             return {'start': (coords[0][1], coords[0][0]),
