@@ -63,8 +63,11 @@ class VVSEfaJSONRemote(VVSRemote):
 @Singleton
 class VVSService:
 
-    def __init__(self, remote:VVSRemote = VVSEfaJSONRemote.instance()):
-        self.remote = remote
+    def __init__(self, remote:VVSRemote=None):
+        if remote:
+            self.remote = remote
+        else:
+            self.remote =  VVSEfaJSONRemote.instance()
 
     def set_remote(self, remote:VVSRemote):
         self.remote = remote

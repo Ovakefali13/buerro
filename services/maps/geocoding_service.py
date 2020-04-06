@@ -38,8 +38,11 @@ class GeocodingJSONRemote(GeocodingRemote):
 @Singleton
 class GeocodingService:
 
-    def __init__(self, remote:GeocodingRemote=GeocodingJSONRemote.instance()):
-        self.remote = remote
+    def __init__(self, remote:GeocodingRemote=None):
+        if remote:
+            self.remote = remote
+        else:
+            self.remote = GeocodingJSONRemote.instance()
 
     def get_coords_from_address(self, address:str):
         # filter blank strings

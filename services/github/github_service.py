@@ -33,9 +33,13 @@ class GithubService:
     remote = None
     pref = None
 
-    def __init__(self, remote:GithubRemote = GithubRealRemote.instance(), fallback:GithubRemote = None):
+    def __init__(self, remote:GithubRemote=None):
+        if remote:
+            self.remote = remote
+        else:
+            self.remote = GithubRealRemote.instance()
+
         self.pref = PrefService().get_preferences('github')
-        self.remote = remote
 
     def set_remote(self,remote):
         self.remote = remote

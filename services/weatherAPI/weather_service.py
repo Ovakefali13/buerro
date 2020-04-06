@@ -89,8 +89,12 @@ class WeatherAdapter:
     MIN_TEMP = 10.0 #°C
     MAX_WIND = 20.0 #km/h
 
-    def __init__(self, remote:WeatherAdapterModule = WeatherAdapterRemote.instance()):
-        self.remote = remote
+    def __init__(self, remote:WeatherAdapterModule=None):
+        if remote:
+            self.remote = remote
+        else:
+            self.remote =  WeatherAdapterRemote.instance()
+
         self.pref = PrefService()
         #get_preferences('weather')
         self.MIN_TEMP = self.pref.get_specific_pref('min_temp')

@@ -169,8 +169,11 @@ class SpotifyRemote(MusicRemote):
 
 @Singleton
 class MusicService:
-    def __init__(self, remote=SpotifyRemote.instance()):
-        self.remote = remote
+    def __init__(self, remote=None):
+        if remote:
+            self.remote = remote
+        else:
+            self.remote = SpotifyRemote.instance()
 
     def set_remote(self, remote:MusicRemote):
         self.remote = remote
