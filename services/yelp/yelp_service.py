@@ -1,8 +1,10 @@
 import requests
-from services.ApiError import ApiError
-from util import Singleton
-from services.preferences import PrefService
+import os
 from abc import ABC, abstractmethod
+
+from util import Singleton
+from services.ApiError import ApiError
+from services.preferences import PrefService
 from services.yelp.yelp_request import YelpRequest
 
 class YelpServiceModule(ABC):
@@ -16,7 +18,7 @@ class YelpServiceModule(ABC):
 
 @Singleton
 class YelpServiceRemote(YelpServiceModule):
-    API_TOKEN = PrefService().get_specific_pref('yelpAPIKey')
+    API_TOKEN = os.environ['YELP_API_KEY']
     headers = {
         'Authorization': 'Bearer %s' % API_TOKEN,
     }

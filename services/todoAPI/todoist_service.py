@@ -1,8 +1,10 @@
 import json
+import os
 from abc import ABC, abstractmethod
-from ..preferences.pref_service import PrefService, PrefJSONRemote, PrefRemote
 import todoist
+
 from util import Singleton
+from ..preferences.pref_service import PrefService, PrefJSONRemote, PrefRemote
 
 class TodoistRemote(ABC):
     @abstractmethod
@@ -29,7 +31,7 @@ class TodoistJSONRemote(TodoistRemote):
 
     def __init__(self):
         pref_json = self.pref_service.get_preferences("cooking")
-        self.api_token = pref_json['todoistAPIKey']
+        self.api_token = os.environ['TODOIST_API_KEY']
         self.api = todoist.TodoistAPI(self.api_token)
         self.api.sync()
 

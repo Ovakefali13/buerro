@@ -1,3 +1,6 @@
+from dotenv import load_dotenv
+load_dotenv()
+
 from controller import ControllerFromArgs
 from chatbot import Chatbot, BuerroBot
 from http.server import HTTPServer
@@ -6,7 +9,6 @@ import time
 import os
 from apscheduler.schedulers.background import BackgroundScheduler
 from pytz import utc
-
 from usecase import Lunchbreak
 from usecase import Github
 from handler import UsecaseStore

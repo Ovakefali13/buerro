@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+import os
 from opencage.geocoder import OpenCageGeocode, InvalidInputError, RateLimitExceededError, UnknownError
 from util import Singleton
 from services.preferences import PrefService, PrefJSONRemote
@@ -17,7 +18,7 @@ class GeocodingJSONRemote(GeocodingRemote):
     def __init__(self):
         pref_service = PrefService(PrefJSONRemote())
         prefs = pref_service.get_preferences("transport")
-        self.geocoder = OpenCageGeocode(prefs['opencagegeocodingAPIKey'])
+        self.geocoder = OpenCageGeocode(os.environ['OPENCAGEGEOCODING_API_KEY'])
 
 
     # Street, City, Country
@@ -62,5 +63,4 @@ class GeocodingService:
 
     def get_city_from_coords(self, coords:tuple):
         results = self.remote.get_information_from_coords(coords)[0]['components']
-
-        return results.get('city') or results.get('village')
+        return results.get('village') or results.get('town') or results.get('city')
