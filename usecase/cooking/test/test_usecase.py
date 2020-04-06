@@ -21,8 +21,9 @@ class TestCooking(unittest.TestCase):
         if 'DONOTMOCK' in os.environ:
             self.todoist_service = TodoistService.instance(
                 TodoistJSONRemote.instance())
+            purgable_calendar = os.environ['CALDAV_PURGABLE_CALENDAR']
             self.calendar_service = CalService.instance(
-                iCloudCaldavRemote.instance())
+                iCloudCaldavRemote.instance(purgable_calendar))
             self.yelp_service = YelpService.instance(
                 YelpServiceRemote.instance())
             self.spoonacle_service = SpoonacularService.instance(

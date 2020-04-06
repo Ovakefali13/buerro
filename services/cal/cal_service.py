@@ -29,14 +29,13 @@ class CalRemote(ABC):
 
 @Singleton
 class iCloudCaldavRemote(CalRemote):
-    def __init__(self):
+    def __init__(self, calendar_name:str=None):
 
         self.pref = PrefService().get_preferences('cal')
         required_env = (
                 'CALDAV_URL',
                 'CALDAV_USERNAME',
-                'CALDAV_PASSWORD',
-                'CALDAV_CALENDAR'
+                'CALDAV_PASSWORD'
         )
 
         if not all([var in os.environ for var in required_env]):
@@ -55,11 +54,15 @@ class iCloudCaldavRemote(CalRemote):
             username=os.environ['CALDAV_USERNAME'],
             password=os.environ['CALDAV_PASSWORD'])
 
+        if not calendar_name:
+            calendar_name = os.getenv('CALDAV_CALENDAR')
+
         principal = client.principal()
         self.calendar = _get_named_calendar(principal.calendars(),
-            os.environ['CALDAV_CALENDAR'])
+                                            calendar_name)
         if self.calendar is None:
-            raise EnvironmentError('Provided calendar could not be found')
+            raise EnvironmentError('Provided calendar could not be found',
+                                    calendar_name)
 
     def add_event(self, event:Event):
         ical = "BEGIN:VCALENDAR\n"+event.to_ical()+"\nEND:VCALENDAR"
