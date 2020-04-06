@@ -1,6 +1,13 @@
 swRegistration = null;
 
-var converter = new showdown.Converter();
+var md_converter = undefined;
+try {
+    var md_converter = new showdown.Converter();
+} catch (e) {
+    if (!e instanceof ReferenceError) {
+        throw e;     
+    }
+}
 
 /**
  * urlBase64ToUint8Array
@@ -160,7 +167,9 @@ function putUserMessage(message) {
 
 function putBotMessage(message) {
     if (message != "") {
-        html = converter.makeHtml(message);
+        if (md_converter) {
+            html = md_converter.makeHtml(message);
+        }
 
         $('#submit-btn').val('Send');
         $('#loader').hide(100);
