@@ -57,8 +57,11 @@ class MapJSONRemote(MapRemote):
 @Singleton
 class MapService:
 
-    def __init__(self, remote:MapRemote=MapJSONRemote.instance()):
-        self.remote = remote
+    def __init__(self, remote:MapRemote=None):
+        if remote:
+            self.remote = remote
+        else:
+            self.remote = MapJSONRemote.instance()
 
 
     def get_route_summary(self, start:tuple, dest:tuple, travel_mode:str=None):

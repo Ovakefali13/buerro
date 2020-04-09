@@ -130,8 +130,9 @@ class TestWorkSession(unittest.TestCase):
         self.scheduler = setup_scheduler()
 
         if 'DONOTMOCK' in os.environ:
+            purgable_calendar = os.environ['CALDAV_PURGABLE_CALENDAR']
             self.cal_service = CalService.instance(
-                iCloudCaldavRemote.instance())
+                iCloudCaldavRemote.instance(purgable_calendar))
             vvs_service = VVSService.instance(
                 VVSEfaJSONRemote.instance())
             geo_service = GeocodingService.instance(

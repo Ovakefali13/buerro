@@ -62,8 +62,11 @@ class TodoistJSONRemote(TodoistRemote):
 class TodoistService:
     remote = None
 
-    def __init__(self, remote:TodoistRemote = TodoistJSONRemote.instance()):
-        self.remote = remote
+    def __init__(self, remote:TodoistRemote=None):
+        if remote:
+            self.remote = remote
+        else:
+            self.remote = TodoistJSONRemote.instance()
 
     def set_remote(self, remote:TodoistJSONRemote):
         self.remote = remote

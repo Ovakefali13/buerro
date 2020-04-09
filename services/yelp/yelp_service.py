@@ -45,8 +45,11 @@ class YelpService:
     remote = None
     pref = None
 
-    def __init__(self, remote:YelpServiceModule = YelpServiceRemote.instance()):
-        self.remote = remote
+    def __init__(self, remote:YelpServiceModule=None):
+        if remote:
+            self.remote = remote
+        else:
+            self.remote = YelpServiceRemote.instance()
         self.pref = PrefService()
 
     def set_remote(self, remote):
