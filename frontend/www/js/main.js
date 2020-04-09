@@ -1,5 +1,14 @@
 swRegistration = null;
 
+var md_converter = undefined;
+try {
+    var md_converter = new showdown.Converter();
+} catch (e) {
+    if (!e instanceof ReferenceError) {
+        throw e;     
+    }
+}
+
 /**
  * urlBase64ToUint8Array
  *
@@ -104,7 +113,7 @@ $(document).ready(function() {
         sendCurrentLocation();
     }, 1000 * 60 * minutes)  
 
-    putBotMessage("Hello, it's me, the PDA for your buerro. Ask me anything.")
+    putBotMessage("Hello, it's me, the PDA for your buerro. Ask me _anything_.")
 
     $("#prompt_input").keypress(function(e) {
         if(e.which == 13) {
@@ -157,13 +166,21 @@ function putUserMessage(message) {
 }
 
 function putBotMessage(message) {
-    var container = $(".bubblecontainer")
-    $('#submit-btn').val('Send');
-    $('#loader').hide(100);
-    container.append(generateChatBubble(true, message));
-    speak();
-    container[0].scrollTop = container[0].scrollHeight
-    $('#prompt_input').focus();
+    if (message != "") {
+        if (md_converter) {
+            html = md_converter.makeHtml(message);
+        }
+
+        $('#submit-btn').val('Send');
+        $('#loader').hide(100);
+
+        var container = $(".bubblecontainer")
+        container.append(generateChatBubble(true, html));
+
+        speak();
+        container[0].scrollTop = container[0].scrollHeight
+        $('#prompt_input').focus();
+    }
 }
 
 
