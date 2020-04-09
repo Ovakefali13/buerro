@@ -102,8 +102,11 @@ class iCloudCaldavRemote(CalRemote):
 @Singleton
 class CalService:
 
-    def __init__(self, remote:CalRemote = iCloudCaldavRemote.instance()):
-        self.remote = remote
+    def __init__(self, remote:CalRemote=None):
+        if remote:
+            self.remote = remote
+        else:
+            self.remote = iCloudCaldavRemote.instance()
 
     def set_remote(self, remote:CalRemote):
         if not issubclass(remote, CalRemote):
