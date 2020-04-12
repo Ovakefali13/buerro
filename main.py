@@ -35,11 +35,15 @@ class Main:
 
     def block_trigger(self, usecase, func, *args, **kwargs):
         running_usecase = self.store.get_running()
+
         if running_usecase:
             if not running_usecase == usecase:
                 self.store.register_fin_callback(func, *args, **kwargs)
         else:
-            func(*args, **kwargs)
+            try:
+                func(*args, **kwargs)
+            except:
+                print("Proactive usecase failed: ", e)
 
     def schedule_usecases(self):
         lunchbreak = self.store.get(Lunchbreak)

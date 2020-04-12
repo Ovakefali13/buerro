@@ -31,10 +31,11 @@
       "maxCookingTime":90
    },
    "work_session":{
-      "min_work_period_minutes":30,
-      "be_minutes_early":10,
-      "remind_min_before_leaving":15,
-      "pomodoro_minutes":25
+      "min_work_period_minutes": 30,
+      "be_minutes_early": 10,
+      "remind_min_before_leaving": 15,
+      "pomodoro_minutes": 25,
+      "break_minutes": 5
    },
    "transport":{
       "minTemp":10,

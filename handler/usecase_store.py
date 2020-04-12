@@ -38,11 +38,15 @@ class UsecaseStore:
         self.running = None
         while not self.callback_queue.empty():
             fun, arg_dict = self.callback_queue.get()
-            args = arg_dict['args']
-            kwargs = arg_dict['kwargs']
-            fun(*args, **kwargs)
-            if self.running:
-                break
+            f_args = arg_dict['args']
+            f_kwargs = arg_dict['kwargs']
+
+            try:
+                fun(*f_args, **f_kwargs)
+                if self.running:
+                    break
+            except Exception as e:
+                print("Registered callback failed: ", e)
 
     def register_fin_callback(self, fun, *args, **kwargs):
         arg_dict = {
