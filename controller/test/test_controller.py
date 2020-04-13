@@ -17,26 +17,26 @@ class MockUsecase(Usecase):
         self.count = 0
 
     def advance(self, message):
-        if self.is_finished(): self.reset()
+        if self.is_finished():
+            self.reset()
         self.count += 1
 
         if self.count == 1:
             return Reply("I created reminders for you. Do you want music?")
         if self.count == 2:
-            return Reply({
-                'message': 'How about this Spotify playlist?'
-                    + '\nWhich project do you want to work on?',
-                'link': 'https://open.spotify.com/playlist/37i9dQZF1DWZeKCadgRdKQ'
-            })
+            return Reply(
+                {
+                    "message": "How about this Spotify playlist?"
+                               "<br>Which project do you want to work on?",
+                    "link": "https://open.spotify.com/playlist/37i9dQZF1DWZeKCadgRdKQ",
+                }
+            )
         if self.count == 3:
             todos = [
-                'Mark 1 to n relationships in architecture',
-                'Implement a prototype for browser notifications'
+                "Mark 1 to n relationships in architecture",
+                "Implement a prototype for browser notifications",
             ]
-            return Reply({
-                'message': "Here are you Todo's: ",
-                'list': todos
-            })
+            return Reply({"message": "Here are you Todo's: ", "list": todos})
         raise Exception("advance called too often")
 
     def reset(self):
@@ -50,16 +50,20 @@ class MockUsecase(Usecase):
     def set_default_services(self):
         pass
 
+
 class QuicklyFinishedUsecase(Usecase):
     def __init__(self):
         self.count = 0
 
     def advance(self, message):
-        if self.is_finished(): self.reset()
+        if self.is_finished():
+            self.reset()
         self.count += 1
         if self.count == 1:
-            return Reply("This usecase is already over. Hopy you enjoyed \
-                        the show")
+            return Reply(
+                "This usecase is already over. Hopy you enjoyed \
+                        the show"
+            )
 
     def reset(self):
         self.count = 0
@@ -70,16 +74,17 @@ class QuicklyFinishedUsecase(Usecase):
     def set_default_services(self):
         pass
 
+
 @Singleton
 class MockChatbotBehavior(ChatbotBehavior):
-
-    def get_usecase(self, message:str):
+    def get_usecase(self, message: str):
         if message == "exception":
             return QuicklyFinishedUsecase
         return MockUsecase
 
     def clear_context(self):
         pass
+
 
 class TestController(unittest.TestCase):
     @classmethod
@@ -88,15 +93,15 @@ class TestController(unittest.TestCase):
         self.serverPort = 9149
         self.server_url = "http://" + self.hostName + ":" + str(self.serverPort)
 
-        MockController = ControllerFromArgs(scheduler=None,
-                chatbot=Chatbot(MockChatbotBehavior.instance())
+        MockController = ControllerFromArgs(
+            scheduler=None, chatbot=Chatbot(MockChatbotBehavior.instance())
         )
 
-        self.httpd = HTTPServer((self.hostName, self.serverPort),
-            MockController)
+        self.httpd = HTTPServer((self.hostName, self.serverPort), MockController)
 
         self.ready_event = Event()
         self.shutdown_event = Event()
+
         def in_thread():
             self.ready_event.set()
             while not self.shutdown_event.is_set():
@@ -113,12 +118,12 @@ class TestController(unittest.TestCase):
         UsecaseStore.instance().purge()
 
     def test_can_step_through_usecase(self):
-        def _query(message:str):
+        def _query(message: str):
             body = {"message": message}
-            res = requests.post(self.server_url + '/message', json=body)
+            res = requests.post(self.server_url + "/message", json=body)
             res = res.json()
-            self.assertIsNotNone(res.get('success'))
-            return res.get('data').get('message', '')
+            self.assertIsNotNone(res.get("success"))
+            return res.get("data").get("message", "")
 
         res = _query("exception")
         self.assertIn("already over", res)
@@ -136,9 +141,9 @@ class TestController(unittest.TestCase):
     def test_update_location(self):
         def _query(lat, lon):
             body = {"location": [lat, lon]}
-            res = requests.post(self.server_url + '/location', json=body)
+            res = requests.post(self.server_url + "/location", json=body)
             res = res.json()
-            self.assertIsNotNone(res.get('success'))
+            self.assertIsNotNone(res.get("success"))
             return res
 
         location_handler = LocationHandler.instance()
@@ -155,9 +160,8 @@ class TestController(unittest.TestCase):
         self.assertEqual(lat, g_lat)
         self.assertEqual(lon, g_lon)
 
-
     @classmethod
     def tearDownClass(self):
         self.shutdown_event.set()
-        body = {'message': 'shutdown'}
-        requests.post(self.server_url + '/message', json=body)
+        body = {"message": "shutdown"}
+        requests.post(self.server_url + "/message", json=body)

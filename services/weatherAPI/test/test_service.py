@@ -5,43 +5,43 @@ import json
 from util import Singleton
 from .. import WeatherAdapter, WeatherAdapterRemote, WeatherAdapterModule
 
+
 @Singleton
 class WeatherMock(WeatherAdapterModule):
-
     def get_current_weather_by_city(self, city):
         dirname = os.path.dirname(__file__)
-        with open(os.path.join(dirname, 'mock_weather.json'), 'r') as mockWeather_f:
+        with open(os.path.join(dirname, "mock_weather.json"), "r") as mockWeather_f:
             mock_weather = json.load(mockWeather_f)
         return mock_weather
 
-
     def get_weather_forecast_by_city(self, city):
         dirname = os.path.dirname(__file__)
-        with open(os.path.join(dirname, 'mock_weather_forecast.json'), 'r') as mockWeather_f:
+        with open(
+            os.path.join(dirname, "mock_weather_forecast.json"), "r"
+        ) as mockWeather_f:
             mock_weather_forecast = json.load(mockWeather_f)
         return mock_weather_forecast
 
     def get_current_weather_by_coordinates(self, lat, lon):
-       return self.get_current_weather_by_city('Stuttgart')
+        return self.get_current_weather_by_city("Stuttgart")
 
     def get_weather_forecast_by_coordinates(self, lat, lon):
-       return self.get_weather_forecast_by_city('Stuttgart')
+        return self.get_weather_forecast_by_city("Stuttgart")
 
 
 class TestWeatherService(unittest.TestCase):
-
     @classmethod
     def setUpClass(self):
         self.remote = None
-        if 'DONOTMOCK' in os.environ:
-            self.weather_adapter = WeatherAdapter.instance(
-                WeatherMock.instance())
+        if "DONOTMOCK" in os.environ:
+            self.weather_adapter = WeatherAdapter.instance(WeatherMock.instance())
         else:
             print("Mocking remotes...")
             self.weather_adapter = WeatherAdapter.instance(
-                WeatherAdapterRemote.instance())
+                WeatherAdapterRemote.instance()
+            )
 
-        self.weather_adapter.update(city='Stuttgart')
+        self.weather_adapter.update(city="Stuttgart")
 
     @classmethod
     def setUp(self):
@@ -71,5 +71,4 @@ class TestWeatherService(unittest.TestCase):
     def test_can_work_with_coordinates(self):
         lat, lon = 52.520007, 13.404954
         self.weather_adapter.update(coordinates=(lat, lon))
-        self.assertIsInstance(self.weather_adapter.will_be_bad_weather(3),
-                            bool)
+        self.assertIsInstance(self.weather_adapter.will_be_bad_weather(3), bool)

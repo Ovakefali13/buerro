@@ -6,12 +6,14 @@ from main import Main
 from usecase import Usecase
 from handler import UsecaseStore
 
+
 class MockUsecase(Usecase):
     def __init__(self):
         self.count = 0
 
     def advance(self, message):
-        if self.is_finished(): self.reset()
+        if self.is_finished():
+            self.reset()
         self.count += 1
         if self.count == 1:
             return "test1"
@@ -37,11 +39,15 @@ class QuicklyFinishedUsecase(Usecase):
         self.event = event
 
     def advance(self, message):
-        if self.is_finished(): self.reset()
+        if self.is_finished():
+            self.reset()
         self.count += 1
         if self.count == 1:
-            return Reply("This usecase is already over. Hopy you enjoyed \
-                        the show")
+            return Reply(
+                "This usecase is already over. Hopy you enjoyed \
+                        the show"
+            )
+
     def reset(self):
         self.count = 0
 
@@ -54,8 +60,8 @@ class QuicklyFinishedUsecase(Usecase):
     def proactive_func(self, arg, kwarg):
         self.event.set()
 
-class TestMain(unittest.TestCase):
 
+class TestMain(unittest.TestCase):
     @patch.object(Main, "schedule_usecases")
     def test_block_trigger(self, mock_schedule):
         event = asyncio.Event()
@@ -68,7 +74,7 @@ class TestMain(unittest.TestCase):
         store.purge()
         usecase = store.get(MockUsecase)
 
-        usecase.advance('foo')
+        usecase.advance("foo")
         self.assertFalse(usecase.is_finished())
         store.set_running(usecase)
 
@@ -76,12 +82,13 @@ class TestMain(unittest.TestCase):
         proactive_usecase.set_event(event)
 
         # Scheduled trigger returns -> block_trigger
-        main.block_trigger(proactive_usecase,
-                            proactive_usecase.proactive_func, 123, kwarg='abc')
+        main.block_trigger(
+            proactive_usecase, proactive_usecase.proactive_func, 123, kwarg="abc"
+        )
 
         self.assertFalse(event.is_set())
 
-        usecase.advance('bar')
+        usecase.advance("bar")
         self.assertTrue(usecase.is_finished())
         store.usecase_finished()
 

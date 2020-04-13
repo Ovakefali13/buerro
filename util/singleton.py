@@ -24,13 +24,14 @@ class Singleton:
         On all subsequent calls, the already created instance is returned.
 
         """
+
         def _construct():
             self.last_args = args
             self.last_kwargs = kwargs
 
             self._instance = self._decorated(*args, **kwargs)
 
-        if hasattr(self, '_instance'):
+        if hasattr(self, "_instance"):
             if args != self.last_args or kwargs != self.last_kwargs:
                 _construct()
         else:
@@ -39,7 +40,7 @@ class Singleton:
         return self._instance
 
     def __call__(self):
-        raise TypeError('Singletons must be accessed through `instance()`.')
+        raise TypeError("Singletons must be accessed through `instance()`.")
 
     def __instancecheck__(self, inst):
         return isinstance(inst, self._decorated)
