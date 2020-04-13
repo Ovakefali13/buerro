@@ -33,8 +33,15 @@ class VVSEfaJSONRemote(VVSRemote):
             "name_sf": location
         }
         url = self.base_url + "/XML_STOPFINDER_REQUEST?" + urlencode(params)
-        # TODO error handling
-        return requests.get(url).json().get('locations')
+
+        try:
+            res = requests.get(url)
+        except Exception as err:
+            raise Exception("Error fetching VVS location: ", err)
+        try:
+            return res.json().get('locations')
+        except:
+            raise Exception("Response does not contain locations ", res)
 
     def get_journeys(self, req:JourneyRequest):
 
@@ -43,23 +50,38 @@ class VVSEfaJSONRemote(VVSRemote):
         }
 
         url = self.base_url + "/XML_TRIP_REQUEST2?" + urlencode(params)
-        # TODO error handling
-        return requests.get(url).json().get('journeys')
 
+        try:
+            res = requests.get(url)
+        except Exception as err:
+            raise Exception("Error fetching VVS location: ", err)
+        try:
+            return res.json().get('journeys')
+        except:
+            raise Exception("Response does not contain journeys ", res)
 
 @Singleton
 class VVSService:
 
-    def __init__(self, remote:VVSRemote = VVSEfaJSONRemote.instance()):
-        self.remote = remote
+    def __init__(self, remote:VVSRemote=None):
+        if remote:
+            self.remote = remote
+        else:
+            self.remote =  VVSEfaJSONRemote.instance()
 
     def set_remote(self, remote:VVSRemote):
         self.remote = remote
 
     def get_location_id(self, location:str):
-        best_match = list(filter(lambda l: l.get('isBest'),
-            self.remote.get_locations(location)))[0]
-        return best_match.get('id')
+        if not location:
+            raise Exception("Passed an empty string as location")
+        locations = self.remote.get_locations(location)
+        if locations:
+            best_match = list(filter(lambda l: l.get('isBest'),
+                locations))[0]
+            return best_match.get('id')
+        else:
+            raise Exception(f"Could not find a VVS stop matching {location}")
 
     def get_journeys(self, origin:str, dest:str,
         arr_dep:str, time:dt=dt.now(pytz.utc)):
@@ -102,7 +124,7 @@ class VVSService:
                 key=lambda journey : journey.get_arr_time())
 
         recommended_journey = sorted_by_arrival[0]
-        that_much_faster = 5
+        that_much_faster = timedelta(minutes=5)
         for journey in sorted_by_arrival:
             if(recommended_journey.get_duration() >= that_much_faster + journey.get_duration()):
                 recommended_journey = journey

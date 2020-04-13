@@ -22,8 +22,11 @@ class PrefJSONRemote(PrefRemote):
 class PrefService:
     remote = None
 
-    def __init__(self, remote=PrefJSONRemote()):
-        self.remote = remote
+    def __init__(self, remote=None):
+        if remote:
+            self.remote = remote
+        else:
+            self.remote = PrefJSONRemote()
 
     def get_preferences(self, key):
         preferences_json = self.remote.load_file()

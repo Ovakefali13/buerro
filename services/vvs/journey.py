@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
-from copy import copy
+import copy
+import pytz
 
 from services.cal import Event
 
@@ -20,7 +21,7 @@ class Journey:
         self.dep_time = dep_time
         self.arr_time = arr_time
         if arr_time is not None and dep_time is not None:
-            self.duration = divmod((arr_time - dep_time).total_seconds(), 60)[0]
+            self.duration = arr_time - dep_time
 
         self.legs = []
         self.transportation = None
@@ -38,7 +39,7 @@ class Journey:
         if self.duration:
             return self.duration
         if self.arr_time and self.dep_time:
-            self.duration = divmod((self.arr_time - self.dep_time).total_seconds(), 60)[0]
+            self.duration = self.arr_time - self.dep_time
             return self.duration
 
         raise Error("duration can not be calculated")
@@ -47,17 +48,55 @@ class Journey:
         return self.arr_time
 
     def __str__(self):
-        description = str(self.origin
-                + ' at '    + str(self.dep_time.strftime("%H:%M"))
-                + ' to '    + self.dest
-                + ' by '    + str(self.transportation)
-                + ' until ' + str(self.arr_time.strftime("%H:%M"))
-                + ' takes ' + str(self.get_duration()))
+        journey = self.localize()
 
-        for leg in self.legs:
+        description = (f'{journey.origin}'
+                f' at {journey.dep_time.strftime("%H:%M")}'
+                f' to {journey.dest}'
+                f' by {journey.transportation}'
+                f' until {journey.arr_time.strftime("%H:%M")}'
+                f' takes {journey.get_duration()}')
+
+        for leg in journey.legs:
             description += "\n" + str(leg)
 
         return description
+
+    def get_user_tz(self):
+        return pytz.timezone("Europe/Berlin")
+
+    def localize(self):
+        new = copy.deepcopy(self)
+
+        new.dep_time = self.dep_time.astimezone(self.get_user_tz())
+        new.arr_time = self.arr_time.astimezone(self.get_user_tz())
+
+        for leg in new.legs:
+            leg = leg.localize()
+
+        return new
+
+    def to_table(self):
+        journey = self.localize()
+
+        dep_time = journey.dep_time.strftime("%H:%M")
+        arr_time = journey.dep_time.strftime("%H:%M")
+
+        table = {
+            'Origin': [self.origin],
+            'Destination': [self.dest],
+            'Departure': [dep_time],
+            'Arrival': [arr_time],
+            'Means': [self.transportation],
+            'Duration': [str(self.get_duration())]
+        }
+
+        for leg in self.legs:
+            leg_table = leg.to_table()
+            for k, l in leg_table.items():
+                table[k] += l
+
+        return table
 
     def to_event(self):
         event = Event()
@@ -85,33 +124,35 @@ class Journey:
             }""".split())
         link = link.replace("DATE", self.dep_time.strftime("%d.%m.%Y"))
         link = link.replace("TIME", self.dep_time.strftime("%H:%M"))
-        link = link.replace("ORIGIN", self.origin)
-        link = link.replace("DEST", self.dest)
+        link = link.replace("ORIGIN", self.origin_id)
+        link = link.replace("DEST", self.dest_id)
         return link
 
     def from_vvs(self, vvs_journey:dict):
-        def from_utc_to_local(utc_dt):
-            return utc_dt.replace(tzinfo=timezone.utc).astimezone()
 
         def parse_vvs_time(datestr:str):
             datestr = datestr.replace("Z", "+00:00")
             vvs_time = datetime.fromisoformat(datestr)
             #vvs_time = datetime.strptime(datestr, "%Y-%m-%dT%H:%M:%SZ")
-            return from_utc_to_local(vvs_time)
+            return vvs_time.astimezone(pytz.utc)
 
         legs = vvs_journey.get('legs', [])
         origin = legs[0].get('origin')
         dest = legs[-1].get('destination')
+
         self.origin = origin.get('name')
         self.dest = dest.get('name')
+        self.origin_id = origin.get('id')
+        self.dest_id = dest.get('id')
+
         self.transportation = list(map(lambda l:
             l.get('transportation').get('name', 'foot'), legs))
         self.dep_time = parse_vvs_time(origin.get('departureTimePlanned'))
         self.arr_time = parse_vvs_time(dest.get('arrivalTimePlanned'))
 
         for leg in vvs_journey.get('legs'):
-            origin = copy(leg.get('origin').get('name'))
-            dest = copy(leg.get('destination').get('name'))
+            origin = copy.copy(leg.get('origin').get('name'))
+            dest = copy.copy(leg.get('destination').get('name'))
             dep_time = parse_vvs_time(leg.get('origin').get('departureTimePlanned'))
             arr_time = parse_vvs_time(leg.get('destination').get('arrivalTimePlanned'))
 

@@ -21,7 +21,6 @@ function getCurrentLocation() {
         });
     });
 }
-            
 
 function sendCurrentLocation() {
     console.log('Sending...');
@@ -35,7 +34,7 @@ function sendCurrentLocation() {
               'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                    'location': location 
+                    'location': location
                 })
             })
     })
@@ -52,7 +51,6 @@ function sendCurrentLocation() {
           throw new Error('Bad response from server.');
         }
     });
-
 }
 
 module.exports = sendCurrentLocation;

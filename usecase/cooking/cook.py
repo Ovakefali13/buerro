@@ -5,9 +5,14 @@ import pytz
 import re
 
 from services.preferences.pref_service import PrefService, PrefRemote, PrefJSONRemote
-from services import SpoonacularService, TodoistService, YelpService, CalService
+from services.todoAPI.todoist_service import TodoistService
+from services.yelp.yelp_service import YelpService
+from services.cal.cal_service import CalService
+from services.spoonacular.spoonacular_service import SpoonacularService
 from services.cal import Event
 from services.yelp import YelpRequest
+from handler import Notification, NotificationHandler, LocationHandler, \
+    UsecaseStore
 
 class Cook(Usecase):
     ingredient = 'pork'
@@ -37,7 +42,7 @@ class Cook(Usecase):
         self.spoonacle_service = spoonacle_service
 
     def set_default_services(self):
-        self.todoist_service = TodoistSerivce.instance()
+        self.todoist_service = TodoistService.instance()
         self.calendar_service = CalService.instance()
         self.yelp_service = YelpService.instance()
         self.spoonacle_service = SpoonacularService.instance()
@@ -47,16 +52,18 @@ class Cook(Usecase):
             raise Exception("Set services!")
         message = message.lower()
         if self.no_time:
-            p = re.compile('^([\w\-]..)')
+            p = re.compile(r'^([\w\-]..)')
+            message = message + "fill"
             item = p.match(message)
-            if item[0] == 'yes':
+            if str(item[0]) == 'yes':
                 self.not_time_to_cook()
-                self.not_time = False
+                self.no_time = False
                 self.finished = True
                 return Reply({'message': self.response_message})
             else:
+                self.no_time = False
                 self.finished = True
-                return Reply({'message': 'Ok'})
+                return Reply({'message': 'Ok, so you don\'t'})
         else:
             '''
             Tested with
@@ -69,11 +76,16 @@ class Cook(Usecase):
             - I like to cook with pork and some false information
             - I have chicken and want to cook
             '''
-            p = re.compile('([\n\r]*with\s*([^\s\r]*)|[\n\r]*have\s(?!time|some)\s*([^\s\r]*))')
+            p = re.compile(r'([\n\r]*with\s*([^\s\r]*)|[\n\r]*have\s(?!time|some)\s*([^\s\r]*))')
             list = p.findall(message)
-            self.ingredient = list[0][1]
-            self.not_time = self.trigger_use_case()
-            if self.not_time: 
+            if not list:
+                return Reply({'message': 'Please specify a ingredient like this "I like to cook with pork"' })
+            if list[0][1] == '':
+                self.ingredient = list[0][2]
+            else:
+                self.ingredient = list[0][1]
+            self.no_time = self.trigger_use_case()
+            if self.no_time:
                 self.finished = False
                 return Reply({'message': 'No time to cook. Would you like to get a restaurant in your area? (Yes/No)'})
             else:
@@ -92,6 +104,7 @@ class Cook(Usecase):
             return False
         else:
             return True
+
     def check_for_time(self):
         now = datetime.now(pytz.utc)
         end_of_day = datetime.now(pytz.utc).replace(hour=23, minute=59, second=59)
@@ -119,7 +132,6 @@ class Cook(Usecase):
 
     def set_calender(self):
         cooking_time = self.spoonacle_service.get_cookingTime()
-
         self.cooking_event = Event()
         self.cooking_event.set_title('Cooking')
         self.cooking_event.set_location('Home')
@@ -131,15 +143,16 @@ class Cook(Usecase):
         return self.calendar_service.add_event(self.cooking_event)
 
     def not_time_to_cook(self):
+        coords = self.get_location()
         cooking_time = datetime.fromisoformat(str(datetime.utcnow().date()))
         cooking_timestamp = datetime.timestamp(cooking_time)
 
         search_params = YelpRequest()
-        search_params.set_location('Jägerstraße 56, 70174 Stuttgart')
+        search_params.set_coordinates(coords)
         search_params.set_time(cooking_timestamp)
-        search_params.search_params['radius'] = 1000
+        search_params.search_params['radius'] = 10000
         return_json = self.yelp_service.get_next_business(search_params)
-        self.response_message = "A restaurant nearby is " + return_json['name'] + "and you can reach them at " + return_json['address'] + "(" + return_json['phone'] + ")"
+        self.response_message = "A restaurant nearby is " + return_json['name'] + " and you can reach them at " + return_json['address'] + " (Phone: " + return_json['phone'] + ")"
 
     def get_response(self):
         return self.response_message
@@ -150,3 +163,7 @@ class Cook(Usecase):
     def get_cooking_event(self):
         return self.cooking_event
 
+    def get_location(self):
+        lh = LocationHandler.instance()
+        lat, lon = lh.get()
+        return lat, lon

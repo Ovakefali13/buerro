@@ -1,6 +1,13 @@
-
 swRegistration = null;
 
+var md_converter = undefined;
+try {
+    var md_converter = new showdown.Converter();
+} catch (e) {
+    if (!e instanceof ReferenceError) {
+        throw e;     
+    }
+}
 
 /**
  * urlBase64ToUint8Array
@@ -35,14 +42,6 @@ function subscribeUser() {
 }
 
 if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.addEventListener('message', event => {
-        if(event.data.options.data) {
-            if(event.data.options.data.message) {
-                putBotMessage(event.data.options.data.message);
-            }
-        }
-    });
-
     window.addEventListener('load', function() {
 
         navigator.serviceWorker.register('/js/service-worker.js')
@@ -55,10 +54,8 @@ if ('serviceWorker' in navigator) {
         })
         .then((pushSubscription) => {
             if(pushSubscription !== null) {
-                console.log('User is subscribed.');
                 sendSubscriptionToBackEnd(pushSubscription)
                 .then(() => { 
-                    console.log('Successfully sent pushSubscription to backend');
                     isSubscribed = true
                 })
                 .catch((err) => {
@@ -67,7 +64,6 @@ if ('serviceWorker' in navigator) {
                     isSubscribed = false;
                 });
             } else {
-                console.log('User is not subscribed.');
                 subscribeUser()
                 .then((pushSubscription) => sendSubscriptionToBackEnd(pushSubscription))
                 .then(() => { 

@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from os import environ
+import os
 from dotenv import load_dotenv
 import random
 import concurrent.futures
@@ -22,14 +22,15 @@ class SpotifyRemote(MusicRemote):
             load_dotenv()
 
             required_env = (
-                'spotify_client_id',
-                'spotify_client_secret',
-                'spotify_username'
+                'SPOTIFY_CLIENT_ID',
+                'SPOTIFY_CLIENT_SECRET',
+                'SPOTIFY_USERNAME'
             )
 
             self.pref_service = PrefService()
             pref = self.pref_service.get_preferences('music')
-            if not all([var in pref for var in required_env]):
+
+            if not all([var in os.environ for var in required_env]):
                 raise EnvironmentError("Did not set all of these environment variables: ",
                     required_env)
 
@@ -44,8 +45,9 @@ class SpotifyRemote(MusicRemote):
                 )
                 return {"Authorization": "Basic %s" % auth_header.decode("ascii")}
 
-            client_id = self.pref_service.get_preferences('music').get('spotify_client_id')
-            client_secret = self.pref_service.get_preferences('music').get('spotify_client_secret')
+            client_id = os.environ['SPOTIFY_CLIENT_ID']
+            client_secret = os.environ['SPOTIFY_CLIENT_SECRET']
+
             headers = _make_authorization_headers(client_id, client_secret)
 
             token_api = "https://accounts.spotify.com/api/token"
@@ -69,7 +71,7 @@ class SpotifyRemote(MusicRemote):
             }
 
         def get_user_playlists(self, limit=20, offset=0):
-            username = self.pref_service.get_preferences('music').get('spotify_username')
+            username = os.environ['SPOTIFY_USERNAME']
             endpoint=self.api_base+'/users/{username}/playlists'
             res = requests.get(endpoint,
                     headers=self.get_headers(),
@@ -163,15 +165,19 @@ class SpotifyRemote(MusicRemote):
             if not playlist:
                 raise Exception("Couldn't find any matching playlist")
 
-            return playlist['external_urls']['spotify']
+            return playlist['external_urls']['spotify'], playlist['name']
 
 @Singleton
 class MusicService:
-    def __init__(self, remote=SpotifyRemote.instance()):
-        self.remote = remote
+    def __init__(self, remote=None):
+        if remote:
+            self.remote = remote
+        else:
+            self.remote = SpotifyRemote.instance()
 
     def set_remote(self, remote:MusicRemote):
         self.remote = remote
 
     def get_playlist_for_mood(self, mood:str):
         return self.remote.get_playlist_for_mood(mood)
+

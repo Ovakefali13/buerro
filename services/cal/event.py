@@ -54,7 +54,10 @@ class Event(iCalEvent):
             return self['dtend'].dt
         return self['dtend']
     def get_location(self):
-        return self['location']
+        if 'location' in self:
+            return self['location']
+        else:
+            return None
 
     def to_ical(self):
         ical = super().to_ical()
@@ -73,17 +76,17 @@ class Event(iCalEvent):
             raise Exception("Event does not have minimal parameters "
                     +min_params)
 
+    def get_user_timezone(self):
+        # in reality: look into DB
+        return pytz.timezone('Europe/Berlin')
+
     def summarize(self):
         self.check_parameters_and_raise()
-        start = self.get_start().strftime("%H:%M")
-        end = self.get_end().strftime("%H:%M")
-        if 'location' in self:
-            location = ' at '+self['location']
+        start = self.get_start().astimezone(self.get_user_timezone()).strftime("%H:%M")
+        end = self.get_end().astimezone(self.get_user_timezone()).strftime("%H:%M")
+        if self.get_location():
+                location = ' at '+self.get_location()
         else:
             location = ''
-        return "{summary} from {start} until {end}{location}".format(
-            summary=self['summary'],
-            start=start, end=end,
-            location=location)
-
+        return f"{self.get_title()} from {start} until {end}{location}"
 

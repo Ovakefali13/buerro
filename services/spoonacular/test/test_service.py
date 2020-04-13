@@ -9,13 +9,11 @@ from ...preferences.pref_service import PrefService, PrefJSONRemote
 
 @Singleton
 class SpoonacularMOCKRemote(SpoonacularRemote):
-    api_token = ''
     pref_service = PrefService(PrefJSONRemote())
     test_ingredient = None
 
     def __init__(self):
         pref_json = self.pref_service.get_preferences("cooking")
-        self.api_token = pref_json['spoonacularAPIKey']
         self.diet = pref_json['diet']
         self.maxCookingTime = pref_json['maxCookingTime']
 
@@ -23,16 +21,9 @@ class SpoonacularMOCKRemote(SpoonacularRemote):
         dirname = os.path.dirname(__file__)
         if ingredient == self.test_ingredient:
             response_json = json.load(open(dirname + '/mock_general_result_true.json'))
-        else: 
+        else:
             response_json = json.load(open(dirname + '/mock_general_result_false.json'))
         return(response_json['results'][0]['id'])
-
-    def get_search_options(self, ingredient):
-        search_options = 'includeIngredients=' + ingredient
-        search_options += '&diet=' + self.diet
-        search_options += '&maxReadyTime=' + str(self.maxCookingTime)
-        search_options += '&apiKey=' + self.api_token
-        return search_options
 
     def search_recipe_by_id(self, id):
         dirname = os.path.dirname(__file__)

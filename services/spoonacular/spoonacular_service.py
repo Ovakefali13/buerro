@@ -1,6 +1,7 @@
 import requests
 import json
 from abc import ABC, abstractmethod
+import os
 
 from ..preferences.pref_service import PrefService, PrefJSONRemote, PrefRemote
 from util import Singleton
@@ -24,7 +25,8 @@ class SpoonacularJSONRemote(SpoonacularRemote):
 
     def __init__(self):
         pref_json = self.pref_service.get_preferences("cooking")
-        self.api_token = pref_json['spoonacularAPIKey']
+
+        self.api_token = os.environ['SPOONACULAR_API_KEY']
         self.diet = pref_json['diet']
         self.maxCookingTime = pref_json['maxCookingTime']
 
@@ -36,14 +38,14 @@ class SpoonacularJSONRemote(SpoonacularRemote):
             print(request_string)
         response_json = response_string.json()
         return(response_json['results'][0]['id'])
-    
+
     def get_search_options(self, ingredient):
         search_options = 'includeIngredients=' + ingredient
         search_options += '&diet=' + self.diet
         search_options += '&maxReadyTime=' + str(self.maxCookingTime)
         search_options += '&apiKey=' + self.api_token
         return search_options
-    
+
     def search_recipe_by_id(self, id):
         request_string = self.base_url + str(id) +'/information?apiKey=' + self.api_token
         response_string = requests.get(request_string)
@@ -60,9 +62,11 @@ class SpoonacularService:
     ingredient = ''
     recipe = []
 
-    def __init__(self,
-        remote:SpoonacularRemote = SpoonacularJSONRemote.instance()):
-        self.remote = remote
+    def __init__(self, remote:SpoonacularRemote=None):
+        if remote:
+            self.remote = remote
+        else:
+            self.remote = SpoonacularJSONRemote.instance()
 
     def set_remote(self, remote):
         self.remote = remote

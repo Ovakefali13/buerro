@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 import inspect
 from usecase import Usecase, \
-    Lunchbreak, WorkSession, Cook
+    Lunchbreak, WorkSession, Cook, Transport
 
 class ChatbotBehavior(ABC):
     @abstractmethod
@@ -16,8 +16,9 @@ class BuerroBot(ChatbotBehavior):
 
     context = None
     usecase_by_keyword = {
-        #"train": Transport,
+        "travel": Transport,
         "work session": WorkSession,
+        "working": WorkSession,
         "lunch": Lunchbreak,
         #"github": Github,
         "cook": Cook

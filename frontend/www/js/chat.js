@@ -1,4 +1,3 @@
-
 function putUserMessage(message) {
     var container = $(".bubblecontainer")
     container.append(generateChatBubble(false, message));
@@ -7,11 +6,23 @@ function putUserMessage(message) {
 }
 
 function putBotMessage(message) {
-    var container = $(".bubblecontainer")
-    container.append(generateChatBubble(true, message));
+    if (message != "") {
+        if (md_converter) {
+            html = md_converter.makeHtml(message);
+        }
 
-    container[0].scrollTop = container[0].scrollHeight
+        $('#submit-btn').val('Send');
+        $('#loader').hide(100);
+
+        var container = $(".bubblecontainer")
+        container.append(generateChatBubble(true, html));
+
+        speak();
+        container[0].scrollTop = container[0].scrollHeight
+        $('#prompt_input').focus();
+    }
 }
+
 
 function processUserPrompt(prompt) {
     //Send to backend with async promise or something

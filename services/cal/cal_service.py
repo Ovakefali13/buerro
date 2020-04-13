@@ -2,8 +2,8 @@ from datetime import datetime as dt, timedelta
 import pytz
 import caldav
 from caldav.elements import dav, cdav
-from dotenv import load_dotenv
 from abc import ABC, abstractmethod
+import os
 
 from services.preferences import PrefService
 from util import Singleton
@@ -29,17 +29,16 @@ class CalRemote(ABC):
 
 @Singleton
 class iCloudCaldavRemote(CalRemote):
-    def __init__(self):
+    def __init__(self, calendar_name:str=None):
 
         self.pref = PrefService().get_preferences('cal')
         required_env = (
-                'caldav_url',
-                'username',
-                'password',
-                'calendar'
+                'CALDAV_URL',
+                'CALDAV_USERNAME',
+                'CALDAV_PASSWORD'
         )
 
-        if not all([var in self.pref for var in required_env]):
+        if not all([var in os.environ for var in required_env]):
             raise EnvironmentError("Did not set all of these preferences: ", required_env)
 
         def _get_named_calendar(calendars, name):
@@ -51,15 +50,19 @@ class iCloudCaldavRemote(CalRemote):
                     return cal
 
         client = caldav.DAVClient(
-            self.pref['caldav_url'],
-            username=self.pref['username'],
-            password=self.pref['password'])
+            os.environ['CALDAV_URL'],
+            username=os.environ['CALDAV_USERNAME'],
+            password=os.environ['CALDAV_PASSWORD'])
+
+        if not calendar_name:
+            calendar_name = os.getenv('CALDAV_CALENDAR')
 
         principal = client.principal()
         self.calendar = _get_named_calendar(principal.calendars(),
-            self.pref['calendar'])
+                                            calendar_name)
         if self.calendar is None:
-            raise EnvironmentError('Provided calendar could not be found')
+            raise EnvironmentError('Provided calendar could not be found',
+                                    calendar_name)
 
     def add_event(self, event:Event):
         ical = "BEGIN:VCALENDAR\n"+event.to_ical()+"\nEND:VCALENDAR"
@@ -99,8 +102,11 @@ class iCloudCaldavRemote(CalRemote):
 @Singleton
 class CalService:
 
-    def __init__(self, remote:CalRemote = iCloudCaldavRemote.instance()):
-        self.remote = remote
+    def __init__(self, remote:CalRemote=None):
+        if remote:
+            self.remote = remote
+        else:
+            self.remote = iCloudCaldavRemote.instance()
 
     def set_remote(self, remote:CalRemote):
         if not issubclass(remote, CalRemote):
@@ -115,7 +121,7 @@ class CalService:
 
     def get_events_between(self, start:dt, end:dt=None):
         events = self.remote.date_search(start, end)
-        return sorted(events, key=lambda e: e['dtstart'].dt)
+        return sorted(events, key=lambda e: e.get_start())
 
     def get_all_events(self):
         return self.remote.events()
