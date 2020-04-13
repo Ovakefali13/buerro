@@ -3,6 +3,7 @@ from .. import Chatbot, BuerroBot
 
 from usecase import Lunchbreak
 
+
 class TestChatbot(unittest.TestCase):
 
     buerro_bot = BuerroBot()

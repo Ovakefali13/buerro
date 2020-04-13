@@ -1,17 +1,17 @@
 import unittest
 from .. import Singleton
 
+
 @Singleton
 class TestClass:
-
     def __init__(self, some_var):
         self.some_var = some_var
 
     def get(self):
         return self.some_var
 
-class TestSingleton(unittest.TestCase):
 
+class TestSingleton(unittest.TestCase):
     def test_instantiation_params(self):
         instance = TestClass.instance(123)
         self.assertEqual(instance.get(), 123)
@@ -34,4 +34,3 @@ class TestSingleton(unittest.TestCase):
     def test_instancecheck(self):
         instance = TestClass.instance(123)
         self.assertIsInstance(instance, TestClass)
-

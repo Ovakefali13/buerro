@@ -5,6 +5,7 @@ from urllib.parse import urlparse
 from util import Singleton
 from .. import MusicRemote, SpotifyRemote, MusicService, Playlist
 
+
 @Singleton
 class MusicMockRemote(MusicRemote):
     def get_category_for_mood(self, mood: str):
@@ -27,8 +28,8 @@ class MusicMockRemote(MusicRemote):
             Playlist('125', 'Classic Rock', 'https://music.com/125'),
         ]
 
-class TestMusicService(unittest.TestCase):
 
+class TestMusicService(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         if 'DONOTMOCK' in os.environ:

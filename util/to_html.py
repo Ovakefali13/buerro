@@ -1,9 +1,11 @@
 from dominate import tags
 
+
 def link_to_html(value, altname="Link"):
     if not isinstance(value, str):
         raise Exception("Passed non string as link")
     return str(tags.a(altname, href=value, target="_blank"))
+
 
 def list_to_html(value):
     if not isinstance(value, list):
@@ -12,6 +14,7 @@ def list_to_html(value):
     for el in value:
         l += tags.li(el)
     return str(l)
+
 
 def dict_to_html(value):
     if not isinstance(value, dict):
@@ -29,8 +32,9 @@ def dict_to_html(value):
 def table_to_html(value):
     if not isinstance(value, dict):
         raise Exception("Passed non-dict as a table")
-    if not all(len(listA) == len(listB)
-        for listA in value.values() for listB in value.values()):
+    if not all(
+        len(listA) == len(listB) for listA in value.values() for listB in value.values()
+    ):
         raise Exception("Provided lists do not have the same length")
 
     columns = value.keys()

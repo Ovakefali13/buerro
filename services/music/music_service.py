@@ -12,6 +12,7 @@ from util import Singleton
 from services.preferences import PrefService
 
 class MusicRemote(ABC):
+
     @abstractmethod
     def get_category_for_mood(self, mood: str):
         pass
@@ -68,7 +69,7 @@ class SpotifyRemote(MusicRemote):
 
         self.refresh_access_token()
 
-        self.api_base='https://api.spotify.com/v1'
+        self.api_base = 'https://api.spotify.com/v1'
 
     def refresh_access_token(self):
         def _make_authorization_headers(client_id, client_secret):

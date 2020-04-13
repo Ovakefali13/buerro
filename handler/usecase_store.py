@@ -2,6 +2,7 @@ import queue
 
 from util import Singleton
 
+
 @Singleton
 class UsecaseStore:
     def __init__(self):
@@ -14,7 +15,7 @@ class UsecaseStore:
         if UsecaseCls not in self.usecase_instances:
             usecase = UsecaseCls()
             usecase.set_default_services()
-            if hasattr(usecase, 'set_scheduler'):
+            if hasattr(usecase, "set_scheduler"):
                 if not self.scheduler:
                     raise Exception("scheduler must be set")
                 usecase.set_scheduler(self.scheduler)
@@ -24,8 +25,9 @@ class UsecaseStore:
     def set_running(self, usecase):
         stored_instance = self.usecase_instances.get(type(usecase), None)
         if stored_instance and stored_instance != usecase:
-            raise Exception(("Two separate instances detected. "
-                            f"{stored_instance} != {usecase}"))
+            raise Exception(
+                ("Two separate instances detected. " f"{stored_instance} != {usecase}")
+            )
         self.running = usecase
         self.usecase_instances[type(usecase)] = usecase
 
@@ -38,8 +40,8 @@ class UsecaseStore:
         self.running = None
         while not self.callback_queue.empty():
             fun, arg_dict = self.callback_queue.get()
-            f_args = arg_dict['args']
-            f_kwargs = arg_dict['kwargs']
+            f_args = arg_dict["args"]
+            f_kwargs = arg_dict["kwargs"]
 
             try:
                 fun(*f_args, **f_kwargs)
@@ -49,10 +51,7 @@ class UsecaseStore:
                 print("Registered callback failed: ", e)
 
     def register_fin_callback(self, fun, *args, **kwargs):
-        arg_dict = {
-            'args': args,
-            'kwargs': kwargs
-        }
+        arg_dict = {"args": args, "kwargs": kwargs}
         self.callback_queue.put((fun, arg_dict))
 
     def set_scheduler(self, scheduler):
