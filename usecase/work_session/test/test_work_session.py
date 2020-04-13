@@ -233,7 +233,7 @@ class TestWorkSession(unittest.TestCase):
 
         mock_get_projects.return_value = ["some project"]
         mock_get_tasks.return_value = []
-        
+
         mock_location.return_value = (48.773466, 9.170824)
 
         uc = self.usecase
@@ -266,7 +266,7 @@ class TestWorkSession(unittest.TestCase):
 
         reply = uc.advance('yes')
         self.assertIn(self.states['music_rec'], reply.message)
-        self.assertIn("spotify.com", reply.message)
+        self.assertIn("http", reply.message)
         self.assertIn(self.states['project'], reply.message)
         mock_get_projects.assert_called_once()
 
@@ -283,7 +283,7 @@ class TestWorkSession(unittest.TestCase):
 
                     # starts over...
                     self.assertTrue(uc.is_finished())
-                    # does not need to be reset 
+                    # does not need to be reset
                     reply = uc.advance(None)
                     self.assertFalse(uc.is_finished())
                 else:
@@ -355,7 +355,7 @@ class TestWorkSession(unittest.TestCase):
 
                     # starts over...
                     self.assertTrue(uc.is_finished())
-                    # does not need to be reset 
+                    # does not need to be reset
                     reply = uc.advance(None)
                     self.assertIn("too close to start working", reply.message)
                     self.assertTrue(uc.is_finished())

@@ -3,30 +3,48 @@ import os
 from urllib.parse import urlparse
 
 from util import Singleton
-from .. import MusicRemote, SpotifyRemote, MusicService
+from .. import MusicRemote, SpotifyRemote, MusicService, Playlist
 
 @Singleton
 class MusicMockRemote(MusicRemote):
-    def get_playlist_for_mood(self, mood:str):
-        uri = "https://open.spotify.com/playlist/37i9dQZF1DX576ecqLnVqL?si=xij5j2DsQwClphFotqa3dQ"
-        return uri, "Test Playlist"
+    def get_category_for_mood(self, mood: str):
+        if mood.lower() == "focus":
+            return {"name": "focus",
+                    "id": "abc"}
+        return {}
+
+    def get_playlists_for_category(self, category_id: str):
+        if category_id == "abc":
+            return [
+                Playlist('123', 'Music for concentration', 'https://music.com/123'),
+                Playlist('124', 'Piano music', 'https://music.com/124'),
+            ]
+        return []
+
+    def get_user_playlists(self):
+        return [
+            Playlist('124', 'Piano music', 'https://music.com/124'),
+            Playlist('125', 'Classic Rock', 'https://music.com/125'),
+        ]
 
 class TestMusicService(unittest.TestCase):
 
     @classmethod
-    def setUpClass(self):
+    def setUpClass(cls):
         if 'DONOTMOCK' in os.environ:
-            self.music_service = MusicService.instance(SpotifyRemote.instance())
+            cls.music_service = MusicService.instance(SpotifyRemote.instance())
         else:
-            self.music_service = MusicService.instance(MusicMockRemote.instance())
+            cls.music_service = MusicService.instance(MusicMockRemote.instance())
 
     def test_can_get_playlist_link_for_mood(self):
-        def uri_valid(x):
+        def uri_valid(uri):
             try:
-                result = urlparse(x)
+                result = urlparse(uri)
                 return all([result.scheme, result.netloc, result.path])
-            except:
+            except ValueError:
                 return False
-        uri, name = self.music_service.get_playlist_for_mood("focus")
-        self.assertTrue(uri_valid(uri))
-        self.assertIsInstance(name, str)
+
+        playlist = self.music_service.get_playlist_for_mood("focus")
+        self.assertIsInstance(playlist, Playlist)
+        self.assertTrue(uri_valid(playlist.get_url()))
+        self.assertIsInstance(playlist.get_name(), str)

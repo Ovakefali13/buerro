@@ -202,12 +202,13 @@ class WorkSession(Usecase):
                                       "please answer with yes or no")
 
         def music_trans(message):
-            msg =""
+            msg = ""
             reply = {}
             if find_whole_word('yes')(message):
-                link, name = self.music_service.get_playlist_for_mood('focus')
+                playlist = self.music_service.get_playlist_for_mood('focus')
                 msg += "How about this Spotify playlist?"
-                msg += "<br>" + link_to_html(link, altname=name) + "<br><br>"
+                msg += "<br>" + link_to_html(playlist.get_url(),
+                                             altname=playlist.get_name()) + "<br><br>"
 
             msg += "Which project do you want to work on?<br>"
             self.projects = self.todo_service.get_project_names()
