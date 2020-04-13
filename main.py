@@ -1,4 +1,5 @@
 from dotenv import load_dotenv
+
 load_dotenv()
 
 from controller import ControllerFromArgs
@@ -16,11 +17,11 @@ from handler import UsecaseStore
 HOST_NAME = "localhost"
 SERVER_PORT = 9150
 
-if 'BACKEND_PORT' in os.environ:
-    SERVER_PORT = int(os.environ['BACKEND_PORT'])
+if "BACKEND_PORT" in os.environ:
+    SERVER_PORT = int(os.environ["BACKEND_PORT"])
+
 
 class Main:
-
     def __init__(self):
         self.store = UsecaseStore.instance()
 
@@ -30,8 +31,7 @@ class Main:
         self.chatbot = Chatbot(BuerroBot())
 
         Controller = ControllerFromArgs(self.scheduler, self.chatbot)
-        self.httpd = HTTPServer((HOST_NAME, SERVER_PORT),
-            Controller)
+        self.httpd = HTTPServer((HOST_NAME, SERVER_PORT), Controller)
 
     def block_trigger(self, usecase, func, *args, **kwargs):
         running_usecase = self.store.get_running()
@@ -48,18 +48,22 @@ class Main:
     def schedule_usecases(self):
         lunchbreak = self.store.get(Lunchbreak)
         lunchbreak.set_default_services()
-        self.scheduler.add_job(func=self.block_trigger,
-                          args=(lunchbreak, lunchbreak.trigger_proactive_usecase,),
-                          kwargs={},
-                          trigger='interval',
-                          hours=1)
+        self.scheduler.add_job(
+            func=self.block_trigger,
+            args=(lunchbreak, lunchbreak.trigger_proactive_usecase,),
+            kwargs={},
+            trigger="interval",
+            hours=1,
+        )
         github = self.store.get(Github)
         github.set_default_services()
-        self.scheduler.add_job(func=self.block_trigger,
-                          args=(github, github.trigger_proactive_usecase,),
-                          kwargs={},
-                          trigger='interval',
-                          hours=1)
+        self.scheduler.add_job(
+            func=self.block_trigger,
+            args=(github, github.trigger_proactive_usecase,),
+            kwargs={},
+            trigger="interval",
+            hours=1,
+        )
 
     def start(self):
         try:
@@ -68,12 +72,13 @@ class Main:
             print("Backend serving at port", SERVER_PORT)
             self.httpd.serve_forever()
 
-            print('Press Ctrl+{0} to exit'.format('Break' if os.name == 'nt' else 'C'))
+            print("Press Ctrl+{0} to exit".format("Break" if os.name == "nt" else "C"))
 
         except (KeyboardInterrupt, SystemExit):
             self.scheduler.shutdown()
             self.httpd.shutdown()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main = Main()
     main.start()

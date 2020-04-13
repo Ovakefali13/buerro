@@ -3,6 +3,8 @@ PY_VERSION ?= 3.7
 PYTHON ?= $(ROOT_DIR)/venv/bin/python$(PY_VERSION)
 #MODULE=controller
 
+SOURCES := $(shell git ls-files | grep '\.py' | cut -f1 -d '/' | sort | uniq) # list of root files and folders
+
 ifdef MODULE
     ARGS := --module $(MODULE)
 endif
@@ -70,7 +72,13 @@ frontend:
 	PRODUCTION=1 cd frontend && npm start
 	cd frontend && npm start
 
+.PHONY: lint
+lint: 
+	pylint $(SOURCES)
+
 .PHONY: set_buerro_path
 set_buerro_path:
-	cd $(shell $(PYTHON) -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())") && \
-	echo $(ROOT_DIR) > buerro.pth
+	cd $$($(PYTHON) -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())") \
+		&& echo $(ROOT_DIR) > buerro.pth
+
+

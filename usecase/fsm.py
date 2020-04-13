@@ -1,5 +1,6 @@
 from usecase import FinishedException
 
+
 class StateMachine:
     def __init__(self):
         self.handlers = {}
@@ -7,14 +8,14 @@ class StateMachine:
         self.endStates = []
         self.currentState = None
 
-    def add_state(self, name:str, fun, end_state=False):
+    def add_state(self, name: str, fun, end_state=False):
         name = name.upper()
         self.handlers[name] = fun
 
         if end_state:
             self.endStates.append(name)
 
-    def set_start(self, name:str):
+    def set_start(self, name: str):
         self.startState = name.upper()
 
     def is_finished(self):
@@ -22,9 +23,9 @@ class StateMachine:
 
     def advance(self, data):
         if not self.endStates:
-            raise  Exception("at least one state must be an end_state")
+            raise Exception("at least one state must be an end_state")
         if self.is_finished():
-            raise  FinishedException("advance called on a finished FSM")
+            raise FinishedException("advance called on a finished FSM")
 
         handler = None
         if not self.currentState:
@@ -36,13 +37,13 @@ class StateMachine:
             try:
                 handler = self.handlers[self.currentState]
             except:
-                raise Exception("new state has not been added",
-                    self.currentState)
+                raise Exception("new state has not been added", self.currentState)
 
         ret = handler(data)
         if not isinstance(ret, tuple):
-            raise Exception("return of a transition should be a tuple of "
-                + "(new_state, data)")
+            raise Exception(
+                "return of a transition should be a tuple of " + "(new_state, data)"
+            )
 
         (new_state, data) = ret
         if new_state is None:
@@ -61,6 +62,5 @@ class StateMachine:
     def reset(self):
         self.currentState = None
 
-    def _set_state(self, state:str):
+    def _set_state(self, state: str):
         self.currentState = state.upper()
-
