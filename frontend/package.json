@@ -1,18 +1,31 @@
 {
-    "name": "buerro_frontend",
-    "version": "0.0.1",
-    "description": "PDA for your buerro",
-    "repository": {"type": "git", "url": "https://github.com/Ovakefali13/buerro"},
-    "main": "server.js",
-    "dependencies": {
-        "bootstrap": "^3.4.1",
-        "express": "^4.17.1",
-        "jquery": "^3.4.1",
-        "showdown": "^1.9.1",
-    },
-    "devDependencies": {"http-proxy-middleware": "^1.0.3", "jest": "^25.1.0"},
-    "scripts": {"test": "jest --collect-coverage", "start": "node server.js"},
-    "jest": {"setupFiles": ["./jest-setup.js"]},
-    "author": "",
-    "license": "ISC",
+  "name": "buerro_frontend",
+  "version": "0.0.1",
+  "description": "PDA for your buerro",
+  "repository": {
+    "type" : "git",
+    "url" : "https://github.com/Ovakefali13/buerro"
+  },
+  "main": "server.js",
+  "dependencies": {
+    "bootstrap": "^3.4.1",
+    "express": "^4.17.1",
+    "jquery": "^3.4.1",
+    "showdown": "^1.9.1"
+  },
+  "devDependencies": {
+    "http-proxy-middleware": "^1.0.3",
+    "jest": "^25.1.0"
+  },
+  "scripts": {
+    "test": "jest --collect-coverage",
+    "start": "node server.js"
+  },
+  "jest": {
+    "setupFiles": [
+      "./jest-setup.js"
+    ]
+  },
+  "author": "",
+  "license": "ISC"
 }

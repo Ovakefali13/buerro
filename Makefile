@@ -76,6 +76,10 @@ frontend:
 lint: 
 	pylint $(SOURCES)
 
+.PHONY: format
+format:
+	black $(filter-out frontend,$(SOURCES))
+
 .PHONY: set_buerro_path
 set_buerro_path:
 	cd $$($(PYTHON) -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())") \
