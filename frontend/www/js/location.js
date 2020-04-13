@@ -38,9 +38,10 @@ function sendCurrentLocation() {
                 })
             })
     })
-    .then(function(response) {
+    .then(async (response) => {
         if (!response.ok) {
-          console.error(response.json())
+          resp = await response.json()
+          console.error('Error: ', resp.error.message);
           throw new Error('Bad status code from server.');
         }
 
@@ -53,4 +54,3 @@ function sendCurrentLocation() {
     });
 }
 
-module.exports = sendCurrentLocation;

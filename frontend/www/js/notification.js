@@ -34,7 +34,7 @@ function subscribeUser() {
     const subscribeOptions = {
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(
-            "BMMA-CffOzTP-pSgzGqrgISf1hKXs9rgELQU1NZmq-_G7aeSiZktA68GdJtlEkKOwMaazkXFolRW8uBRpPKOexA"
+            "BMMA-CffOzTP-pSgzGqrgISf1hKXs9rgELQU1NZmq_G7aeSiZktA68GdJtlEkKOwMaazkXFolRW8uBRpPKOexA"
         )
     }
 
@@ -78,7 +78,8 @@ if ('serviceWorker' in navigator) {
                     isSubscribed = false;
                 });
             }
-        }, err => {
+        })
+        .catch(err => {
             console.error(err);
         });
     });
@@ -105,5 +106,8 @@ function sendSubscriptionToBackEnd(subscription) {
     if (!responseData.success) {
       throw new Error('Bad response from server.');
     }
+  })
+  .catch(err => {
+    console.error('Error sending subscripton to backend: ', err);
   });
 }

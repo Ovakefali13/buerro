@@ -14,6 +14,13 @@ describe('Title', () => {
         await expect(page.title()).resolves.toMatch('buerro');
     });
 
+    it('can send location', () => {
+        page.evaluate(() => {
+            return sendCurrentLocation();
+        })
+        .then(response => expect.toBeTruthy(response.success));
+    });
+
     afterAll(async () => {
         // Disable both JavaScript and CSS coverage
         const [jsCoverage, cssCoverage] = await Promise.all([

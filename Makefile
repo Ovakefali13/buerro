@@ -68,7 +68,6 @@ backend:
 .PHONY: frontend
 frontend:
 	PRODUCTION=1 cd frontend && npm start
-	cd frontend && npm start
 
 .PHONY: set_buerro_path
 set_buerro_path:
