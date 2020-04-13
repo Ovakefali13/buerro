@@ -5,7 +5,7 @@ try {
     var md_converter = new showdown.Converter();
 } catch (e) {
     if (!e instanceof ReferenceError) {
-        throw e;     
+        throw e;
     }
 }
 
@@ -55,7 +55,7 @@ if ('serviceWorker' in navigator) {
         .then((pushSubscription) => {
             if(pushSubscription !== null) {
                 sendSubscriptionToBackEnd(pushSubscription)
-                .then(() => { 
+                .then(() => {
                     isSubscribed = true
                 })
                 .catch((err) => {
@@ -66,13 +66,15 @@ if ('serviceWorker' in navigator) {
             } else {
                 subscribeUser()
                 .then((pushSubscription) => sendSubscriptionToBackEnd(pushSubscription))
-                .then(() => { 
+                .then(() => {
                     console.log('Successfully sent pushSubscription to backend');
                     isSubscribed = true
                 })
                 .catch((err) => {
                     console.error('Failed to send subscription: ', err);
-                    pushSubscription.unsubscribe();
+                    if(pushSubscription) {
+                        pushSubscription.unsubscribe();
+                    }
                     isSubscribed = false;
                 });
             }
