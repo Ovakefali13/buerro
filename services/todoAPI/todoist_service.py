@@ -6,6 +6,7 @@ import todoist
 from util import Singleton
 from ..preferences.pref_service import PrefService, PrefJSONRemote, PrefRemote
 
+
 class TodoistRemote(ABC):
     @abstractmethod
     def get_projects(self):
@@ -16,27 +17,28 @@ class TodoistRemote(ABC):
         pass
 
     @abstractmethod
-    def set_todos(self, project_id:int):
+    def set_todos(self, project_id: int):
         pass
 
     @abstractmethod
-    def delete_todo(self, delete_item:str, p_id:int):
+    def delete_todo(self, delete_item: str, p_id: int):
         pass
+
 
 @Singleton
 class TodoistJSONRemote(TodoistRemote):
-    api_token = ''
+    api_token = ""
     pref_service = PrefService(PrefJSONRemote())
     api = None
 
     def __init__(self):
         pref_json = self.pref_service.get_preferences("cooking")
-        self.api_token = os.environ['TODOIST_API_KEY']
+        self.api_token = os.environ["TODOIST_API_KEY"]
         self.api = todoist.TodoistAPI(self.api_token)
         self.api.sync()
 
     def get_projects(self):
-        return self.api.state['projects']
+        return self.api.state["projects"]
 
     def get_todos(self, project_id):
         return self.api.projects.get_data(project_id)
@@ -47,53 +49,54 @@ class TodoistJSONRemote(TodoistRemote):
         self.api.commit()
 
     def complete_todo(self, task):
-        task = self.api.items.get_by_id(task['id'])
+        task = self.api.items.get_by_id(task["id"])
         task.complete()
         self.api.commit()
 
     def delete_todo(self, delete_item, p_id):
         items_list = self.get_todos(p_id)
-        for item in items_list['items']:
-            if item['content'] == delete_item:
-                self.api.items.get_by_id(item['id']).delete()
+        for item in items_list["items"]:
+            if item["content"] == delete_item:
+                self.api.items.get_by_id(item["id"]).delete()
         self.api.commit()
+
 
 @Singleton
 class TodoistService:
     remote = None
 
-    def __init__(self, remote:TodoistRemote=None):
+    def __init__(self, remote: TodoistRemote = None):
         if remote:
             self.remote = remote
         else:
             self.remote = TodoistJSONRemote.instance()
 
-    def set_remote(self, remote:TodoistJSONRemote):
+    def set_remote(self, remote: TodoistJSONRemote):
         self.remote = remote
 
     def get_project_names(self):
         response = []
         for project in self.remote.get_projects():
-            response.append(project['name'])
+            response.append(project["name"])
         return response
 
     def get_project_id(self, name):
         response = None
         for project in self.remote.get_projects():
-            if project['name'].lower() == name.lower():
-                response = project['id']
+            if project["name"].lower() == name.lower():
+                response = project["id"]
         return response
 
     def get_project_task_names(self, name):
         response = []
         project = self.remote.get_todos(self.get_project_id(name))
-        for item in project['items']:
-            response.append(item['content'])
+        for item in project["items"]:
+            response.append(item["content"])
         return response
 
     def get_project_tasks(self, name):
         project = self.remote.get_todos(self.get_project_id(name))
-        return project['items']
+        return project["items"]
 
     def complete_todo(self, task):
         self.remote.complete_todo(task)
@@ -106,16 +109,14 @@ class TodoistService:
         project_id = self.get_project_id(project_name)
         self.remote.delete_todo(item, project_id)
 
-    def tasks_as_table(self, tasks:list):
+    def tasks_as_table(self, tasks: list):
         if not isinstance(tasks, list):
             raise Exception("Passed non-list as task list")
 
-        keys = ('content', 'priority', 'due')
+        keys = ("content", "priority", "due")
 
         return {
-            'Description': [t['content'] for t in tasks],
-            'Priority': [t['priority'] for t in tasks],
-            'Due': [t['due']['string'] if t['due'] else None for t in tasks]
+            "Description": [t["content"] for t in tasks],
+            "Priority": [t["priority"] for t in tasks],
+            "Due": [t["due"]["string"] if t["due"] else None for t in tasks],
         }
-
-

@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 import inspect
-from usecase import Usecase, \
-    Lunchbreak, WorkSession, Cook, Transport
+from usecase import Usecase, Lunchbreak, WorkSession, Cook, Transport
+
 
 class ChatbotBehavior(ABC):
     @abstractmethod
@@ -12,6 +12,7 @@ class ChatbotBehavior(ABC):
     def clear_context(self):
         pass
 
+
 class BuerroBot(ChatbotBehavior):
 
     context = None
@@ -20,15 +21,14 @@ class BuerroBot(ChatbotBehavior):
         "work session": WorkSession,
         "working": WorkSession,
         "lunch": Lunchbreak,
-        #"github": Github,
-        "cook": Cook
+        # "github": Github,
+        "cook": Cook,
     }
 
     def __init__(self):
         for usecase in self.usecase_by_keyword.values():
             if not issubclass(usecase, Usecase):
-                raise Exception(f'Usecase {usecase} is not a sub-class of '
-                    +'Usecase')
+                raise Exception(f"Usecase {usecase} is not a sub-class of " + "Usecase")
 
     def get_usecase(self, prompt):
         if prompt == None or prompt == "":
@@ -48,11 +48,16 @@ class BuerroBot(ChatbotBehavior):
                 elif isinstance(value, dict):
                     return self.parse_dic(value, prompt)
                 else:
-                    raise Exception(("keyword to usecase dictionary "
-                                    f"contains an invalid type: {type(value)}"))
+                    raise Exception(
+                        (
+                            "keyword to usecase dictionary "
+                            f"contains an invalid type: {type(value)}"
+                        )
+                    )
 
     def clear_context(self):
         context = None
+
 
 class Chatbot:
     behaviour = None
