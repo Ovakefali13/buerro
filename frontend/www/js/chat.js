@@ -38,7 +38,7 @@ function processUserPrompt(prompt) {
                    'location': location
                 })
             })
-        .then(function(response) {
+        .then(async response => {
 
             if (!response.ok) {
 

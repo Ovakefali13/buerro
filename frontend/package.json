@@ -19,12 +19,14 @@
   "devDependencies": {
     "http-proxy-middleware": "^1.0.3",
     "jest": "^25.1.0",
-    "nyc": "^15.0.1"
+    "nyc": "^15.0.1",
+    "testcafe": "^1.8.4"
   },
   "scripts": {
     "test": "jest",
     "start": "node server.js",
-    "coverage": "nyc npm run test"
+    "coverage": "nyc npm run test",
+    "e2e": "testcafe chrome test/index-test.js --hostname localhost --ports 7409,1903 --app 'node server.js'"
   },
   "jest": {
     "preset": "jest-puppeteer",
