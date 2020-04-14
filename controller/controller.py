@@ -1,15 +1,10 @@
-from http.server import BaseHTTPRequestHandler, HTTPServer
-import urllib
-import sqlite3
-import re
+from http.server import BaseHTTPRequestHandler
 import json
 from apscheduler.schedulers.base import BaseScheduler
-import asyncio
 
 from chatbot import Chatbot
 from handler import NotificationHandler, LocationHandler, UsecaseStore
-from usecase import Usecase, Reply
-
+from usecase import Reply
 
 def ControllerFromArgs(scheduler: BaseScheduler, chatbot: Chatbot):
     class CustomController(BaseHTTPRequestHandler):
@@ -83,18 +78,28 @@ def ControllerFromArgs(scheduler: BaseScheduler, chatbot: Chatbot):
                 if msg == "shutdown":
                     respond_succ("shutdown")
                 else:
+                    reply = None
                     store = UsecaseStore.instance()
                     usecase = store.get_running()
                     if not usecase:
                         UsecaseCls = self.chatbot.get_usecase(msg)
 
                         if not UsecaseCls:
-                            respond_succ(
-                                (
-                                    "I did not understand that. \n"
-                                    "Try one of the following: "
-                                )
-                            )  # TODO
+                            msg = ("I did not understand that. \n"
+                                          "Try one of the following: ")
+
+                            example_sentences = [
+                                "I want to start working.",
+                                "I want to travel from Stuttgart to Frankfurt and arrive at 4 p.m.",
+                                "I want to travel home now",
+                                "I want to cook today",
+                                "Where can I go for lunch?",
+
+                            ]
+
+                            reply = Reply({'message': msg, 'list': example_sentences})
+                            respond_succ(reply.to_html())
+                            del msg
                             return
 
                         usecase = store.get(UsecaseCls)
