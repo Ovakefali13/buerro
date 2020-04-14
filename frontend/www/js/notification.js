@@ -34,7 +34,7 @@ function subscribeUser() {
     const subscribeOptions = {
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(
-            "BMMA-CffOzTP-pSgzGqrgISf1hKXs9rgELQU1NZmq_G7aeSiZktA68GdJtlEkKOwMaazkXFolRW8uBRpPKOexA"
+            "BMMA-CffOzTP-pSgzGqrgISf1hKXs9rgELQU1NZmqi-_G7aeSiZktA68GdJtlEkKOwMaazkXFolRW8uBRpPKOexA"
         )
     }
 
