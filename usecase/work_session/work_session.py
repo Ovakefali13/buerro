@@ -197,12 +197,12 @@ class WorkSession(Usecase):
                 start=now,
                 end=now + timedelta(hours=8)
             )
+            next_events = [e for e in next_events if e.get_start() > now]
 
             if not next_events:
                 msg = "You have no upcoming events."
                 msg += "<br>Would you like to listen to music?"
                 return "music", msg
-
             next_event = next_events[0]
 
             minutes_until = (next_event["dtstart"].dt - now).seconds / 60
@@ -212,7 +212,6 @@ class WorkSession(Usecase):
 
             if not "location" in next_event:
                 return _no_journey(next_event)
-
             self.journey = _get_journey_to(next_event)
 
             minutes_until = (self.journey.dep_time - now).seconds / 60
@@ -221,11 +220,11 @@ class WorkSession(Usecase):
 
             journey_event = self.journey.to_event()
             self.cal_service.add_event(journey_event)
-
             msg = "I created a reminder for when you have to get going to reach:<br>"
             msg += next_event.summarize()
             msg += "<br> using this VVS journey:<br>"
             msg += table_to_html(self.journey.to_table())
+
             msg += "<br>Would you like to listen to music?"
 
             return "music", msg
