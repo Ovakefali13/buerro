@@ -35,13 +35,24 @@ function processUserPrompt(prompt) {
             },
             body: JSON.stringify({
                    message: prompt,
-                   'location': location 
+                   'location': location
                 })
             })
         .then(function(response) {
+
             if (!response.ok) {
-              console.error(response.json())
-              throw new Error('Bad status code from server.');
+
+              message = undefined
+              try {
+                resp = await response.json()
+                message = resp.error.message;
+              } catch(e) {}
+              if(message) {
+                throw new Error('Bad server response: ', message);
+              } else {
+                throw new Error('Bad status code from server.');
+              }
+
               putBotMessage("Server communication failed.");
             }
 

@@ -10,6 +10,16 @@ describe('Title', () => {
             page.coverage.startCSSCoverage()
         ]);
 
+        await page.setGeolocation({
+            latitude: 48.773466,
+            longitude: 9.170824
+        });
+
+        const browserContext = browser.defaultBrowserContext();
+        const permissions = [
+            'geolocation', 'notifications', 'microphone'
+        ]
+        await context.overridePermissions(path, permissions);
     });
 
     it('should be titled "buerro"', async () => {
@@ -17,10 +27,6 @@ describe('Title', () => {
     });
 
     it('can send location', async () => {
-        await page.setGeolocation({
-            latitude: 48.773466,
-            longitude: 9.170824
-        });
 
         await page.evaluate(() => {
             return sendCurrentLocation();

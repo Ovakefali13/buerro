@@ -13,7 +13,6 @@ function getCurrentLocation() {
             var lon = pos.coords.longitude;
             resolve([ lat, lon ]);
         }, err => {
-            console.log('Failed to get location: ', err);
             reject(err);
         },
         {
@@ -28,8 +27,8 @@ function sendCurrentLocation() {
 
     return getCurrentLocation()
     .catch(err => {
-        console.error('Failed to send location because it could not be acquired');
-        return
+        throw new Error('Failed to send location because it could not be acquired: '
+            + err.code + ' - '+ err.message);
     })
     .then(location => {
         return fetch('api/location', {
@@ -62,6 +61,7 @@ function sendCurrentLocation() {
         if (!(responseData.success)) {
           throw new Error('Bad response from server.');
         }
+        return responseData
     });
 }
 

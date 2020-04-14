@@ -45,12 +45,17 @@ if ('serviceWorker' in navigator) {
     window.addEventListener('load', function() {
 
         navigator.serviceWorker.register('/js/service-worker.js')
+        .catch(err => {
+            throw new Error('Failed to register service worker: ' + err.message);
+        })
         .then((registration) => {
             console.log('ServiceWorker registration successful: ', registration);
             swRegistration = registration
-            return registration.pushManager.getSubscription()
-        }, err => {
-            console.error(err);
+            try {
+                return registration.pushManager.getSubscription()
+            } catch(err) {
+                throw new Error("Failed to register push subscription: " + err.message);
+            }
         })
         .then((pushSubscription) => {
             if(pushSubscription !== null) {
@@ -59,9 +64,9 @@ if ('serviceWorker' in navigator) {
                     isSubscribed = true
                 })
                 .catch((err) => {
-                    console.error('Failed to send subscription: ', err);
                     pushSubscription.unsubscribe();
                     isSubscribed = false;
+                    throw new Error('Failed to send subscription: ' + err.message);
                 });
             } else {
                 subscribeUser()
@@ -71,16 +76,13 @@ if ('serviceWorker' in navigator) {
                     isSubscribed = true
                 })
                 .catch((err) => {
-                    console.error('Failed to send subscription: ', err);
                     if(pushSubscription) {
                         pushSubscription.unsubscribe();
                     }
                     isSubscribed = false;
+                    throw new Error('Failed to send subscription: ' + err.message);
                 });
             }
-        })
-        .catch(err => {
-            console.error(err);
         });
     });
 
