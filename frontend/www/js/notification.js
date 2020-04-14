@@ -96,18 +96,22 @@ function sendSubscriptionToBackEnd(subscription) {
   })
   .then(function(response) {
     if (!response.ok) {
-      console.error(response.json())
-      throw new Error('Bad status code from server.');
+      resp = undefined
+      try {
+          resp = response.json().error.message;
+      } catch {}
+      if(resp) {
+          throw new Error('Bad server response: ', resp);
+      } else {
+          throw new Error('Bad status code from server.');
+      }
     }
 
     return response.json();
   })
   .then(function(responseData) {
     if (!responseData.success) {
-      throw new Error('Bad response from server.');
+        throw new Error('Bad response from server.');
     }
-  })
-  .catch(err => {
-    console.error('Error sending subscripton to backend: ', err);
   });
 }

@@ -1,7 +1,13 @@
 // jest-puppeteer.config.js
+port = 4444;
+if(process.env.FRONTEND_PORT) {
+    port = process.env.FRONTEND_PORT;
+}
+console.log('Test Server running on port ', port);
+
 module.exports = {
   server: {
-    command: 'FRONTEND_PORT=4444 node server.js',
-    port: 4444,
+    command: 'node server.js',
+    port: port,
   },
 }

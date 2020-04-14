@@ -22,13 +22,14 @@
     "nyc": "^15.0.1"
   },
   "scripts": {
-    "test": "nyc jest",
-    "start": "node server.js"
+    "test": "jest",
+    "start": "node server.js",
+    "coverage": "nyc npm run test"
   },
   "jest": {
     "preset": "jest-puppeteer",
     "globals": {
-      "PATH": "http://localhost:4444"
+      "HOST": "http://localhost"
     },
     "collectCoverage": true,
     "coverageDirectory": "coverage"
