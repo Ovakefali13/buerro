@@ -44,12 +44,13 @@ function sendCurrentLocation() {
     })
     .then(async (response) => {
         if (!response.ok) {
-          resp = undefined
+          message = undefined
           try {
-              resp = response.json().error.message;
-          } catch {}
-          if(resp) {
-              throw new Error('Bad server response: ', resp);
+              resp = await response.json()
+              message = resp.error.message;
+          } catch(e) {}
+          if(message) {
+              throw new Error('Bad server response: ', message);
           } else {
               throw new Error('Bad status code from server.');
           }
