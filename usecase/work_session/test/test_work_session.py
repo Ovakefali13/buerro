@@ -270,10 +270,10 @@ class TestWorkSession(unittest.TestCase):
         # and advances correctly...
         self.assertIn(self.states["music"], reply.message)
 
-        reply = uc.advance("yes")
-        self.assertIn(self.states["music_rec"], reply.message)
-        self.assertIn("spotify.com", reply.message)
-        self.assertIn(self.states["project"], reply.message)
+        reply = uc.advance('yes')
+        self.assertIn(self.states['music_rec'], reply.message)
+        self.assertIn("http", reply.message)
+        self.assertIn(self.states['project'], reply.message)
         mock_get_projects.assert_called_once()
 
         reply = uc.advance("some project")
