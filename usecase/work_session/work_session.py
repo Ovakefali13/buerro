@@ -1,8 +1,8 @@
 from datetime import datetime as dt, timedelta
-import pytz
 import re
-from util import link_to_html, list_to_html, dict_to_html, table_to_html
+import pytz
 
+from util import link_to_html, table_to_html
 from services import (
     TodoistService,
     VVSService,
@@ -12,7 +12,6 @@ from services import (
     MusicService,
 )
 from usecase import Usecase, Reply, StateMachine, FinishedException
-
 # from usecase import TransportUsecase
 from handler import NotificationHandler, LocationHandler
 
@@ -33,6 +32,25 @@ class WorkSession(Usecase):
 
         self.scheduler = None
         self.notification_handler = NotificationHandler.instance()
+
+        self.pref_service = None
+        self.pref = None
+        self.cal_service = None
+        self.vvs_service = None
+        self.geo_service = None
+        self.todo_service = None
+        self.music_service = None
+
+        self.journey = None
+        self.projects = []
+        self.chosen_project = None
+        self.todos = []
+        self.chosen_task = None
+        self.choosing = False
+        self.todo_table = {}
+
+        self.expire_by = None
+        self.wake_job = None
 
     def set_services(
         self,
@@ -87,7 +105,7 @@ class WorkSession(Usecase):
         return self.fsm.is_finished()
 
     def _set_state(self, state: str):
-        self.fsm._set_state(state)
+        self.fsm._set_state(state) # pylint: disable=protected-access
 
     def get_state(self):
         return self.fsm.currentState
@@ -97,7 +115,7 @@ class WorkSession(Usecase):
         todo_table = self.todo_service.tasks_as_table(todos)
 
         self.todos = {str(i): e for i, e in enumerate(todos)}
-        self.todo_table = {"ID": [id for id in self.todos.keys()], **todo_table}
+        self.todo_table = {"ID": self.todos.keys(), **todo_table}
 
     def wake_up(self, reply, next_state):
         self.notification_handler.push(reply.to_notification())
@@ -114,7 +132,7 @@ class WorkSession(Usecase):
         )
 
     def enough_time_for(self, delta: timedelta):
-        if hasattr(self, "journey"):
+        if hasattr(self, "journey") and self.journey:
             leave_buffer = timedelta(minutes=self.pref["remind_min_before_leaving"])
             get_going_by = self.journey.dep_time - leave_buffer
             end = dt.now(pytz.utc) + delta
@@ -123,11 +141,11 @@ class WorkSession(Usecase):
             return True
         return True
 
-    def define_state_transitions(self):
+    def define_state_transitions(self): # pylint: disable=too-many-locals,too-many-statements
         def find_whole_word(w):
             return re.compile(r"\b({0})\b".format(w), flags=re.IGNORECASE).search
 
-        def start_trans(message):
+        def start_trans(message): # pylint: disable=unused-argument
             def _event_too_close(event, journey=None):
                 msg = "Your next appointment is too close to start working: <br>"
                 msg += event.summarize()
@@ -150,73 +168,78 @@ class WorkSession(Usecase):
                 msg += "<br>Do you still want to start working?"
                 return "no_journey", msg
 
-            next_events = self.cal_service.get_next_events()
-            if next_events:
-                next_event = next_events[0]
-                now = dt.now(pytz.utc)
-                minutes_until = (next_event["dtstart"].dt - now).seconds / 60
-                min_work_period = self.pref["min_work_period_minutes"]
-                if minutes_until < min_work_period:
-                    return _event_too_close(next_event)
+            def _get_journey_to(event):
+                location = LocationHandler.instance().get()
+                origin = self.geo_service.get_address_from_coords(location)
 
-                if not "location" in next_event:
-                    return _no_journey(next_event)
-                else:
-                    location = LocationHandler.instance().get()
-                    origin = self.geo_service.get_address_from_coords(location)
+                dest = event["location"]
 
-                    dest = next_event["location"]
+                journey = None
+                origin_id = self.vvs_service.get_location_id(origin)
+                dest_id = self.vvs_service.get_location_id(dest)
 
-                    journey = None
-                    try:
-                        origin_id = self.vvs_service.get_location_id(origin)
-                        dest_id = self.vvs_service.get_location_id(dest)
+                min_early = self.pref["be_minutes_early"]
+                arrive_by = event["dtstart"].dt - timedelta(
+                    minutes=min_early
+                )
 
-                        min_early = self.pref["be_minutes_early"]
-                        arrive_by = next_event["dtstart"].dt - timedelta(
-                            minutes=min_early
-                        )
+                journeys = self.vvs_service.get_journeys_for_id(
+                    origin_id, dest_id, "arr", arrive_by
+                )
+                journey = self.vvs_service.recommend_journey_to_arrive_by(
+                    journeys, event.get_start()
+                )
+                return journey
 
-                        journeys = self.vvs_service.get_journeys_for_id(
-                            origin_id, dest_id, "arr", arrive_by
-                        )
-                        journey = self.vvs_service.recommend_journey_to_arrive_by(
-                            journeys, next_event.get_start()
-                        )
-                    except:
-                        return _no_journey(next_event)
 
-                    now = dt.now(pytz.utc)
-                    minutes_until = (journey.dep_time - now).seconds / 60
-                    if minutes_until < min_work_period:
-                        return _event_too_close(next_event, journey)
+            now = dt.now(pytz.utc)
+            next_events = self.cal_service.get_events_between(
+                start=now,
+                end=now + timedelta(hours=8)
+            )
 
-                    self.journey = journey
-                    journey_event = journey.to_event()
-                    self.cal_service.add_event(journey_event)
+            if not next_events:
+                msg = "You have no upcoming events."
+                msg += "<br>Would you like to listen to music?"
+                return "music", msg
 
-                    msg = "I created a reminder for when you have to get going to reach:<br>"
-                    msg += next_event.summarize()
-                    msg += "<br> using this VVS journey:<br>"
-                    msg += table_to_html(journey.to_table())
-                    msg += "<br>Would you like to listen to music?"
+            next_event = next_events[0]
 
-                    return "music", msg
+            minutes_until = (next_event["dtstart"].dt - now).seconds / 60
+            min_work_period = self.pref["min_work_period_minutes"]
+            if minutes_until < min_work_period:
+                return _event_too_close(next_event)
 
-            msg = "You have no upcoming events."
+            if not "location" in next_event:
+                return _no_journey(next_event)
+
+            self.journey = _get_journey_to(next_event)
+
+            minutes_until = (self.journey.dep_time - now).seconds / 60
+            if minutes_until < min_work_period:
+                return _event_too_close(next_event, self.journey)
+
+            journey_event = self.journey.to_event()
+            self.cal_service.add_event(journey_event)
+
+            msg = "I created a reminder for when you have to get going to reach:<br>"
+            msg += next_event.summarize()
+            msg += "<br> using this VVS journey:<br>"
+            msg += table_to_html(self.journey.to_table())
             msg += "<br>Would you like to listen to music?"
+
             return "music", msg
+
 
         def no_journey_trans(message):
             if find_whole_word("yes")(message):
                 return "music", "Would you like to listen to music?"
-            elif find_whole_word("no")(message):
+            if find_whole_word("no")(message):
                 return "end_state", "Alright. See you soon!"
-            else:
-                return (
-                    "no_journey",
-                    ("I did not get that, " "please answer with yes or no"),
-                )
+            return (
+                "no_journey",
+                ("I did not get that, please answer with yes or no"),
+            )
 
         def music_trans(message):
             msg = ""
@@ -289,7 +312,8 @@ class WorkSession(Usecase):
                 message = ""
             if find_whole_word("no")(message):
                 return "end_state", "I hope you'll have a productive session!"
-            elif find_whole_word("yes")(message):
+
+            if find_whole_word("yes")(message):
                 next_state = "break"
                 wake_up_reply = "Good Work! You finished your session.<br>"
                 wake_up_reply += ask_for_break()
@@ -349,11 +373,14 @@ class WorkSession(Usecase):
         def break_trans(message):
             if message is None:
                 message = ""
+
             if find_whole_word("skip")(message):
                 return "pomodoro", get_ask_for_pomodoro_msg()
-            elif find_whole_word("finish")(message):
+
+            if find_whole_word("finish")(message):
                 return "end_state", "Okay let's finish up. See you."
-            elif find_whole_word("break")(message):
+
+            if find_whole_word("break")(message):
                 minutes = self.pref["break_minutes"]
                 delta = timedelta(minutes=minutes)
 
@@ -376,11 +403,11 @@ class WorkSession(Usecase):
                     reply=Reply(msg),
                 )
                 return "wait_state", f"I will notify you in {minutes} minutes."
-            else:
-                msg = (
-                    "I did not get that. " "Please answer with (break, skip or finish)."
-                )
-                return "break", msg
+
+            msg = (
+                "I did not get that. " "Please answer with (break, skip or finish)."
+            )
+            return "break", msg
 
         def cancel_interval():
             if self.wake_job.next_run_time < dt.now(pytz.utc):
@@ -396,23 +423,23 @@ class WorkSession(Usecase):
 
         def choosing_todo_trans(message):
             self.chosen_task = None
-            if "none" == message.lower():
+            if message.lower() == "none":
                 return "wait_state", "No task chosen."
-            if "finish" == message.lower():
+            if message.lower() == "finish":
                 cancel_interval()
                 return None, ""
-            else:
-                try:
-                    set_chosen_task(message)
-                except NonUniqueTaskException:
-                    return "choosing_todo", "This task is not unique. Choose by ID."
 
-                if self.chosen_task:
-                    self.choosing = False
-                    return "wait_state", f"Switched to {self.chosen_task['content']}."
-                else:
-                    msg = "I could not match that to any task."
-                    return "choosing_todo", msg
+            try:
+                set_chosen_task(message)
+            except NonUniqueTaskException:
+                return "choosing_todo", "This task is not unique. Choose by ID."
+
+            if self.chosen_task:
+                self.choosing = False
+                return "wait_state", f"Switched to {self.chosen_task['content']}."
+
+            msg = "I could not match that to any task."
+            return "choosing_todo", msg
 
         def wait_trans(message):
             if not (self.expire_by and self.wake_job):
@@ -423,7 +450,7 @@ class WorkSession(Usecase):
                 cancel_interval()
                 return None, ""
 
-            elif self.chosen_task and (
+            if self.chosen_task and (
                 find_whole_word("complete")(message)
                 or find_whole_word("switch")(message)
             ):
@@ -441,17 +468,16 @@ class WorkSession(Usecase):
                     msg += "Choose a new task, " "say <i>none</i> or " "<i>finish</i>."
                 return "choosing_todo", {"message": msg, "table": self.todo_table}
 
-            else:
-                period = self.expire_by - dt.now(pytz.utc)
-                minutes, seconds = divmod(period.seconds, 60)
-                msg = (
-                    "Timer running. "
-                    f"I will notify you in {minutes}:{seconds}.<br>"
-                    "Enter <i>cancel</i> to skip forward."
-                )
-                if self.chosen_task:
-                    msg += "<br>" + ask_for_task_state()
-                return "wait_state", msg
+            period = self.expire_by - dt.now(pytz.utc)
+            minutes, seconds = divmod(period.seconds, 60)
+            msg = (
+                "Timer running. "
+                f"I will notify you in {minutes}:{seconds}.<br>"
+                "Enter <i>cancel</i> to skip forward."
+            )
+            if self.chosen_task:
+                msg += "<br>" + ask_for_task_state()
+            return "wait_state", msg
 
         m = self.fsm
         m.add_state("start", start_trans)
