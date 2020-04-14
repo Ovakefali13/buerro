@@ -9,17 +9,15 @@ self.addEventListener('push', async function(event) {
 
     try {
         data = event.data.json();
-        console.log(data);
         title = data.title;
 
         options = Object.assign({}, data.options, options);
-        console.log(options);
     } catch(e) {
         title = event.data.text();
     }
 
     self.registration.showNotification(title, options);
-    
+
     // find the client(s) you want to send messages to:
     self.clients.matchAll({includeUncontrolled: true, type: 'window'}).then( (clients) => {
         if (clients && clients.length) {
@@ -30,25 +28,61 @@ self.addEventListener('push', async function(event) {
     });
 });
 
-buerro_url = 'http://localhost:4000/'
+/*
+function isClientFocused() {
+  return clients.matchAll({
+    type: 'window',
+    includeUncontrolled: true
+  })
+  .then((windowClients) => {
+    let clientIsFocused = false;
 
-self.addEventListener('notificationclick', function(event) {
-  console.log('On notification click: ', event.notification.tag);
-  event.notification.close();
-
-  // This looks to see if the current is already open and
-  // focuses if it is
-  event.waitUntil(clients.matchAll({
-    type: "window"
-  }).then(function(clientList) {
-    for (var i = 0; i < clientList.length; i++) {
-      var client = clientList[i];
-      if (client.url == buerro_url) {
-        return client.focus(); // TODO doesnt seem to work
+    for (let i = 0; i < windowClients.length; i++) {
+      const windowClient = windowClients[i];
+      if (windowClient.focused) {
+        clientIsFocused = true;
+        break;
       }
     }
-    if (clients.openWindow)
+
+    return clientIsFocused;
+  });
+}
+
+self.addEventListener('notificationclick', function(event) {
+  const promiseChain = isClientFocused()
+  .then((clientIsFocused) => {
+    if (clientIsFocused) {
+      console.log('Don\'t need to show a notification.');
+      return;
+
+    }
+
+    // Client isn't focused, we need to show a notification.
+    return self.registration.showNotification('Had to show a notification.');
+  });
+
+  event.waitUntil(promiseChain);
+});
+*/
+
+self.addEventListener('notificationclick', function(event) {
+  event.notification.close();
+
+  const promiseChain = clients.matchAll({
+    type: 'window',
+    includeUncontrolled: true
+  })
+  .then((windowClients) => {
+    client = windowClients[0];
+
+    if (client) {
+      return client.focus();
+    } else {
       return clients.openWindow('/');
-  }));
+    }
+  });
+
+  event.waitUntil(promiseChain);
 });
 
