@@ -53,8 +53,4 @@ class GithubService:
         return self.remote.get_notifications()
 
     def connect(self):
-        try:
-            self.remote.connect(os.environ["GITHUB_API_KEY"])
-        except:
-            if fallback != None:
-                self.remote = fallback
+        self.remote.connect(os.getenv("GITHUB_API_KEY"))

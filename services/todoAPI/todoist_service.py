@@ -33,7 +33,7 @@ class TodoistJSONRemote(TodoistRemote):
 
     def __init__(self):
         pref_json = self.pref_service.get_preferences("cooking")
-        self.api_token = os.environ["TODOIST_API_KEY"]
+        self.api_token = os.getenv("TODOIST_API_KEY")
         self.api = todoist.TodoistAPI(self.api_token)
         self.api.sync()
 

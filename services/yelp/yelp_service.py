@@ -20,7 +20,7 @@ class YelpServiceModule(ABC):
 
 @Singleton
 class YelpServiceRemote(YelpServiceModule):
-    API_TOKEN = os.environ["YELP_API_KEY"]
+    API_TOKEN = os.getenv("YELP_API_KEY")
     headers = {
         "Authorization": "Bearer %s" % API_TOKEN,
     }

@@ -25,7 +25,7 @@ class GeocodingJSONRemote(GeocodingRemote):
     def __init__(self):
         pref_service = PrefService(PrefJSONRemote())
         prefs = pref_service.get_preferences("transport")
-        self.geocoder = OpenCageGeocode(os.environ["OPENCAGEGEOCODING_API_KEY"])
+        self.geocoder = OpenCageGeocode(os.getenv("OPENCAGEGEOCODING_API_KEY"))
 
     # Street, City, Country
     def get_information_from_address(self, address: str):
