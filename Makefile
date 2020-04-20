@@ -13,8 +13,10 @@ ifdef TRAVIS
 endif
 
 default: mock 
-integration: mock no_mock frontend_test
-test: mock frontend_test
+integration: mock no_mock # frontend_test: Don't unit test the frontend
+						  # it depends heavily on browser functionality,
+						  # only e2e tests would make sense
+test: mock 				  # frontend_test
 
 .PHONY: install
 install: venv/
