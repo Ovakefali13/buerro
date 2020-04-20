@@ -27,7 +27,11 @@ function putBotMessage(message) {
 function processUserPrompt(prompt) {
     //Send to backend with async promise or something
     putUserMessage(prompt);
-    getCurrentLocation(location => {
+    return getCurrentLocation()
+    .catch(err => {
+        // ignore: location is not required to send a message
+    })
+    .then(response => {
         return fetch('/api/message', {
             method: 'POST',
             headers: {
@@ -36,8 +40,8 @@ function processUserPrompt(prompt) {
             body: JSON.stringify({
                    message: prompt,
                    'location': location
-                })
             })
+        })
         .then(async response => {
 
             if (!response.ok) {
