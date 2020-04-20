@@ -4,6 +4,6 @@ python:
 install:
     - make install
 script:
-    - make integration PYTHON=python
+    - make mock PYTHON=python
 git:
     submodules: false
