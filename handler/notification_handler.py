@@ -85,17 +85,6 @@ class NotificationHandler(BaseNotificationHandler):
         return subscription_info
 
     def push(self, notification: Notification):
-        key_file = "sec/vapid_private_key.pem"
-        if pathlib.Path(key_file).exists():
-            priv_key = key_file
-        else:
-            # snagged from pywebpush/test
-            priv_key = (
-                "MHcCAQEEIPeN1iAipHbt8+/KZ2NIF8NeN24jqAmnMLFZEMocY8RboAoGCCqGSM49"
-                "AwEHoUQDQgAEEJwJZq/GN8jJbo1GGpyU70hmP2hbWAUpQFKDByKB81yldJ9GTklB"
-                "M5xqEwuPM7VuQcyiLDhvovthPIXx+gsQRQ=="
-            )
-
         subscription = self.get_subscription()
         if not subscription:
             raise Exception("No user subscribed to notifications.")
@@ -104,7 +93,7 @@ class NotificationHandler(BaseNotificationHandler):
             webpush(
                 subscription_info=subscription,
                 data=json.dumps(notification),
-                vapid_private_key=priv_key,
+                vapid_private_key='sec/private_key.pem',
                 vapid_claims={"sub": "mailto:buerro@icloud.com"},
             )
         except WebPushException as ex:

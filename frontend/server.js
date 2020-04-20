@@ -9,7 +9,7 @@ const path = require('path');
 
 var port = 4000;
 if(process.env.FRONTEND_PORT) {
-    port = process.env.FRONTEND_PORT; 
+    port = process.env.FRONTEND_PORT;
 }
 
 var backend_api = "http://localhost";
@@ -20,6 +20,8 @@ if(process.env.BACKEND_PORT) {
 const backend = backend_api + ':' + backend_port;
 
 app.use("/", express.static('www'));
+
+app.use("/sec/app-server-key", express.static(path.join(__dirname, '..', 'sec', 'app_server_key.pem')));
 
 app.use('/scripts', express.static(path.join(__dirname, '/node_modules/bootstrap/dist/')));
 app.use('/scripts', express.static(path.join(__dirname, '/node_modules/jquery/dist/')));

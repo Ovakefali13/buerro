@@ -29,16 +29,48 @@ function urlBase64ToUint8Array(base64String) {
     return outputArray;
 }
 
+/*
+function pubKeyFromPem(pem) {
+    const start = "-----BEGIN PUBLIC KEY-----"
+    const end = "-----END PUBLIC KEY-----"
+
+    console.log(pem)
+
+    var key = pem.substring( // get key in between start, end
+        pem.indexOf(start) + start.length + 1,
+        pem.indexOf(end),
+    );
+
+    key = key.replace(/(\r\n|\n|\r)/gm, ""); // replace line breaks
+    return key;
+}
+*/
+
+function getAppServerKey() {
+    return fetch('/sec/app-server-key', {
+      method: 'GET',
+    })
+    .then(async (response) => {
+      const key = await response.text();
+      if(key.length < 1) {
+        throw new Error("Failed to get app server key");
+      }
+      return key;
+    });
+}
+
 function subscribeUser() {
 
+  return getAppServerKey()
+  .then(key => {
+    console.log('Key: ', key)
     const subscribeOptions = {
         userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(
-            "BMMA-CffOzTP-pSgzGqrgISf1hKXs9rgELQU1NZmq_G7aeSiZktA68GdJtlEkKOwMaazkXFolRW8uBRpPKOexA"
-        )
+        applicationServerKey: urlBase64ToUint8Array(key)
     }
 
     return swRegistration.pushManager.subscribe(subscribeOptions);
+  });
 }
 
 if ('serviceWorker' in navigator) {
