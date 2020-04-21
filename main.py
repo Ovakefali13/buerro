@@ -42,7 +42,7 @@ class Main:
         else:
             try:
                 func(*args, **kwargs)
-            except:
+            except Exception as e:
                 print("Proactive usecase failed: ", e)
 
     def schedule_usecases(self):
