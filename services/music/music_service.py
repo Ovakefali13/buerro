@@ -78,8 +78,8 @@ class SpotifyRemote(MusicRemote):
             )
             return {"Authorization": "Basic %s" % auth_header.decode("ascii")}
 
-        client_id = os.environ['SPOTIFY_CLIENT_ID']
-        client_secret = os.environ['SPOTIFY_CLIENT_SECRET']
+        client_id = os.getenv('SPOTIFY_CLIENT_ID')
+        client_secret = os.getenv('SPOTIFY_CLIENT_SECRET')
 
         headers = _make_authorization_headers(client_id, client_secret)
 
@@ -105,7 +105,7 @@ class SpotifyRemote(MusicRemote):
 
     def get_user_playlists(self):
 
-        username = os.environ['SPOTIFY_USERNAME']
+        username = os.getenv('SPOTIFY_USERNAME')
         endpoint = self.api_base + f'/users/{username}/playlists'
 
         def _request_user_playlist(limit, offset):

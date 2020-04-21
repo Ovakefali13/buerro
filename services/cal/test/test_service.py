@@ -45,7 +45,7 @@ class TestCalService(unittest.TestCase):
     @classmethod
     def setUpClass(self):
         if "DONOTMOCK" in os.environ:
-            purgable_calendar = os.environ["CALDAV_PURGABLE_CALENDAR"]
+            purgable_calendar = os.getenv("CALDAV_PURGABLE_CALENDAR")
             self.cal_service = CalService.instance(
                 iCloudCaldavRemote.instance(purgable_calendar)
             )

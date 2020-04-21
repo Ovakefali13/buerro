@@ -23,7 +23,7 @@ class MapJSONRemote(MapRemote):
             "start": None,
             "end": None,
             "profile": None,
-            "api_key": os.environ["OPENROUTESERVICE_API_KEY"],
+            "api_key": os.getenv("OPENROUTESERVICE_API_KEY"),
         }
 
     def __set_route__(self, start: tuple, dest: tuple):

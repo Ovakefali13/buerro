@@ -28,7 +28,7 @@ class SpoonacularJSONRemote(SpoonacularRemote):
     def __init__(self):
         pref_json = self.pref_service.get_preferences("cooking")
 
-        self.api_token = os.environ["SPOONACULAR_API_KEY"]
+        self.api_token = os.getenv("SPOONACULAR_API_KEY")
         self.diet = pref_json["diet"]
         self.maxCookingTime = pref_json["maxCookingTime"]
 

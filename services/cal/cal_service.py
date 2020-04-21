@@ -49,9 +49,9 @@ class iCloudCaldavRemote(CalRemote):
                     return cal
 
         client = caldav.DAVClient(
-            os.environ["CALDAV_URL"],
-            username=os.environ["CALDAV_USERNAME"],
-            password=os.environ["CALDAV_PASSWORD"],
+            os.getenv("CALDAV_URL"),
+            username=os.getenv("CALDAV_USERNAME"),
+            password=os.getenv("CALDAV_PASSWORD"),
         )
 
         if not calendar_name:

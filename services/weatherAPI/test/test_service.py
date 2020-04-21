@@ -34,11 +34,13 @@ class TestWeatherService(unittest.TestCase):
     def setUpClass(self):
         self.remote = None
         if "DONOTMOCK" in os.environ:
-            self.weather_adapter = WeatherAdapter.instance(WeatherMock.instance())
+            self.weather_adapter = WeatherAdapter.instance(
+                WeatherAdapterRemote.instance()
+            )
         else:
             print("Mocking remotes...")
             self.weather_adapter = WeatherAdapter.instance(
-                WeatherAdapterRemote.instance()
+                WeatherMock.instance()
             )
 
         self.weather_adapter.update(city="Stuttgart")

@@ -29,7 +29,7 @@ class WeatherAdapterModule(ABC):
 @Singleton
 class WeatherAdapterRemote(WeatherAdapterModule):
     def __init__(self):
-        self.API_TOKEN = os.environ["OPENWEATHERMAP_API_KEY"]
+        self.API_TOKEN = os.getenv("OPENWEATHERMAP_API_KEY")
         self.base_url = "https://api.openweathermap.org/data/2.5"
         self.base_params = {"units": "metric", "appid": self.API_TOKEN}
 
@@ -108,7 +108,7 @@ class WeatherAdapter:
                 *coordinates
             )
         else:
-            raise Error("Provide either city or coordinates")
+            raise Exception("Provide either city or coordinates")
 
     def get_current_temperature(self):
         return float(self.weather["main"]["temp"])
