@@ -15,13 +15,18 @@ ifdef TRAVIS
 endif
 
 default: mock 
-integration: mock no_mock frontend_test
-test: mock frontend_test
+integration: mock no_mock # frontend_test: Don't unit test the frontend
+						  # it depends heavily on browser functionality,
+						  # only e2e tests would make sense
+test: mock 				  # frontend_test
 
-.PHONY: install
+.PHONY: install install-dev
 install: venv/
 	$(PIP) install -r requirements.txt
-	cd frontend && npm install
+	cd frontend && npm install --prod
+
+install-dev:
+	cd frontend && npm install --only=dev
 
 ifdef TRAVIS
 venv/:
@@ -70,7 +75,6 @@ backend:
 .PHONY: frontend
 frontend:
 	PRODUCTION=1 cd frontend && npm start
-	cd frontend && npm start
 
 .PHONY: lint
 lint: 

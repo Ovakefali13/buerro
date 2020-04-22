@@ -2,3 +2,4 @@ node_modules/
 package-lock.json
 coverage/
 ssl/*.key
+.nyc_output/
