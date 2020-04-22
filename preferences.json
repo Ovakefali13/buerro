@@ -1,0 +1,61 @@
+{
+   "general":{
+      "diet":"vegan",
+      "work_address":"Herrenberger Straße 140, 71034 Böblingen",
+      "university_address":"Rotebühlplatz 41, 70178 Stuttgart",
+      "mainstation_address":"Arnulf-Klett-Platz 2, 70173 Stuttgart",
+      "home_address":"Schloßplatz 4, 70173 Stuttgart",
+      "work_coords":[
+         48.676260,
+         8.980900
+      ],
+      "university_coords":[
+         48.773630,
+         9.170960
+      ],
+      "mainstation_coords":[
+         48.782761,
+         9.182630
+      ],
+      "home_coords":[
+         48.777980,
+         9.181840
+      ]
+   },
+   "cal":{
+
+   },
+   "cooking":{
+      "diet":"omnivore",
+      "intolerances":"Shellfish",
+      "maxCookingTime":90
+   },
+   "work_session":{
+      "min_work_period_minutes": 30,
+      "be_minutes_early": 10,
+      "remind_min_before_leaving": 15,
+      "pomodoro_minutes": 25,
+      "break_minutes": 5
+   },
+   "transport":{
+      "minTemp":10,
+      "maxWind":20,
+      "walk_or_bike":"cycling",
+      "vvs_or_car":"car"
+   },
+   "weather":{
+      "min_temp":10,
+      "max_wind":20
+   },
+   "lunchbreak":{
+      "base_radius":500,
+      "ten_min_radius":100,
+      "price":"1, 2"
+   },
+   "music":{
+
+   },
+   "github":{
+
+   }
+}

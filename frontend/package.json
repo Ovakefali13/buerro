@@ -1,0 +1,41 @@
+{
+  "name": "buerro_frontend",
+  "version": "0.0.1",
+  "description": "PDA for your buerro",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Ovakefali13/buerro"
+  },
+  "main": "server.js",
+  "dependencies": {
+    "bootstrap": "^3.4.1",
+    "express": "^4.17.1",
+    "jquery": "^3.4.1",
+    "showdown": "^1.9.1"
+  },
+  "devDependencies": {
+    "jest-puppeteer": "^4.4.0",
+    "puppeteer": "^2.1.1",
+    "puppeteer-to-istanbul": "^1.2.2",
+    "http-proxy-middleware": "^1.0.3",
+    "jest": "^25.1.0",
+    "nyc": "^15.0.1",
+    "testcafe": "^1.8.4"
+  },
+  "scripts": {
+    "test": "jest",
+    "start": "node server.js",
+    "coverage": "nyc npm run test",
+    "e2e": "testcafe chrome test/index-test.js --hostname localhost --ports 7409,1903 --app 'node server.js'"
+  },
+  "jest": {
+    "preset": "jest-puppeteer",
+    "globals": {
+      "HOST": "http://localhost"
+    },
+    "collectCoverage": true,
+    "coverageDirectory": "coverage"
+  },
+  "author": "",
+  "license": "ISC"
+}

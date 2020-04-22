@@ -1,0 +1,269 @@
+{
+	"vegetarian": false,
+	"vegan": false,
+	"glutenFree": true,
+	"dairyFree": true,
+	"veryHealthy": false,
+	"cheap": false,
+	"veryPopular": false,
+	"sustainable": false,
+	"weightWatcherSmartPoints": 12,
+	"gaps": "no",
+	"lowFodmap": false,
+	"sourceUrl": "http://www.seriouseats.com/recipes/2011/12/pork-adobo-philippino-braise-recipe.html",
+	"spoonacularSourceUrl": "https://spoonacular.com/pork-adobo-113888",
+	"aggregateLikes": 1,
+	"spoonacularScore": 61.0,
+	"healthScore": 21.0,
+	"creditsText": "Serious Eats",
+	"sourceName": "Serious Eats",
+	"pricePerServing": 177.29,
+	"extendedIngredients": [{
+		"id": 2004,
+		"aisle": "Produce;Spices and Seasonings",
+		"image": "bay-leaves.jpg",
+		"consitency": "solid",
+		"name": "bay leaves",
+		"original": "4 bay leaves",
+		"originalString": "4 bay leaves",
+		"originalName": "bay leaves",
+		"amount": 4.0,
+		"unit": "",
+		"meta": [],
+		"metaInformation": [],
+		"measures": {
+			"us": {
+				"amount": 4.0,
+				"unitShort": "",
+				"unitLong": ""
+			},
+			"metric": {
+				"amount": 4.0,
+				"unitShort": "",
+				"unitLong": ""
+			}
+		}
+	}, {
+		"id": 12104,
+		"aisle": "Produce",
+		"image": "coconut.jpg",
+		"consitency": "solid",
+		"name": "coconut",
+		"original": "1 cup coconut mik",
+		"originalString": "1 cup coconut mik",
+		"originalName": "coconut mik",
+		"amount": 1.0,
+		"unit": "cup",
+		"meta": [],
+		"metaInformation": [],
+		"measures": {
+			"us": {
+				"amount": 1.0,
+				"unitShort": "cup",
+				"unitLong": "cup"
+			},
+			"metric": {
+				"amount": 236.588,
+				"unitShort": "ml",
+				"unitLong": "milliliters"
+			}
+		}
+	}, {
+		"id": 11215,
+		"aisle": "Produce",
+		"image": "garlic.jpg",
+		"consitency": "solid",
+		"name": "garlic",
+		"original": "8 cloves garlic, peeled and lightly crushed",
+		"originalString": "8 cloves garlic, peeled and lightly crushed",
+		"originalName": "garlic, peeled and lightly crushed",
+		"amount": 8.0,
+		"unit": "cloves",
+		"meta": ["crushed", "peeled"],
+		"metaInformation": ["crushed", "peeled"],
+		"measures": {
+			"us": {
+				"amount": 8.0,
+				"unitShort": "cloves",
+				"unitLong": "cloves"
+			},
+			"metric": {
+				"amount": 8.0,
+				"unitShort": "cloves",
+				"unitLong": "cloves"
+			}
+		}
+	}, {
+		"id": 4582,
+		"aisle": "Oil, Vinegar, Salad Dressing",
+		"image": "vegetable-oil.jpg",
+		"consitency": "liquid",
+		"name": "oil",
+		"original": "1 tablespoon oil",
+		"originalString": "1 tablespoon oil",
+		"originalName": "oil",
+		"amount": 1.0,
+		"unit": "tablespoon",
+		"meta": [],
+		"metaInformation": [],
+		"measures": {
+			"us": {
+				"amount": 1.0,
+				"unitShort": "Tbsp",
+				"unitLong": "Tbsp"
+			},
+			"metric": {
+				"amount": 1.0,
+				"unitShort": "Tbsp",
+				"unitLong": "Tbsp"
+			}
+		}
+	}, {
+		"id": 10072,
+		"aisle": "Meat",
+		"image": "pork-shoulder.png",
+		"consitency": "solid",
+		"name": "pork shoulder",
+		"original": "3 pounds fatty pork shoulder, cut into 1 1/2 inch cubes",
+		"originalString": "3 pounds fatty pork shoulder, cut into 1 1/2 inch cubes",
+		"originalName": "fatty pork shoulder, cut into 1 1/2 inch cubes",
+		"amount": 3.0,
+		"unit": "pounds",
+		"meta": ["cut into 1 1/2 inch cubes"],
+		"metaInformation": ["cut into 1 1/2 inch cubes"],
+		"measures": {
+			"us": {
+				"amount": 3.0,
+				"unitShort": "lb",
+				"unitLong": "pounds"
+			},
+			"metric": {
+				"amount": 1.361,
+				"unitShort": "kilogram",
+				"unitLong": "kilograms"
+			}
+		}
+	}, {
+		"id": 1022053,
+		"aisle": "Ethnic Foods;Oil, Vinegar, Salad Dressing",
+		"image": "rice-vinegar.png",
+		"consitency": "liquid",
+		"name": "rice vinegar",
+		"original": "1/2 cup rice vinegar, plus more to taste",
+		"originalString": "1/2 cup rice vinegar, plus more to taste",
+		"originalName": "rice vinegar, plus more to taste",
+		"amount": 0.5,
+		"unit": "cup",
+		"meta": ["plus more to taste"],
+		"metaInformation": ["plus more to taste"],
+		"measures": {
+			"us": {
+				"amount": 0.5,
+				"unitShort": "cups",
+				"unitLong": "cups"
+			},
+			"metric": {
+				"amount": 118.294,
+				"unitShort": "ml",
+				"unitLong": "milliliters"
+			}
+		}
+	}, {
+		"id": 16124,
+		"aisle": "Ethnic Foods;Condiments",
+		"image": "soy-sauce.jpg",
+		"consitency": "liquid",
+		"name": "soy sauce",
+		"original": "1/2 cup soy sauce",
+		"originalString": "1/2 cup soy sauce",
+		"originalName": "soy sauce",
+		"amount": 0.5,
+		"unit": "cup",
+		"meta": [],
+		"metaInformation": [],
+		"measures": {
+			"us": {
+				"amount": 0.5,
+				"unitShort": "cups",
+				"unitLong": "cups"
+			},
+			"metric": {
+				"amount": 118.294,
+				"unitShort": "ml",
+				"unitLong": "milliliters"
+			}
+		}
+	}],
+	"id": 113888,
+	"title": "Pork Adobo",
+	"readyInMinutes": 180,
+	"servings": 4,
+	"image": "https://spoonacular.com/recipeImages/113888-556x370.jpg",
+	"imageType": "jpg",
+	"summary": "Need a <b>gluten free and dairy free main course</b>? Pork Adobo could be a great recipe to try. One portion of this dish contains about <b>45g of protein</b>, <b>25g of fat</b>, and a total of <b>441 calories</b>. This recipe serves 4 and costs $1.77 per serving. From preparation to the plate, this recipe takes approximately <b>3 hours</b>. This recipe from Serious Eats has 1 fans. A mixture of bay leaves, pork shoulder, garlic, and a handful of other ingredients are all it takes to make this recipe so scrumptious. Taking all factors into account, this recipe <b>earns a spoonacular score of 61%</b>, which is pretty good. If you like this recipe, take a look at these similar recipes: <a href=\"https://spoonacular.com/recipes/pork-adobo-568455\">Pork Adobo</a>, <a href=\"https://spoonacular.com/recipes/adobo-pork-598890\">Adobo Pork</a>, and <a href=\"https://spoonacular.com/recipes/pork-adobo-949982\">Pork Adobo</a>.",
+	"cuisines": [],
+	"dishTypes": ["lunch", "main course", "main dish", "dinner"],
+	"diets": ["gluten free", "dairy free"],
+	"occasions": [],
+	"winePairing": {},
+	"instructions": "<ol><li>Heat oil in a large straight-sided sauté pan on very high heat until oil begins to smoke. Sear pork in batches, leaving plenty of open space in the pan, until a light crust forms, about 1 to 2 minutes per side. </li><li>When last batch of pork is seared, return all pork to pan and add soy sauce, vinegar, coconut milk, bay leaves, and garlic. Bring to a boil, then reduce to a bare simmer and cook, covered, for 2 1/2 to 3 hours, or until pork is very tender but not completely falling apart. </li><li>Remove pork from pan and set aside. Strain sauce into a fat separator or measuring cup and skim off fat, reserving for another use. Return sauce to pan, add about 1 tablespoon of vinegar, and cook on medium high heat until sauce reduces to less than 1 cup. </li><li>Return pork to thickened sauce and add salt and vinegar to taste. Serve with rice and chopped scallions for garnish.</li></ol>",
+	"analyzedInstructions": [{
+		"name": "",
+		"steps": [{
+			"number": 1,
+			"step": "Heat oil in a large straight-sided sauté pan on very high heat until oil begins to smoke. Sear pork in batches, leaving plenty of open space in the pan, until a light crust forms, about 1 to 2 minutes per side. When last batch of pork is seared, return all pork to pan and add soy sauce, vinegar, coconut milk, bay leaves, and garlic. Bring to a boil, then reduce to a bare simmer and cook, covered, for 2 1/2 to 3 hours, or until pork is very tender but not completely falling apart.",
+			"ingredients": [{
+				"id": 2004,
+				"name": "bay leaves",
+				"image": "bay-leaves.jpg"
+			}, {
+				"id": 16124,
+				"name": "soy sauce",
+				"image": "soy-sauce.jpg"
+			}, {
+				"id": 2053,
+				"name": "vinegar",
+				"image": "vinegar-(white).jpg"
+			}, {
+				"id": 11215,
+				"name": "garlic",
+				"image": "garlic.png"
+			}, {
+				"id": 4582,
+				"name": "cooking oil",
+				"image": "vegetable-oil.jpg"
+			}],
+			"equipment": [{
+				"id": 404645,
+				"name": "frying pan",
+				"image": "pan.png"
+			}],
+			"length": {
+				"number": 1,
+				"unit": "minutes"
+			}
+		}, {
+			"number": 2,
+			"step": "Remove pork from pan and set aside. Strain sauce into a fat separator or measuring cup and skim off fat, reserving for another use. Return sauce to pan, add about 1 tablespoon of vinegar, and cook on medium high heat until sauce reduces to less than 1 cup. Return pork to thickened sauce and add salt and vinegar to taste.",
+			"ingredients": [{
+				"id": 2053,
+				"name": "vinegar",
+				"image": "vinegar-(white).jpg"
+			}],
+			"equipment": [{
+				"id": 404766,
+				"name": "measuring cup",
+				"image": "measuring-cup.jpg"
+			}, {
+				"id": 404645,
+				"name": "frying pan",
+				"image": "pan.png"
+			}]
+		}, {
+			"number": 3,
+			"step": "Serve with rice and chopped scallions for garnish.",
+			"ingredients": [],
+			"equipment": []
+		}]
+	}]
+}

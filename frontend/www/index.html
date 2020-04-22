@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>buerro</title>
+
+    <link rel="apple-touch-icon" sizes="180x180" href="ico/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="ico/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="ico/favicon-16x16.png">
+    <link rel="manifest" href="ico/site.webmanifest">
+    
+    <link rel="stylesheet" href="scripts/css/bootstrap.min.css">
+    <link rel="stylesheet" href="style.css">
+    
+    <script type="text/javascript" src="scripts/jquery.min.js"></script>
+    <script type="text/javascript" src="scripts/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="scripts/showdown.min.js"></script>
+
+    <script type="text/javascript" src="js/location.js"></script>
+    <script type="text/javascript" src="js/notification.js"></script>
+    <script type="text/javascript" src="js/chat.js"></script>
+    <script type="text/javascript" src="js/main.js"></script>
+    <script type="text/javascript" src="js/stt.js"></script>
+    <script type="text/javascript" src="js/tts.js"></script>
+  </head>
+  <body>
+    <div class="chatcontainer">
+      <div id="chatbubbles" class="bubblecontainer"></div>
+      <div class="input-group stay-bottom chat-input">
+          <textarea type=text id="prompt_input" class="form-control chat-input-field" aria-label="With textarea" rows="3"></textarea>
+          <input id="submit-btn" class="chat-send-button" type="submit" value="Send">
+          <div id="loader" class="loader"></div>          
+      </div>
+      <button onclick="record(event)" class="chat-record-btn" id="record"><span class="glyphicon glyphicon-record" aria-hidden="true"></span></button>
+      <button onclick="toggle_speech(event)" class="chat-say-btn" id="speak"><span class="glyphicon glyphicon-volume-up" aria-hidden="true"></span></button>
+    </div>
+  </body>
+</html>
