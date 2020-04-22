@@ -18,10 +18,13 @@ integration: mock no_mock # frontend_test: Don't unit test the frontend
 						  # only e2e tests would make sense
 test: mock 				  # frontend_test
 
-.PHONY: install
+.PHONY: install install-dev
 install: venv/
 	$(PIP) install -r requirements.txt
-	cd frontend && npm install
+	cd frontend && npm install --prod
+
+install-dev:
+	cd frontend && npm install --only=dev
 
 ifdef TRAVIS
 venv/:

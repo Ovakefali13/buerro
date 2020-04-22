@@ -10,13 +10,13 @@
   "dependencies": {
     "bootstrap": "^3.4.1",
     "express": "^4.17.1",
-    "jest-puppeteer": "^4.4.0",
     "jquery": "^3.4.1",
-    "puppeteer": "^2.1.1",
-    "puppeteer-to-istanbul": "^1.2.2",
     "showdown": "^1.9.1"
   },
   "devDependencies": {
+    "jest-puppeteer": "^4.4.0",
+    "puppeteer": "^2.1.1",
+    "puppeteer-to-istanbul": "^1.2.2",
     "http-proxy-middleware": "^1.0.3",
     "jest": "^25.1.0",
     "nyc": "^15.0.1",
