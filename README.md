@@ -10,7 +10,7 @@ Best deployed using the [Docker buerro *wrap*per](https://github.com/mariushegel
 make install
 ```
 
-The scheduler we use, require setting your local timezone:
+The scheduler we use, might require setting your local timezone:
 
 ```
 export TZ=Europe/Berlin
